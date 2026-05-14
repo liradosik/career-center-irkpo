@@ -1,0 +1,234 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Вакансии{% endblock %}
+
+{% block content %}
+<div class="student-vacancies-page-v2">
+
+  <section class="hero student-vacancies-hero-v2">
+    <div class="student-vacancies-hero-main">
+      <div class="hero-kicker">Раздел возможностей</div>
+      <h1>Вакансии и стажировки</h1>
+      <p>Подберите предложение по формату, типу занятости и карьерному направлению.</p>
+    </div>
+
+    <div class="student-vacancies-hero-art" aria-hidden="true">
+      <span class="vacancies-decor-circle vacancies-decor-circle-one"></span>
+      <span class="vacancies-decor-circle vacancies-decor-circle-two"></span>
+      <span class="vacancies-decor-circle vacancies-decor-circle-three"></span>
+      <span class="vacancies-decor-star vacancies-decor-star-one">✦</span>
+      <span class="vacancies-decor-star vacancies-decor-star-two">✧</span>
+      <span class="vacancies-decor-star vacancies-decor-star-three">✦</span>
+      <span class="vacancies-decor-dot vacancies-decor-dot-one"></span>
+      <span class="vacancies-decor-dot vacancies-decor-dot-two"></span>
+    </div>
+  </section>
+
+  <section class="student-vacancies-filter-card-v2">
+    <form method="get" class="student-vacancies-filter-grid-v2">
+      <label class="student-vacancies-field-v2 is-search">
+        <span>Поиск</span>
+        <span class="student-vacancies-search-wrap-v2">
+          <input
+            type="search"
+            name="q"
+            value="{{ q }}"
+            placeholder="Например: дизайнер, junior, стажировка"
+          >
+          <i class="bi bi-search"></i>
+        </span>
+      </label>
+
+      <label class="student-vacancies-field-v2">
+        <span>Тип занятости</span>
+        <select name="employment">
+          <option value="">Все</option>
+          {% for option in employment_options %}
+            <option value="{{ option }}" {% if employment_filter == option %}selected{% endif %}>
+              {{ option }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label class="student-vacancies-field-v2">
+        <span>Формат</span>
+        <select name="format">
+          <option value="">Все</option>
+          {% for option in format_options %}
+            <option value="{{ option }}" {% if format_filter == option %}selected{% endif %}>
+              {{ option }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label class="student-vacancies-field-v2">
+        <span>Направление</span>
+        <select name="direction">
+          <option value="">Все</option>
+          {% for option in direction_options %}
+            <option value="{{ option }}" {% if direction_filter == option %}selected{% endif %}>
+              {{ option }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <div class="student-vacancies-filter-actions-v2">
+        <button class="btn btn-primary" type="submit">
+          <i class="bi bi-funnel"></i>
+          Применить
+        </button>
+
+        <a class="btn" href="{% url 'vacancies:list' %}">
+          <i class="bi bi-arrow-clockwise"></i>
+          Сбросить
+        </a>
+      </div>
+    </form>
+  </section>
+
+  <section class="student-vacancies-list-v2">
+    {% for v in vacancies %}
+      <article class="student-vacancy-card-v2">
+        <div class="student-vacancy-icon-v2 {% cycle 'is-blue' 'is-green' 'is-orange' 'is-purple' %}">
+          {% if 'дизайн' in v.direction|lower or 'design' in v.direction|lower %}
+            <i class="bi bi-palette"></i>
+          {% elif 'it' in v.direction|lower or 'разработ' in v.title|lower or 'програм' in v.direction|lower %}
+            <i class="bi bi-code-slash"></i>
+          {% elif 'аналит' in v.title|lower %}
+            <i class="bi bi-bar-chart"></i>
+          {% else %}
+            <i class="bi bi-briefcase"></i>
+          {% endif %}
+        </div>
+
+        <div class="student-vacancy-main-v2">
+          <div class="student-vacancy-title-row-v2">
+            <h2>{{ v.title }}</h2>
+            <span>Новая</span>
+          </div>
+
+          <p class="student-vacancy-company-v2">
+            {{ v.company }}
+          </p>
+
+          <div class="student-vacancy-tags-v2">
+            <span>{{ v.format_type }}</span>
+            <span>{{ v.employment_type }}</span>
+            <span>{{ v.direction }}</span>
+          </div>
+
+          <div class="student-vacancy-actions-v2">
+            <a class="btn student-vacancy-detail-btn" href="{% url 'vacancies:detail' v.pk %}">
+              Подробнее
+            </a>
+
+            {% if v.id in responded_vacancy_ids %}
+              <span class="student-vacancy-responded-badge">
+                <i class="bi bi-check2"></i>
+                Откликнулись
+              </span>
+            {% else %}
+              <form method="post" action="{% url 'vacancies:respond' v.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button class="btn btn-primary student-vacancy-action-btn" type="submit">
+                  Откликнуться
+                </button>
+              </form>
+            {% endif %}
+
+            <form method="post" action="{% url 'vacancies:toggle_favorite' v.pk %}">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button
+                class="student-vacancy-save-btn student-vacancy-save-inline {% if v.id in favorite_vacancy_ids %}is-active{% endif %}"
+                type="submit"
+                title="Избранное"
+              >
+                {% if v.id in favorite_vacancy_ids %}
+                  <i class="bi bi-bookmark-check-fill"></i>
+                {% else %}
+                  <i class="bi bi-bookmark"></i>
+                {% endif %}
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <aside class="student-vacancy-side-v2">
+          <div class="student-vacancy-side-meta">
+            <p>
+              <i class="bi bi-geo-alt"></i>
+              <span>{{ v.format_type }}</span>
+            </p>
+
+            <p>
+              <small>Опубликовано</small>
+              <strong>{{ v.created_at|date:"d.m.Y" }}</strong>
+            </p>
+          </div>
+        </aside>
+      </article>
+    {% empty %}
+      <section class="student-vacancies-empty-v2">
+        <div class="student-vacancies-empty-icon-v2">
+          <i class="bi bi-search"></i>
+        </div>
+
+        <h2>Вакансий не найдено</h2>
+        <p>Попробуйте изменить поиск, формат, тип занятости или направление.</p>
+
+        <a class="btn btn-primary" href="{% url 'vacancies:list' %}">
+          Сбросить фильтры
+        </a>
+      </section>
+    {% endfor %}
+  </section>
+
+  {% if page_obj.paginator.count %}
+    <section class="student-vacancies-pagination-wrap">
+      <p>
+        Показано {{ page_start }}–{{ page_end }} из {{ page_obj.paginator.count }} вакансий
+      </p>
+
+      {% if page_obj.paginator.num_pages > 1 %}
+        <nav class="student-vacancies-pagination" aria-label="Пагинация вакансий">
+          {% if page_obj.has_previous %}
+            <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}">
+              <i class="bi bi-chevron-left"></i>
+            </a>
+          {% else %}
+            <span class="is-disabled">
+              <i class="bi bi-chevron-left"></i>
+            </span>
+          {% endif %}
+
+          {% for num in page_obj.paginator.page_range %}
+            {% if num == page_obj.number %}
+              <span class="is-current">{{ num }}</span>
+            {% elif num <= 5 or num == page_obj.paginator.num_pages %}
+              <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}">{{ num }}</a>
+            {% elif num == 6 %}
+              <span class="is-gap">…</span>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}">
+              <i class="bi bi-chevron-right"></i>
+            </a>
+          {% else %}
+            <span class="is-disabled">
+              <i class="bi bi-chevron-right"></i>
+            </span>
+          {% endif %}
+        </nav>
+      {% endif %}
+    </section>
+  {% endif %}
+
+</div>
+{% endblock %}

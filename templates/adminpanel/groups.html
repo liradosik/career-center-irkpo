@@ -1,0 +1,120 @@
+{% extends 'base_dashboard.html' %}
+{% load ui_extras %}
+{% block title %}Группы{% endblock %}
+
+{% block content %}
+<section class="hero admin-page-hero">
+  <div>
+    <div class="hero-kicker">Администрирование</div>
+    <h1>Группы</h1>
+    <p>Управление учебными группами, специальностями и назначением кураторов.</p>
+  </div>
+</section>
+
+<section class="section card admin-create-group-card">
+  <h2>Создать группу</h2>
+
+  <form method="post" class="admin-create-group-form">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="create">
+
+    <div class="group-create-fields">
+      <div class="form-field">
+        <label for="{{ form.name.id_for_label }}">Название группы</label>
+        {{ form.name }}
+        {{ form.name.errors }}
+      </div>
+
+      <div class="form-field">
+        <label for="{{ form.specialty_ref.id_for_label }}">Специальность</label>
+        {{ form.specialty_ref }}
+        {{ form.specialty_ref.errors }}
+      </div>
+
+      <div class="form-field">
+        <label for="{{ form.admission_year.id_for_label }}">Год поступления</label>
+        {{ form.admission_year }}
+        {{ form.admission_year.errors }}
+      </div>
+
+      <div class="form-field">
+        <label for="{{ form.course_number.id_for_label }}">Курс</label>
+        {{ form.course_number }}
+        {{ form.course_number.errors }}
+      </div>
+
+      <div class="form-field">
+        <label for="{{ form.curator.id_for_label }}">Куратор</label>
+        {{ form.curator }}
+        {{ form.curator.errors }}
+      </div>
+    </div>
+
+    <div class="admin-form-actions">
+      <button class="btn btn-primary" type="submit">Создать группу</button>
+      <a class="btn btn-link" href="{% url 'accounts:admin_group_import' %}">Импорт CSV / Excel</a>
+    </div>
+  </form>
+</section>
+
+<section class="section card admin-groups-list-card">
+  <h2>Список групп</h2>
+
+  <form method="get" class="admin-groups-filters">
+    <input name="q" placeholder="Название группы" value="{{ request.GET.q }}">
+
+    <select name="specialty">
+      <option value="">Специальность</option>
+      {% for specialty in specialties %}
+        <option value="{{ specialty.id }}" {% if request.GET.specialty == specialty.id|stringformat:'s' %}selected{% endif %}>
+          {{ specialty.code }} • {{ specialty.name }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <select name="curator">
+      <option value="">Куратор</option>
+      {% for curator in curators %}
+        <option value="{{ curator.id }}" {% if request.GET.curator == curator.id|stringformat:'s' %}selected{% endif %}>
+          {{ curator.full_name }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <input name="course_number" type="number" min="1" placeholder="Курс" value="{{ request.GET.course_number }}">
+    <input name="admission_year" type="number" min="2000" placeholder="Год поступления" value="{{ request.GET.admission_year }}">
+
+    <button class="btn btn-link" type="submit">Применить</button>
+  </form>
+
+  <div class="admin-groups-list">
+    {% for group in groups %}
+      <article class="admin-group-row admin-group-row-simple admin-group-row-no-avatar">
+        <div class="admin-group-main">
+          <div>
+            <strong>{{ group.name }}</strong>
+            <span>{{ group.specialty_ref.name|default:group.specialty|default:'Специальность не указана' }}</span>
+          </div>
+        </div>
+
+        <div class="admin-group-cell">
+          <span>Куратор</span>
+          <strong>{% if group.curator %}{% if group.curator.photo %}<img class="avatar-img avatar-sm" src="{{ group.curator.photo.url }}" alt="{{ group.curator.full_name }}">{% else %}<span class="avatar-fallback avatar-sm">{{ group.curator.full_name|initials }}</span>{% endif %} {{ group.curator.full_name }}{% else %}Без куратора{% endif %}</strong>
+        </div>
+
+        <div class="admin-group-cell">
+          <span>Студентов</span>
+          <strong>{{ group.students_count|default:0 }}</strong>
+        </div>
+
+        <a class="btn btn-link" href="{% url 'accounts:admin_group_detail' group.id %}">Открыть</a>
+      </article>
+    {% empty %}
+      <div class="admin-empty-state">
+        <strong>Группы не найдены</strong>
+        <p>Попробуйте изменить фильтры или создать новую группу.</p>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

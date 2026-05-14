@@ -1,0 +1,18 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Обращение{% endblock %}
+{% block content %}
+<section class="admin-support-detail">
+  <div class="card">
+    <h1>{{ ticket.subject }}</h1>
+    <p><strong>От кого:</strong> {{ ticket.author_label }}</p>
+    {% if ticket.requester %}<p><strong>Email пользователя:</strong> {{ ticket.requester.email }}</p><p><strong>Группа:</strong> {{ ticket.requester.group|default:"—" }}</p>{% else %}<p><strong>Email для связи:</strong> {{ ticket.public_email|default:"—" }}</p><p><strong>Контакт:</strong> {{ ticket.public_contact|default:"—" }}</p>{% endif %}
+    <p><strong>Источник:</strong> {{ ticket.get_source_display }}</p>
+    <p><strong>Категория:</strong> {{ ticket.get_category_display }}</p>
+    <p>{{ ticket.message|linebreaksbr }}</p>
+  </div>
+  <div class="card support-ticket-form">
+    <h2>Ответ администратора</h2>
+    <form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn-primary" type="submit">Сохранить ответ</button></form>
+  </div>
+</section>
+{% endblock %}

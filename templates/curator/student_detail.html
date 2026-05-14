@@ -1,0 +1,82 @@
+{% extends 'base_dashboard.html' %}
+{% load ui_extras %}
+{% block title %}Карточка студента{% endblock %}
+{% block content %}
+<section class="hero curator-student-hero">
+  {% if student.photo %}<img class="avatar-img avatar-lg" src="{{ student.photo.url }}" alt="{{ student.full_name }}">{% else %}<div class="avatar-fallback avatar-lg">{{ student.full_name|initials }}</div>{% endif %}
+  <div>
+    <div class="hero-kicker">Карточка студента</div>
+    <h1>{{ student.full_name }}</h1>
+    <p>{{ student.email }}</p>
+    <div class="admin-profile-badges">
+      <span class="profile-badge">Группа: {{ student.group|default:'—' }}</span>
+      <span class="curator-student-status status-{{ student.academic_status }}">{{ student.get_academic_status_display }}</span>
+    </div>
+  </div>
+</section>
+
+<section class="section curator-student-main-grid">
+  <div class="card admin-info-card curator-profile-info-list">
+    <h2>Контакты и профиль</h2>
+    <div class="admin-info-list">
+      <div><span>Email</span><strong>{{ student.email }}</strong></div>
+      <div><span>Телефон</span><strong>{% if profile and profile.phone %}{{ profile.phone }}{% else %}не указан{% endif %}</strong></div>
+      <div><span>Город</span><strong>{% if profile and profile.city %}{{ profile.city }}{% else %}не указан{% endif %}</strong></div>
+      <div><span>О себе</span><strong>{% if profile and profile.about %}{{ profile.about }}{% else %}информация отсутствует{% endif %}</strong></div>
+      <div>
+        <span>Публичное резюме</span>
+        <strong>
+          {% if resume_public_url %}
+            <a class="curator-inline-link" href="{{ resume_public_url }}">{{ resume_public_url }}</a>
+          {% else %}
+            не опубликовано
+          {% endif %}
+        </strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="card curator-status-edit-card">
+    <h2>Учебный статус</h2>
+    <form method="post" class="curator-status-form">
+      {% csrf_token %}
+      {{ status_form.academic_status.label_tag }}
+      {{ status_form.academic_status }}
+      <button class="btn btn-primary" type="submit">Сохранить статус</button>
+    </form>
+  </div>
+</section>
+
+<section class="section card curator-portfolio-card curator-portfolio-card-wide">
+  <h2>Статистика портфолио</h2>
+  <div class="curator-portfolio-stats">
+    <article><span>Всего</span><strong>{{ portfolio_total }}</strong></article>
+    <article><span>На проверке</span><strong>{{ portfolio_pending }}</strong></article>
+    <article><span>Подтверждено</span><strong>{{ portfolio_approved }}</strong></article>
+    <article><span>Отклонено</span><strong>{{ portfolio_rejected }}</strong></article>
+  </div>
+</section>
+
+<section class="section card curator-panel">
+  <h2>Записи портфолио, требующие проверки</h2>
+  <div class="curator-list">
+    {% for entry in pending_entries %}
+      <article class="curator-review-card">
+        <div class="curator-review-head">
+          <h3>{{ entry.title }}</h3>
+          {% if entry.status == 'pending' %}<span class="badge badge-pending">Ожидает проверки</span>{% endif %}
+        </div>
+        <p class="curator-review-meta-line">{{ entry.type }} · {{ entry.date }}</p>
+        <p>{{ entry.description|truncatechars:220 }}</p>
+        {% include 'portfolio/_attachments.html' with attachments=entry.attachments.all legacy_file=entry.file %}
+        {% if entry.curator_comment %}<p class="muted">Комментарий куратора: {{ entry.curator_comment }}</p>{% endif %}
+      </article>
+    {% empty %}
+      <div class="curator-empty">
+        <strong>Нет записей, требующих проверки</strong>
+        <p>У студента нет материалов в очереди подтверждения.</p>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

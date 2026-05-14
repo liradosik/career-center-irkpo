@@ -1,0 +1,163 @@
+{% extends 'base_dashboard.html' %}
+{% load ui_extras %}
+
+{% block title %}Курсы и семинары{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero-kicker">Администрирование</div>
+  <h1>Курсы и семинары</h1>
+  <p>Создание и управление обучающими событиями для студентов.</p>
+</section>
+
+<section class="section card admin-wide-card admin-create-card admin-course-create-card">
+  <h2>Создать курс</h2>
+
+  <form method="post" class="admin-course-form admin-create-split-form">
+    {% csrf_token %}
+
+    <div class="admin-create-split admin-create-split-course">
+      <div class="admin-create-main-fields">
+        <p>
+          <label>{{ form.title.label }}</label>
+          {{ form.title }}
+        </p>
+
+        <p>
+          <label>{{ form.kind.label }}</label>
+          {{ form.kind }}
+        </p>
+
+        <p>
+          <label>{{ form.format_type.label }}</label>
+          {{ form.format_type }}
+        </p>
+
+        <p>
+          <label>{{ form.organization.label }}</label>
+          {{ form.organization }}
+        </p>
+
+        <p>
+          <label>{{ form.contacts.label }}</label>
+          {{ form.contacts }}
+        </p>
+
+        <p>
+          <label>{{ form.date.label }}</label>
+          {{ form.date }}
+        </p>
+
+        <p>
+          <label>{{ form.places.label }}</label>
+          {{ form.places }}
+        </p>
+
+        <p>
+          <label>{{ form.status.label }}</label>
+          {{ form.status }}
+        </p>
+      </div>
+
+      <div class="admin-create-text-fields">
+        <p>
+          <label>{{ form.description.label }}</label>
+          {{ form.description }}
+        </p>
+      </div>
+    </div>
+
+    <p class="admin-form-actions">
+      <button class="btn btn-primary" name="action" value="create" type="submit">
+        Создать курс
+      </button>
+    </p>
+  </form>
+</section>
+
+<section class="section card admin-wide-card">
+  <h2>Список курсов</h2>
+
+  <form method="get" class="filters admin-clean-filters">
+    <input
+      name="q"
+      placeholder="Название или организация"
+      value="{{ request.GET.q }}"
+    >
+
+    <select name="status">
+      <option value="">Статус</option>
+      <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Активно</option>
+      <option value="hidden" {% if request.GET.status == 'hidden' %}selected{% endif %}>Скрыто</option>
+      <option value="archive" {% if request.GET.status == 'archive' %}selected{% endif %}>Архив</option>
+    </select>
+
+    <select name="kind">
+      <option value="">Тип</option>
+      <option value="course" {% if request.GET.kind == 'course' %}selected{% endif %}>Курс</option>
+      <option value="seminar" {% if request.GET.kind == 'seminar' %}selected{% endif %}>Семинар</option>
+      <option value="practice" {% if request.GET.kind == 'practice' %}selected{% endif %}>Практика</option>
+    </select>
+
+    <select name="format_type">
+      <option value="">Формат</option>
+      <option value="online" {% if request.GET.format_type == 'online' %}selected{% endif %}>Онлайн</option>
+      <option value="offline" {% if request.GET.format_type == 'offline' %}selected{% endif %}>Очно</option>
+    </select>
+
+    <button class="btn btn-link" type="submit">Применить</button>
+  </form>
+
+  <div class="admin-course-list">
+    {% for course in courses %}
+      <div class="admin-course-row">
+        <div class="admin-course-main">
+          <strong>{{ course.title }}</strong>
+          <span>{{ course.organization|default:'Организация не указана' }}</span>
+        </div>
+
+        <div class="admin-course-meta">
+          <strong>{{ KIND_LABELS|dict_get:course.kind }}</strong>
+          <span>{{ FORMAT_LABELS|dict_get:course.format_type }}</span>
+        </div>
+
+        <div class="admin-course-meta">
+          <span>{{ STATUS_LABELS|dict_get:course.status }}</span>
+          {% if course.format_type == 'offline' %}
+            <span>Мест: {{ course.places }} / {{ course.registrations_count }}</span>
+          {% else %}
+            <span>Онлайн</span>
+          {% endif %}
+        </div>
+
+        <a class="btn btn-link admin-row-open" href="{% url 'accounts:admin_course_detail' course.id %}">
+          Открыть
+        </a>
+      </div>
+    {% empty %}
+      <div class="admin-empty-state">
+        Курсы и семинары не найдены.
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const fields = {
+      title: 'Например, Основы портфолио и резюме',
+      organization: 'Например, Центр карьеры ИРКПО',
+      contacts: 'Email, телефон, кабинет или Telegram',
+      places: 'Например, 25',
+      description: 'Кратко опишите тему, формат и кому подойдёт курс'
+    };
+
+    Object.entries(fields).forEach(function ([name, placeholder]) {
+      const field = document.querySelector('.admin-course-create-card [name="' + name + '"]');
+      if (field) {
+        field.setAttribute('placeholder', placeholder);
+      }
+    });
+  });
+</script>
+{% endblock %}

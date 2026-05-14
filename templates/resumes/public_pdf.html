@@ -1,0 +1,864 @@
+{% load ui_extras %}
+
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Резюме {{ student.full_name|default:"студента" }}</title>
+
+  <style>
+    @page {
+      size: A4;
+      margin: 14mm;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: #172536;
+      background: #ffffff;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .pdf-page {
+      width: 100%;
+    }
+
+    .pdf-hero {
+      display: table;
+      width: 100%;
+      padding: 18px 20px;
+      border: 1px solid #cfe0f5;
+      border-radius: 14px;
+      background: #f8fbff;
+      page-break-inside: avoid;
+    }
+
+    .pdf-photo-cell {
+      display: table-cell;
+      width: 96px;
+      vertical-align: middle;
+      padding-right: 18px;
+    }
+
+    .pdf-photo,
+    .pdf-avatar {
+      width: 82px;
+      height: 82px;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .pdf-avatar {
+      text-align: center;
+      line-height: 82px;
+      background: #e8f1ff;
+      color: #1e66d0;
+      font-size: 30px;
+      font-weight: 700;
+    }
+
+    .pdf-person-cell {
+      display: table-cell;
+      vertical-align: middle;
+    }
+
+    .pdf-name {
+      margin: 0 0 6px;
+      color: #172536;
+      font-size: 26px;
+      line-height: 1.08;
+      font-weight: 700;
+    }
+
+    .pdf-position {
+      margin: 0 0 7px;
+      color: #1e66d0;
+      font-size: 13px;
+      line-height: 1.25;
+      font-weight: 700;
+    }
+
+    .pdf-contacts {
+      margin: 0;
+      color: #334e70;
+      font-size: 10.5px;
+    }
+
+    .pdf-about {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid #dbe7f5;
+      border-radius: 10px;
+      background: #ffffff;
+      color: #41556d;
+      page-break-inside: avoid;
+    }
+
+    .pdf-grid {
+      display: table;
+      width: 100%;
+      table-layout: fixed;
+      margin-top: 12px;
+      border-spacing: 10px 0;
+    }
+
+    .pdf-column {
+      display: table-cell;
+      width: 50%;
+      vertical-align: top;
+    }
+
+    .pdf-block {
+      margin-bottom: 10px;
+      padding: 12px 14px;
+      border: 1px solid #dbe7f5;
+      border-radius: 12px;
+      background: #ffffff;
+      page-break-inside: avoid;
+    }
+
+    .pdf-block h2 {
+      margin: 0 0 8px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #d8e4f2;
+      color: #1e66d0;
+      font-size: 15px;
+      line-height: 1.2;
+      font-weight: 700;
+    }
+
+    .pdf-info {
+      display: block;
+    }
+
+    .pdf-row {
+      margin: 0 0 6px;
+    }
+
+    .pdf-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .pdf-row strong {
+      display: block;
+      margin-bottom: 1px;
+      color: #172536;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .pdf-row span {
+      display: block;
+      color: #41556d;
+      font-size: 10.5px;
+      overflow-wrap: break-word;
+    }
+
+    .pdf-entry {
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #edf2f8;
+      page-break-inside: avoid;
+    }
+
+    .pdf-entry:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+
+    .pdf-entry h3 {
+      margin: 0 0 3px;
+      color: #172536;
+      font-size: 11.5px;
+      line-height: 1.3;
+      font-weight: 700;
+    }
+
+    .pdf-entry span,
+    .pdf-entry p,
+    .pdf-muted {
+      margin: 0;
+      color: #41556d;
+      font-size: 10.5px;
+      line-height: 1.4;
+    }
+
+    .pdf-skills {
+      display: block;
+    }
+
+    .pdf-skill {
+      display: inline-block;
+      margin: 0 4px 5px 0;
+      padding: 4px 7px;
+      border: 1px solid #d7e7fb;
+      border-radius: 999px;
+      background: #f4f8ff;
+      color: #1e66d0;
+      font-size: 10px;
+      line-height: 1.2;
+    }
+
+    .pdf-muted {
+      color: #64748b;
+    }
+    /* === PDF resume templates === */
+
+/* classic — базовый стиль, оставляем спокойным */
+.pdf-template-classic .pdf-hero {
+  border-color: #cfe0f5;
+  background: #f8fbff;
+}
+
+.pdf-template-classic .pdf-block h2 {
+  color: #1e66d0;
+}
+
+/* modern — более современный голубой стиль */
+.pdf-template-modern {
+  color: #172536;
+}
+
+.pdf-template-modern .pdf-hero {
+  border: 0;
+  border-radius: 18px;
+  background: #edf5ff;
+}
+
+.pdf-template-modern .pdf-name {
+  color: #172536;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.pdf-template-modern .pdf-position {
+  color: #1e66d0;
+}
+
+.pdf-template-modern .pdf-about,
+.pdf-template-modern .pdf-block {
+  border-color: #d6e6f8;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.pdf-template-modern .pdf-block h2 {
+  border-bottom-color: #d8e7f8;
+  color: #1e66d0;
+  font-size: 15px;
+}
+
+.pdf-template-modern .pdf-skill {
+  background: #eef6ff;
+  color: #1e66d0;
+}
+
+/* academic — строже, меньше “сайтовости”, больше документа */
+.pdf-template-academic {
+  color: #111827;
+}
+
+.pdf-template-academic .pdf-hero {
+  padding: 0 0 12px;
+  border: 0;
+  border-bottom: 2px solid #172536;
+  border-radius: 0;
+  background: #ffffff;
+}
+
+.pdf-template-academic .pdf-photo-cell {
+  width: 86px;
+  padding-right: 14px;
+}
+
+.pdf-template-academic .pdf-photo,
+.pdf-template-academic .pdf-avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 8px;
+}
+
+.pdf-template-academic .pdf-avatar {
+  line-height: 70px;
+  background: #f1f5f9;
+  color: #172536;
+}
+
+.pdf-template-academic .pdf-name {
+  color: #111827;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.pdf-template-academic .pdf-position {
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pdf-template-academic .pdf-contacts {
+  color: #475569;
+}
+
+.pdf-template-academic .pdf-about {
+  border: 0;
+  border-left: 3px solid #172536;
+  border-radius: 0;
+  background: #f8fafc;
+}
+
+.pdf-template-academic .pdf-block {
+  border: 0;
+  border-radius: 0;
+  border-top: 1px solid #cbd5e1;
+  background: #ffffff;
+  padding: 10px 0 8px;
+}
+
+.pdf-template-academic .pdf-block h2 {
+  border-bottom: 0;
+  color: #111827;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pdf-template-academic .pdf-skill {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+  color: #111827;
+}
+
+/* compact — более плотная версия */
+.pdf-template-compact {
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.pdf-template-compact .pdf-hero {
+  padding: 12px 14px;
+  border-radius: 10px;
+}
+
+.pdf-template-compact .pdf-photo-cell {
+  width: 72px;
+  padding-right: 12px;
+}
+
+.pdf-template-compact .pdf-photo,
+.pdf-template-compact .pdf-avatar {
+  width: 60px;
+  height: 60px;
+}
+
+.pdf-template-compact .pdf-avatar {
+  line-height: 60px;
+  font-size: 22px;
+}
+
+.pdf-template-compact .pdf-name {
+  font-size: 21px;
+  margin-bottom: 3px;
+}
+
+.pdf-template-compact .pdf-position {
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.pdf-template-compact .pdf-about {
+  margin-top: 7px;
+  padding: 7px 9px;
+}
+
+.pdf-template-compact .pdf-grid {
+  margin-top: 8px;
+  border-spacing: 7px 0;
+}
+
+.pdf-template-compact .pdf-block {
+  margin-bottom: 7px;
+  padding: 8px 10px;
+  border-radius: 9px;
+}
+
+.pdf-template-compact .pdf-block h2 {
+  margin-bottom: 5px;
+  font-size: 12px;
+}
+
+.pdf-template-compact .pdf-entry {
+  margin-bottom: 5px;
+  padding-bottom: 5px;
+}
+
+.pdf-template-compact .pdf-entry h3 {
+  font-size: 10.5px;
+}
+
+.pdf-template-compact .pdf-row strong,
+.pdf-template-compact .pdf-row span,
+.pdf-template-compact .pdf-entry span,
+.pdf-template-compact .pdf-entry p,
+.pdf-template-compact .pdf-muted {
+  font-size: 9.5px;
+}
+
+/* font size settings */
+.pdf-font-small {
+  font-size: 10px;
+}
+
+.pdf-font-standard {
+  font-size: 11px;
+}
+
+.pdf-font-large {
+  font-size: 12px;
+}
+
+.pdf-font-large .pdf-name {
+  font-size: 30px;
+}
+
+.pdf-font-large .pdf-block h2 {
+  font-size: 16px;
+}
+
+.pdf-font-large .pdf-row strong,
+.pdf-font-large .pdf-row span,
+.pdf-font-large .pdf-entry span,
+.pdf-font-large .pdf-entry p,
+.pdf-font-large .pdf-muted {
+  font-size: 11.5px;
+}
+/* === PDF resume templates: stronger overrides === */
+
+/* CLASSIC — классический документ: белый фон, рамки, спокойный синий */
+.pdf-template-classic .pdf-hero {
+  padding: 16px 18px;
+  border: 1px solid #b8c7da;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.pdf-template-classic .pdf-photo,
+.pdf-template-classic .pdf-avatar {
+  border-radius: 8px;
+}
+
+.pdf-template-classic .pdf-name {
+  color: #172536;
+  font-size: 25px;
+  font-weight: 700;
+}
+
+.pdf-template-classic .pdf-position {
+  color: #334e70;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pdf-template-classic .pdf-about {
+  border: 1px solid #cfd8e6;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.pdf-template-classic .pdf-block {
+  border: 1px solid #cfd8e6;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.pdf-template-classic .pdf-block h2 {
+  border-bottom: 1px solid #cfd8e6;
+  color: #172536;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.pdf-template-classic .pdf-skill {
+  border-color: #cfd8e6;
+  background: #ffffff;
+  color: #172536;
+}
+
+/* MODERN — оставляем явно голубым и мягким */
+.pdf-template-modern .pdf-hero {
+  border: 0;
+  border-radius: 18px;
+  background: #edf5ff;
+}
+
+.pdf-template-modern .pdf-photo,
+.pdf-template-modern .pdf-avatar {
+  border-radius: 50%;
+}
+
+.pdf-template-modern .pdf-name {
+  color: #172536;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.pdf-template-modern .pdf-position {
+  color: #1e66d0;
+}
+
+.pdf-template-modern .pdf-about,
+.pdf-template-modern .pdf-block {
+  border: 1px solid #d6e6f8;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.pdf-template-modern .pdf-block h2 {
+  border-bottom-color: #d8e7f8;
+  color: #1e66d0;
+}
+
+/* COMPACT — максимально плотный: меньше отступы, меньше фото, меньше блоки */
+.pdf-template-compact {
+  font-size: 9.5px;
+  line-height: 1.28;
+}
+
+.pdf-template-compact .pdf-hero {
+  padding: 10px 12px;
+  border: 1px solid #cfd8e6;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.pdf-template-compact .pdf-photo-cell {
+  width: 58px;
+  padding-right: 10px;
+}
+
+.pdf-template-compact .pdf-photo,
+.pdf-template-compact .pdf-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+}
+
+.pdf-template-compact .pdf-avatar {
+  line-height: 48px;
+  font-size: 18px;
+}
+
+.pdf-template-compact .pdf-name {
+  margin-bottom: 2px;
+  color: #172536;
+  font-size: 18px;
+  line-height: 1.05;
+  font-weight: 700;
+}
+
+.pdf-template-compact .pdf-position {
+  margin-bottom: 3px;
+  color: #334e70;
+  font-size: 10px;
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+.pdf-template-compact .pdf-contacts {
+  font-size: 8.8px;
+}
+
+.pdf-template-compact .pdf-about {
+  margin-top: 6px;
+  padding: 6px 8px;
+  border: 1px solid #d7dee9;
+  border-radius: 6px;
+  background: #ffffff;
+  font-size: 9px;
+}
+
+.pdf-template-compact .pdf-grid {
+  margin-top: 7px;
+  border-spacing: 6px 0;
+}
+
+.pdf-template-compact .pdf-block {
+  margin-bottom: 6px;
+  padding: 7px 8px;
+  border: 1px solid #d7dee9;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.pdf-template-compact .pdf-block h2 {
+  margin-bottom: 4px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid #d7dee9;
+  color: #172536;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.pdf-template-compact .pdf-row {
+  margin-bottom: 3px;
+}
+
+.pdf-template-compact .pdf-row strong,
+.pdf-template-compact .pdf-row span,
+.pdf-template-compact .pdf-entry span,
+.pdf-template-compact .pdf-entry p,
+.pdf-template-compact .pdf-muted {
+  font-size: 8.8px;
+}
+
+.pdf-template-compact .pdf-entry {
+  margin-bottom: 4px;
+  padding-bottom: 4px;
+}
+
+.pdf-template-compact .pdf-entry h3 {
+  margin-bottom: 2px;
+  font-size: 9.4px;
+}
+
+.pdf-template-compact .pdf-skill {
+  margin: 0 3px 3px 0;
+  padding: 2px 5px;
+  border-color: #d7dee9;
+  background: #ffffff;
+  color: #172536;
+  font-size: 8.5px;
+}
+
+/* ACADEMIC — оставляем строгим, но закрепим поверх остальных */
+.pdf-template-academic .pdf-hero {
+  padding: 0 0 12px;
+  border: 0;
+  border-bottom: 2px solid #172536;
+  border-radius: 0;
+  background: #ffffff;
+}
+
+.pdf-template-academic .pdf-block {
+  border: 0;
+  border-top: 1px solid #cbd5e1;
+  border-radius: 0;
+  background: #ffffff;
+}
+
+.pdf-template-academic .pdf-block h2 {
+  border-bottom: 0;
+  color: #111827;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+  </style>
+</head>
+
+<body class="pdf-template-{{ resume_template|default:'classic' }} pdf-font-{{ resume_font_size|default:'standard' }}">
+  <div class="pdf-page">
+
+    <section class="pdf-hero">
+      {% if resume_photo_source != 'hidden' %}
+        <div class="pdf-photo-cell">
+          {% if resume_photo_url %}
+            <img class="pdf-photo" src="{{ resume_photo_url }}" alt="">
+          {% else %}
+            <div class="pdf-avatar">
+              {{ student.full_name|default:"Р"|slice:":1" }}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <div class="pdf-person-cell">
+        <h1 class="pdf-name">{{ student.full_name|default:"ФИО не указано" }}</h1>
+        <p class="pdf-position">{{ resume.title|default:"Студент / Начинающий специалист" }}</p>
+
+        <p class="pdf-contacts">
+          {% if student.email %}{{ student.email }}{% endif %}
+          {% if profile.phone %} · {{ profile.phone }}{% endif %}
+          {% if profile.city %} · {{ profile.city }}{% endif %}
+          {% if profile.contact_link %} · {{ profile.contact_link }}{% endif %}
+        </p>
+      </div>
+    </section>
+
+    {% if about_text %}
+      <section class="pdf-about">
+        {{ about_text }}
+      </section>
+    {% endif %}
+
+    <main class="pdf-grid">
+      <div class="pdf-column">
+
+        {% if 'contacts' in selected_sections %}
+          {% if student.email or profile.phone or profile.city or profile.contact_link %}
+            <section class="pdf-block">
+              <h2>Контактная информация</h2>
+
+              {% if student.email %}
+                <p class="pdf-row">
+                  <strong>Email:</strong>
+                  <span>{{ student.email }}</span>
+                </p>
+              {% endif %}
+
+              {% if profile.phone %}
+                <p class="pdf-row">
+                  <strong>Телефон:</strong>
+                  <span>{{ profile.phone }}</span>
+                </p>
+              {% endif %}
+
+              {% if profile.city %}
+                <p class="pdf-row">
+                  <strong>Город:</strong>
+                  <span>{{ profile.city }}</span>
+                </p>
+              {% endif %}
+              {% if profile.contact_link %}
+                <p class="pdf-row">
+                  <strong>Дополнительный контакт:</strong>
+                  <span>{{ profile.contact_link }}</span>
+                </p>
+              {% endif %}
+            </section>
+          {% endif %}
+        {% endif %}
+
+        {% if 'education' in selected_sections %}
+          <section class="pdf-block">
+            <h2>Основная информация</h2>
+
+            <p class="pdf-row">
+              <strong>Учебное заведение:</strong>
+              <span>ИРКПО</span>
+            </p>
+
+            {% if student.specialty %}
+              <p class="pdf-row">
+                <strong>Специальность:</strong>
+                <span>{{ student.specialty }}</span>
+              </p>
+            {% endif %}
+
+            {% if student.group %}
+              <p class="pdf-row">
+                <strong>Группа:</strong>
+                <span>{{ student.group }}</span>
+              </p>
+            {% endif %}
+          </section>
+        {% endif %}
+
+        {% if 'skills' in selected_sections %}
+          <section class="pdf-block">
+            <h2>Навыки</h2>
+
+            {% if grouped_entries.skills %}
+              <div class="pdf-skills">
+                {% for e in grouped_entries.skills %}
+                  <span class="pdf-skill">{{ e.title }}</span>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="pdf-muted">Нет подтверждённых навыков.</p>
+            {% endif %}
+          </section>
+        {% endif %}
+
+        {% if 'education' in selected_sections %}
+          <section class="pdf-block">
+            <h2>Образование</h2>
+
+            <article class="pdf-entry">
+              <h3>Иркутский региональный колледж педагогического образования</h3>
+              <p>{{ student.group|default:"Группа не указана" }} · {{ student.specialty|default:"Специальность не указана" }}</p>
+            </article>
+          </section>
+        {% endif %}
+
+      </div>
+
+      <div class="pdf-column">
+
+        {% if 'projects' in selected_sections %}
+          <section class="pdf-block">
+            <h2>Проекты и работы</h2>
+
+            {% for e in grouped_entries.projects %}
+              <article class="pdf-entry">
+                <h3>{{ e.title }}</h3>
+                {% if e.date %}<span>{{ e.date|date:"Y" }}</span>{% endif %}
+                {% if e.description %}<p>{{ e.description }}</p>{% endif %}
+              </article>
+            {% empty %}
+              <p class="pdf-muted">Нет подтверждённых проектов.</p>
+            {% endfor %}
+          </section>
+        {% endif %}
+
+        {% if 'achievements' in selected_sections %}
+          <section class="pdf-block">
+            <h2>Достижения</h2>
+
+            {% for e in grouped_entries.achievements %}
+              <article class="pdf-entry">
+                <h3>{{ e.title }}</h3>
+                {% if e.date %}<span>{{ e.date|date:"Y" }}</span>{% endif %}
+                {% if e.description %}<p>{{ e.description }}</p>{% endif %}
+              </article>
+            {% empty %}
+              <p class="pdf-muted">Нет подтверждённых достижений.</p>
+            {% endfor %}
+          </section>
+        {% endif %}
+
+        {% if 'certificates' in selected_sections %}
+          <section class="pdf-block">
+            <h2>Сертификаты и курсы</h2>
+
+            {% for e in grouped_entries.certificates %}
+              <article class="pdf-entry">
+                <h3>{{ e.title }}</h3>
+                {% if e.date %}<span>{{ e.date|date:"Y" }}</span>{% endif %}
+                {% if e.description %}<p>{{ e.description }}</p>{% endif %}
+              </article>
+            {% empty %}
+              <p class="pdf-muted">Нет подтверждённых сертификатов.</p>
+            {% endfor %}
+          </section>
+        {% endif %}
+
+        {% if 'recommendations' in selected_sections %}
+          <section class="pdf-block">
+            <h2>Отзывы и рекомендации</h2>
+
+            {% for e in grouped_entries.recommendations %}
+              <article class="pdf-entry">
+                {% if e.title %}<h3>{{ e.title }}</h3>{% endif %}
+                {% if e.description %}<p>{{ e.description }}</p>{% endif %}
+              </article>
+            {% empty %}
+              <p class="pdf-muted">Нет подтверждённых отзывов.</p>
+            {% endfor %}
+          </section>
+        {% endif %}
+
+      </div>
+    </main>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,204 @@
+{% extends 'base_dashboard.html' %}
+{% load ui_extras %}
+{% block title %}Вакансии{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero-kicker">Администрирование</div>
+  <h1>Вакансии</h1>
+  <p>Создание вакансий и управление карьерными публикациями для студентов.</p>
+</section>
+
+<section class="section card admin-create-card vacancy-create-card">
+  <h2>Создать вакансию</h2>
+
+  <form method="post" class="admin-form vacancy-create-form">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="create">
+
+    <div class="admin-create-split admin-create-split-vacancy">
+      <div class="admin-create-main-fields">
+        <div class="form-field">
+          <label>{{ form.title.label }}</label>
+          {{ form.title }}
+          {{ form.title.errors }}
+        </div>
+
+        <div class="form-field">
+          <label>{{ form.company.label }}</label>
+          {{ form.company }}
+          {{ form.company.errors }}
+        </div>
+
+        <div class="form-field">
+          <label>{{ form.employment_type.label }}</label>
+          <select name="employment_type" id="id_employment_type">
+            <option value="">Выберите тип занятости</option>
+            <option value="Стажировка">Стажировка</option>
+            <option value="Частичная занятость">Частичная занятость</option>
+            <option value="Полная занятость">Полная занятость</option>
+            <option value="Проектная работа">Проектная работа</option>
+            <option value="Практика">Практика</option>
+          </select>
+          {{ form.employment_type.errors }}
+        </div>
+
+        <div class="form-field">
+          <label>{{ form.format_type.label }}</label>
+          <select name="format_type" id="id_format_type">
+            <option value="">Выберите формат</option>
+            <option value="Очно">Очно</option>
+            <option value="Удалённо">Удалённо</option>
+            <option value="Гибрид">Гибрид</option>
+          </select>
+          {{ form.format_type.errors }}
+        </div>
+
+        <div class="form-field">
+          <label>{{ form.direction.label }}</label>
+          {{ form.direction }}
+          {{ form.direction.errors }}
+        </div>
+
+        <div class="form-field">
+          <label>{{ form.contacts.label }}</label>
+          {{ form.contacts }}
+          {{ form.contacts.errors }}
+        </div>
+
+        <div class="form-field">
+          <label>{{ form.status.label }}</label>
+          {{ form.status }}
+          {{ form.status.errors }}
+        </div>
+      </div>
+
+      <div class="admin-create-text-fields">
+        <div class="form-field">
+          <label>{{ form.description.label }}</label>
+          {{ form.description }}
+          {{ form.description.errors }}
+        </div>
+
+        <div class="form-field">
+          <label>{{ form.responsibilities.label }}</label>
+          {{ form.responsibilities }}
+          {{ form.responsibilities.errors }}
+        </div>
+
+        <div class="form-field">
+          <label>{{ form.requirements.label }}</label>
+          {{ form.requirements }}
+          {{ form.requirements.errors }}
+        </div>
+
+        <div class="form-field">
+          <label>{{ form.conditions.label }}</label>
+          {{ form.conditions }}
+          {{ form.conditions.errors }}
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-form-actions">
+      <button class="btn btn-primary" type="submit">Создать вакансию</button>
+    </div>
+  </form>
+</section>
+
+<section class="section card admin-list-card vacancy-list-card">
+  <h2>Список вакансий</h2>
+
+  <form method="get" class="admin-filters vacancy-filters">
+    <input name="q" placeholder="Название или компания" value="{{ request.GET.q }}">
+
+    <select name="status">
+      <option value="">Статус</option>
+      <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Активно</option>
+      <option value="hidden" {% if request.GET.status == 'hidden' %}selected{% endif %}>Скрыто</option>
+      <option value="archive" {% if request.GET.status == 'archive' %}selected{% endif %}>Архив</option>
+    </select>
+
+    <select name="format_type">
+      <option value="">Формат</option>
+      <option value="Очно" {% if request.GET.format_type == 'Очно' %}selected{% endif %}>Очно</option>
+      <option value="Удалённо" {% if request.GET.format_type == 'Удалённо' %}selected{% endif %}>Удалённо</option>
+      <option value="Гибрид" {% if request.GET.format_type == 'Гибрид' %}selected{% endif %}>Гибрид</option>
+    </select>
+
+    <select name="employment_type">
+      <option value="">Тип занятости</option>
+      <option value="Стажировка" {% if request.GET.employment_type == 'Стажировка' %}selected{% endif %}>Стажировка</option>
+      <option value="Частичная занятость" {% if request.GET.employment_type == 'Частичная занятость' %}selected{% endif %}>Частичная занятость</option>
+      <option value="Полная занятость" {% if request.GET.employment_type == 'Полная занятость' %}selected{% endif %}>Полная занятость</option>
+      <option value="Проектная работа" {% if request.GET.employment_type == 'Проектная работа' %}selected{% endif %}>Проектная работа</option>
+      <option value="Практика" {% if request.GET.employment_type == 'Практика' %}selected{% endif %}>Практика</option>
+    </select>
+
+    <input name="direction" placeholder="Направление" value="{{ request.GET.direction }}">
+
+    <button class="btn btn-link" type="submit">Применить</button>
+  </form>
+
+  <div class="admin-row-list vacancy-row-list">
+    {% for vacancy in vacancies %}
+      <article class="admin-row vacancy-row vacancy-row-no-avatar">
+        <div class="vacancy-main">
+          <strong>{{ vacancy.title }}</strong>
+          <span>{{ vacancy.company }}</span>
+        </div>
+
+        <div class="vacancy-meta">
+          <span class="admin-row-label">Формат</span>
+          <strong>{{ vacancy.format_type|default:"—" }}</strong>
+        </div>
+
+        <div class="vacancy-meta">
+          <span class="admin-row-label">Занятость</span>
+          <strong>{{ vacancy.employment_type|default:"—" }}</strong>
+        </div>
+
+        <div class="vacancy-meta">
+          <span class="admin-row-label">Направление</span>
+          <strong>{{ vacancy.direction|default:"—" }}</strong>
+        </div>
+
+        <div class="vacancy-status vacancy-status-{{ vacancy.status }}">
+          {{ STATUS_LABELS|dict_get:vacancy.status }}
+        </div>
+
+        <a class="btn btn-link" href="{% url 'accounts:admin_vacancy_detail' vacancy.id %}">
+          Открыть
+        </a>
+      </article>
+    {% empty %}
+      <div class="admin-empty-state">
+        <strong>Вакансии не найдены</strong>
+        <p>Попробуйте изменить фильтры или создайте новую вакансию.</p>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const placeholders = {
+      title: 'Например, Junior Python-разработчик',
+      company: 'Например, ООО «Иркутск IT»',
+      direction: 'Например, IT, дизайн, педагогика',
+      contacts: 'Email, телефон или Telegram',
+      description: 'Коротко опишите вакансию и кому она подойдёт',
+      responsibilities: 'Основные задачи студента',
+      requirements: 'Навыки, курс, опыт или личные качества',
+      conditions: 'График, оплата, обучение, оформление'
+    };
+
+    Object.entries(placeholders).forEach(function ([name, text]) {
+      const field = document.querySelector('.vacancy-create-form [name="' + name + '"]');
+      if (field && !field.getAttribute('placeholder')) {
+        field.setAttribute('placeholder', text);
+      }
+    });
+  });
+</script>
+{% endblock %}

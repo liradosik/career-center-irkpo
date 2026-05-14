@@ -1,0 +1,402 @@
+{% extends 'base_dashboard.html' %}
+{% load ui_extras %}
+
+{% block title %}Панель администратора{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+  <section class="dashboard-hero admin-dashboard-hero-clean">
+  <div class="admin-dashboard-hero-text">
+    <div class="hero-kicker">Администрирование</div>
+    <h1>Панель администратора</h1>
+    <p>Ключевые показатели по пользователям, учебной части, карьерным материалам и активности студентов.</p>
+  </div>
+</section>
+
+  <section class="dashboard-section">
+    <div class="section-heading section-heading-simple">
+      <h2>Ключевые показатели</h2>
+    </div>
+
+    <div class="metrics-grid metrics-grid-five">
+      <article class="metric-card">
+        <div class="metric-label">Студенты</div>
+        <div class="metric-value-row">
+          <strong>{{ students_total }}</strong>
+          <span>студентов</span>
+        </div>
+      </article>
+
+      <article class="metric-card">
+        <div class="metric-label">Учебные группы</div>
+        <div class="metric-value-row">
+          <strong>{{ groups_active }}</strong>
+          <span>группы</span>
+        </div>
+      </article>
+
+      <article class="metric-card">
+        <div class="metric-label">Вакансии</div>
+        <div class="metric-value-row">
+          <strong>{{ vacancies_active }}</strong>
+          <span>вакансий</span>
+        </div>
+      </article>
+
+      <article class="metric-card">
+        <div class="metric-label">Курсы и семинары</div>
+        <div class="metric-value-row">
+          <strong>{{ courses_active }}</strong>
+          <span>событий</span>
+        </div>
+      </article>
+
+      <article class="metric-card">
+        <div class="metric-label">Кураторы</div>
+        <div class="metric-value-row">
+          <strong>{{ curators_total }}</strong>
+          <span>куратора</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="dashboard-section analytics-layout">
+    <div class="analytics-main card">
+      <div class="section-heading section-heading-simple">
+        <h2 class="single-line-title">Студенты по специальностям</h2>
+      </div>
+
+      <div class="bar-chart-wrap">
+        <canvas id="specialtyStudentsChart"></canvas>
+        <p id="specialtyStudentsEmpty" class="muted" style="display:none;">Недостаточно данных для отображения.</p>
+      </div>
+    </div>
+
+    <aside class="analytics-side">
+      <div class="card status-card">
+        <h2>Статус студентов</h2>
+
+        <div class="student-status-layout">
+          <div class="donut-wrap">
+            <canvas id="studentsStatusChart"></canvas>
+            <p id="studentsStatusEmpty" class="muted" style="display:none;">Недостаточно данных.</p>
+          </div>
+
+          <div class="status-list">
+            <div>
+              <span class="dot dot-blue"></span>
+              Обучаются
+              <strong>{{ students_studying }}</strong>
+            </div>
+
+            <div>
+              <span class="dot dot-sky"></span>
+              Академический отпуск
+              <strong>{{ students_academic_leave }}</strong>
+            </div>
+
+            <div>
+              <span class="dot dot-steel"></span>
+              Выпускники
+              <strong>{{ students_graduate }}</strong>
+            </div>
+
+            <div>
+              <span class="dot dot-gray"></span>
+              Отчислены
+              <strong>{{ students_inactive_status }}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card status-card">
+        <h2>Материалы по статусам</h2>
+
+        <div class="status-summary">
+          {% with vacancy_total=vacancy_summary.active|add:vacancy_summary.hidden|add:vacancy_summary.archive %}
+            <div class="status-summary-row">
+              <span>Вакансии</span>
+              <strong>{{ vacancy_summary.active }}</strong>
+              <em>активно</em>
+            </div>
+
+            <div class="status-bars" aria-label="Вакансии по статусам">
+              <span style="width: {% if vacancy_total > 0 %}{% widthratio vacancy_summary.active vacancy_total 100 %}{% else %}0{% endif %}%;"></span>
+            </div>
+
+            <div class="status-details">
+              Скрыто: {{ vacancy_summary.hidden }} • Архив: {{ vacancy_summary.archive }}
+            </div>
+          {% endwith %}
+
+          {% with course_total=course_summary.active|add:course_summary.hidden|add:course_summary.archive %}
+            <div class="status-summary-row">
+              <span>Курсы</span>
+              <strong>{{ course_summary.active }}</strong>
+              <em>активно</em>
+            </div>
+
+            <div class="status-bars" aria-label="Курсы по статусам">
+              <span style="width: {% if course_total > 0 %}{% widthratio course_summary.active course_total 100 %}{% else %}0{% endif %}%;"></span>
+            </div>
+
+            <div class="status-details">
+              Скрыто: {{ course_summary.hidden }} • Архив: {{ course_summary.archive }}
+            </div>
+          {% endwith %}
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="dashboard-section attention-card attention-card-clean">
+    <div>
+      <h2>Требует внимания</h2>
+      <p>Показатели, которые стоит проверить администратору.</p>
+    </div>
+
+    <div class="attention-grid attention-grid-clean">
+      {% if students_without_group > 0 %}
+        <div class="attention-item attention-item-plain">
+          <strong>{{ students_without_group }}</strong>
+          <span>студентов без группы</span>
+        </div>
+      {% endif %}
+
+      {% if groups_without_curator > 0 %}
+        <div class="attention-item attention-item-plain">
+          <strong>{{ groups_without_curator }}</strong>
+          <span>групп без куратора</span>
+        </div>
+      {% endif %}
+
+      {% if portfolio_pending_total > 0 %}
+        <div class="attention-item attention-item-plain">
+          <strong>{{ portfolio_pending_total }}</strong>
+          <span>записей портфолио на проверке</span>
+        </div>
+      {% endif %}
+
+      {% if offline_full_courses > 0 %}
+        <div class="attention-item attention-item-plain">
+          <strong>{{ offline_full_courses }}</strong>
+          <span>очных курсов без мест</span>
+        </div>
+      {% endif %}
+
+      {% if support_new_total > 0 %}<div class="attention-item attention-item-plain"><strong>{{ support_new_total }}</strong><span>новых обращений</span></div>{% endif %}
+      {% if support_in_progress_total > 0 %}<div class="attention-item attention-item-plain"><strong>{{ support_in_progress_total }}</strong><span>обращений в работе</span></div>{% endif %}
+      
+
+      {% if students_without_group == 0 and groups_without_curator == 0 and portfolio_pending_total == 0 and offline_full_courses == 0 and support_new_total == 0 and support_in_progress_total == 0 and support_public_total == 0 %}
+        <div class="attention-empty attention-empty-plain">
+          Критических задач сейчас нет.
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="dashboard-section">
+    <div class="section-heading section-heading-simple">
+      <h2>Последние обновления</h2>
+    </div>
+
+    <div class="recent-grid">
+      <div class="card recent-card">
+        <h3>Студенты</h3>
+
+        {% for student in latest_students %}
+          <div class="recent-item">
+            <strong>{{ student.full_name }}</strong>
+            <span>{{ student.group|default:'Группа не указана' }} • {{ student.date_joined|date:'d.m.Y' }}</span>
+          </div>
+        {% empty %}
+          <p class="muted">Данных пока нет.</p>
+        {% endfor %}
+      </div>
+
+      <div class="card recent-card">
+        <h3>Вакансии</h3>
+
+        {% for vacancy in latest_vacancies %}
+          <div class="recent-item">
+            <strong>{{ vacancy.title }}</strong>
+            <span>{{ vacancy.company }} • {{ vacancy.created_at|date:'d.m.Y' }}</span>
+          </div>
+        {% empty %}
+          <p class="muted">Данных пока нет.</p>
+        {% endfor %}
+      </div>
+
+      <div class="card recent-card">
+        <h3>Курсы</h3>
+
+        {% for course in latest_courses %}
+          <div class="recent-item">
+            <strong>{{ course.title }}</strong>
+            <span>{{ KIND_LABELS|dict_get:course.kind }} • {{ course.created_at|date:'d.m.Y' }}</span>
+          </div>
+        {% empty %}
+          <p class="muted">Данных пока нет.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{{ student_status_chart|json_script:"student-status-data" }}
+{{ specialty_chart_labels|json_script:"specialty-labels-data" }}
+{{ specialty_chart_values|json_script:"specialty-values-data" }}
+
+<script>
+(function () {
+  const studentStatusData = JSON.parse(document.getElementById('student-status-data').textContent);
+  const specialtyLabels = JSON.parse(document.getElementById('specialty-labels-data').textContent);
+  const specialtyValues = JSON.parse(document.getElementById('specialty-values-data').textContent);
+
+  const chartTextColor = '#526174';
+  const chartGridColor = '#e6eef8';
+
+  function hasData(values) {
+    return values && values.length && values.reduce((a, b) => a + Number(b), 0) > 0;
+  }
+
+  function wrapLabel(label, maxLength = 30) {
+    if (!label || label.length <= maxLength) {
+      return label;
+    }
+
+    const words = label.split(' ');
+    const lines = [];
+    let currentLine = '';
+
+    words.forEach((word) => {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+
+      if (testLine.length > maxLength) {
+        if (currentLine) {
+          lines.push(currentLine);
+        }
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    });
+
+    if (currentLine) {
+      lines.push(currentLine);
+    }
+
+    return lines;
+  }
+
+  if (!hasData(studentStatusData)) {
+    document.getElementById('studentsStatusChart').style.display = 'none';
+    document.getElementById('studentsStatusEmpty').style.display = 'block';
+  } else {
+    const nonZeroStudentStatus = studentStatusData.filter((value) => Number(value) > 0).length;
+
+    new Chart(document.getElementById('studentsStatusChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Обучаются', 'Академический отпуск', 'Выпускники', 'Отчислены'],
+        datasets: [{
+          data: studentStatusData,
+          backgroundColor: ['#1e66d0', '#5f95e8', '#94bff5', '#cbd8ea'],
+          borderColor: nonZeroStudentStatus > 1 ? '#ffffff' : 'transparent',
+          borderWidth: nonZeroStudentStatus > 1 ? 4 : 0,
+          hoverOffset: 4,
+          spacing: 0
+        }]
+      },
+      options: {
+        cutout: '68%',
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            bodyFont: {
+              family: 'Inter, Segoe UI, Arial'
+            }
+          }
+        },
+        responsive: true,
+        maintainAspectRatio: false
+      }
+    });
+  }
+
+  if (!hasData(specialtyValues)) {
+    document.getElementById('specialtyStudentsChart').style.display = 'none';
+    document.getElementById('specialtyStudentsEmpty').style.display = 'block';
+  } else {
+    new Chart(document.getElementById('specialtyStudentsChart'), {
+      type: 'bar',
+      data: {
+        labels: specialtyLabels.map((label) => wrapLabel(label, 30)),
+        datasets: [{
+          label: 'Студенты',
+          data: specialtyValues,
+          backgroundColor: '#3d8bff',
+          borderRadius: 10,
+          maxBarThickness: 34
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: {
+          padding: {
+            left: 4,
+            right: 12,
+            top: 8,
+            bottom: 8
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              title: function(context) {
+                return specialtyLabels[context[0].dataIndex];
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: {
+              precision: 0,
+              color: chartTextColor
+            },
+            grid: {
+              color: chartGridColor
+            }
+          },
+          y: {
+            ticks: {
+              color: chartTextColor,
+              font: {
+                size: 12
+              }
+            },
+            grid: {
+              display: false
+            }
+          }
+        }
+      }
+    });
+  }
+})();
+</script>
+{% endblock %}

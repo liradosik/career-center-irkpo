@@ -1,0 +1,83 @@
+{% extends 'base_dashboard.html' %}
+{% load ui_extras %}
+{% block title %}Кураторы{% endblock %}
+
+{% block content %}
+<section class="hero admin-page-hero">
+  <div>
+    <div class="hero-kicker">Администрирование</div>
+    <h1>Кураторы</h1>
+    <p>Создание и редактирование кураторов для учебных групп.</p>
+  </div>
+</section>
+
+<section class="section admin-curators-page">
+  <div class="card admin-create-card admin-curator-create-card">
+    <div class="admin-card-head">
+      <h2>Создать куратора</h2>
+    </div>
+
+    <form method="post" class="admin-create-curator-form">
+      {% csrf_token %}
+
+      <div class="form-field">
+        <label for="{{ form.full_name.id_for_label }}">ФИО</label>
+        {{ form.full_name }}
+        {{ form.full_name.errors }}
+      </div>
+
+      <div class="form-field">
+        <label for="{{ form.email.id_for_label }}">Email</label>
+        {{ form.email }}
+        {{ form.email.errors }}
+      </div>
+
+      <div class="form-field">
+        <label for="{{ form.password.id_for_label }}">Временный пароль</label>
+        {{ form.password }}
+        {{ form.password.errors }}
+      </div>
+
+      <div class="form-field-wide admin-form-actions">
+        <button class="btn btn-primary" type="submit">Создать куратора</button>
+        <a class="btn btn-link" href="{% url 'accounts:admin_curator_import' %}">Импорт CSV / Excel</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="card admin-list-card">
+    <div class="admin-card-head">
+      <h2>Список кураторов</h2>
+    </div>
+
+    <form method="get" class="admin-filter-panel admin-curator-filters">
+      <input name="q" placeholder="ФИО или email" value="{{ request.GET.q }}">
+      <button class="btn btn-link" type="submit">Применить</button>
+    </form>
+
+    <div class="admin-curator-list">
+      {% for curator in curators %}
+        <article class="admin-curator-row">
+          <div class="admin-curator-main">
+            {% if curator.photo %}<img class="avatar-img avatar-md" src="{{ curator.photo.url }}" alt="{{ curator.full_name }}">{% else %}<div class="avatar-fallback avatar-md">{{ curator.full_name|initials }}</div>{% endif %}
+
+            <div class="admin-curator-name">
+              <strong>{{ curator.full_name }}</strong>
+              <span>{{ curator.email }}</span>
+            </div>
+          </div>
+
+          <a class="btn btn-link admin-row-action" href="{% url 'accounts:admin_curator_detail' curator.id %}">
+            Открыть
+          </a>
+        </article>
+      {% empty %}
+        <div class="admin-empty-state">
+          <strong>Кураторы не найдены</strong>
+          <p>Попробуйте изменить поиск или создать нового куратора.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

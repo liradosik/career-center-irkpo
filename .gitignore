@@ -1,0 +1,11 @@
+media/
+__pycache__/
+*.pyc
+.env
+career_center/.env
+
+db.sqlite3
+*.sqlite3
+*.log
+.venv/
+venv/
