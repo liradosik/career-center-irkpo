@@ -3,6 +3,7 @@ from django.core.paginator import Paginator
 from django.core.exceptions import ValidationError
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 
 from apps.accounts.decorators import role_required
 from apps.accounts.models import ActivityLog, User
@@ -19,8 +20,9 @@ def _redirect_back(request, fallback_name, **kwargs):
 
 @role_required(User.Role.STUDENT)
 def course_list(request):
-    courses = Course.objects.filter(status=Course.Status.ACTIVE).annotate(
-        occupied_places_count=Count(
+    today = timezone.localdate()
+    courses = Course.objects.filter(status=Course.Status.ACTIVE, date__gte=today).annotate(
+        active_registrations_count=Count(
             'registrations',
             filter=Q(registrations__status=CourseRegistration.Status.REGISTERED),
         )
@@ -55,8 +57,9 @@ def course_list(request):
 
     for course in courses:
         reg = registration_map.get(course.id)
-        occupied = course.occupied_places_count
-        available = course.format_type == Course.Format.ONLINE or occupied < course.places
+        occupied = course.active_registrations_count
+        is_unlimited = not course.places
+        available = is_unlimited or occupied < course.places
 
         if registration_filter == 'registered' and not (
             reg and reg.status == CourseRegistration.Status.REGISTERED
@@ -74,8 +77,6 @@ def course_list(request):
         if registration_filter == 'full' and available:
             continue
 
-        course.occupied_places_count = occupied
-        course.available_places_count = max(course.places - occupied, 0)
         filtered_courses.append(course)
 
     paginator = Paginator(filtered_courses, 12)
@@ -105,9 +106,8 @@ def course_list(request):
 @role_required(User.Role.STUDENT, User.Role.CURATOR, User.Role.ADMIN)
 def course_detail(request, pk):
     course = get_object_or_404(Course.objects.filter(status=Course.Status.ACTIVE).annotate(
-        occupied_places_count=Count('registrations', filter=Q(registrations__status=CourseRegistration.Status.REGISTERED))
+        active_registrations_count=Count('registrations', filter=Q(registrations__status=CourseRegistration.Status.REGISTERED))
     ), pk=pk)
-    course.available_places_count = max(course.places - course.occupied_places_count, 0)
     registration = None
     if request.user.role == User.Role.STUDENT:
         registration = CourseRegistration.objects.filter(student=request.user, course=course).first()
@@ -148,7 +148,7 @@ def course_detail(request, pk):
         'curator_not_registered_students': curator_not_registered_students,
         'active_registrations_count': registered_count,
         'cancelled_registrations_count': cancelled_count,
-        'free_places_count': max(course.places - registered_count, 0),
+        'free_places_count': None if not course.places else max(course.places - registered_count, 0),
         'is_favorite': is_favorite,
     })
 
@@ -158,12 +158,15 @@ def register_course(request, pk):
     if request.method != 'POST':
         return redirect('courses:detail', pk=pk)
     course = get_object_or_404(Course, pk=pk, status=Course.Status.ACTIVE)
+    if course.date < timezone.localdate():
+        messages.error(request, 'Мероприятие уже завершено.')
+        return _redirect_back(request, 'courses:detail', pk=pk)
     if CourseRegistration.objects.filter(student=request.user, course=course, status=CourseRegistration.Status.REGISTERED).exists():
         messages.info(request, 'Вы уже записаны на это событие.')
         return _redirect_back(request, 'courses:detail', pk=pk)
 
-    if course.format_type == Course.Format.OFFLINE and not course.has_available_places:
-        messages.error(request, 'На очный курс больше нет мест.')
+    if not course.has_available_places:
+        messages.error(request, 'На это мероприятие больше нет мест.')
         return _redirect_back(request, 'courses:detail', pk=pk)
 
     registration, _ = CourseRegistration.objects.get_or_create(student=request.user, course=course)

@@ -122,9 +122,12 @@
 
         <p>
           <label>{{ form.places.label }}</label>
-          {{ form.places }}
+          {{ form.places }}{% if form.places.help_text %}<small>{{ form.places.help_text }}</small>{% endif %}
         </p>
 
+        <p><label>{{ form.online_url.label }}</label>{{ form.online_url }}</p>
+        <p><label>{{ form.address.label }}</label>{{ form.address }}</p>
+        <p><label>{{ form.map_url.label }}</label>{{ form.map_url }}</p>
         <p>
           <label>{{ form.status.label }}</label>
           {{ form.status }}

@@ -89,9 +89,7 @@
       </div>
 
       <div>
-        <span>Контакты</span>
-        <strong>{{ vacancy.contacts|default:'—' }}</strong>
-      </div>
+        <span>Контакты</span><strong>{{ vacancy.contacts|default:'—' }}</strong></div><div><span>Адрес</span><strong>{{ vacancy.address|default:'—' }}</strong>{% if vacancy.map_url %}<div><a class='btn btn-link' href='{{ vacancy.map_url }}' target='_blank' rel='noopener'>Открыть на карте</a></div>{% endif %}</div>
     </div>
 
     <details class="admin-edit-details">
