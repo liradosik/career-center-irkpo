@@ -90,6 +90,7 @@ class User(AbstractUser):
     specialty = models.CharField(max_length=255, blank=True)
     admission_year = models.PositiveIntegerField(null=True, blank=True)
     academic_status = models.CharField(max_length=16, choices=AcademicStatus.choices, default=AcademicStatus.STUDYING)
+    must_change_password = models.BooleanField(default=False)
     curator = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='students')
     study_group = models.ForeignKey(StudyGroup, null=True, blank=True, on_delete=models.SET_NULL, related_name='students')
     photo = models.ImageField(upload_to='users/photos/', blank=True, null=True)

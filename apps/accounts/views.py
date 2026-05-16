@@ -10,6 +10,7 @@ from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
 
 from django.contrib import messages
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView, LogoutView
 from django.core.exceptions import ValidationError
@@ -42,6 +43,7 @@ from .forms import (
     CuratorImportForm,
     EmailAuthenticationForm,
     GroupImportForm,
+    AccountPasswordChangeForm,
     StudentImportForm,
     SupportTicketAdminUpdateForm,
     SupportTicketCreateForm,
@@ -206,6 +208,23 @@ def home(request):
 
 def redirect_by_role(request):
     return redirect(role_redirect(request.user))
+
+
+@login_required
+def change_password(request):
+    forced = bool(request.user.must_change_password)
+    if request.method == 'POST':
+        form = AccountPasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            user.must_change_password = False
+            user.save(update_fields=['password', 'must_change_password'])
+            update_session_auth_hash(request, user)
+            messages.success(request, 'Пароль успешно изменён.')
+            return redirect('accounts:redirect_by_role')
+    else:
+        form = AccountPasswordChangeForm(request.user)
+    return render(request, 'accounts/change_password.html', {'form': form, 'forced': forced})
 
 
 @role_required(User.Role.STUDENT)
@@ -1175,7 +1194,8 @@ def admin_student_detail(request, student_id):
             new_password = request.POST.get('temp_password', '').strip()
             if new_password:
                 student.set_password(new_password)
-                student.save(update_fields=['password'])
+                student.must_change_password = True
+                student.save(update_fields=['password', 'must_change_password'])
                 messages.success(request, 'Пароль студента сброшен.')
             else:
                 messages.error(request, 'Введите временный пароль.')
@@ -1280,6 +1300,7 @@ def admin_student_import(request):
                             is_active=True,
                         )
                         student.set_password(password)
+                        student.must_change_password = True
                         sync_student_with_group(student, study_group)
                         student.save()
                     created += 1
@@ -1346,7 +1367,7 @@ def admin_curator_import(request):
                         errors.append(f'Строка {row_idx}: пользователь с email {email} уже существует.')
                         continue
 
-                    curator = User(full_name=full_name, email=email, role=User.Role.CURATOR, is_active=True)
+                    curator = User(full_name=full_name, email=email, role=User.Role.CURATOR, is_active=True, must_change_password=True)
                     curator.set_password(password)
                     curator.save()
                     created += 1
@@ -1722,7 +1743,8 @@ def admin_curator_detail(request, curator_id):
             new_password = request.POST.get('temp_password', '').strip()
             if new_password:
                 curator.set_password(new_password)
-                curator.save(update_fields=['password'])
+                curator.must_change_password = True
+                curator.save(update_fields=['password', 'must_change_password'])
                 messages.success(request, 'Пароль куратора сброшен.')
             else:
                 messages.error(request, 'Введите временный пароль.')

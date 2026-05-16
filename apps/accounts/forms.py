@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import PasswordChangeForm
 
 from apps.courses.models import Course
 from apps.vacancies.models import Vacancy
@@ -25,6 +26,12 @@ RUS_FORMAT_CHOICES = [
 
 class EmailAuthenticationForm(AuthenticationForm):
     username = forms.EmailField(label='Email')
+
+
+class AccountPasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(label='Старый пароль', widget=forms.PasswordInput(attrs={'autocomplete': 'current-password'}))
+    new_password1 = forms.CharField(label='Новый пароль', widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}))
+    new_password2 = forms.CharField(label='Повторите новый пароль', widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}))
 
 
 class StudentProfileForm(forms.ModelForm):
@@ -142,6 +149,7 @@ class AdminStudentCreateForm(forms.ModelForm):
         user = super().save(commit=False)
         user.role = User.Role.STUDENT
         user.academic_status = User.AcademicStatus.STUDYING
+        user.must_change_password = True
         user.set_password(self.cleaned_data['password'])
         sync_student_with_group(user, self.cleaned_data.get('study_group'))
         if commit:
@@ -199,6 +207,7 @@ class AdminCuratorCreateForm(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.role = User.Role.CURATOR
+        user.must_change_password = True
         user.set_password(self.cleaned_data['password'])
         if commit:
             user.save()
