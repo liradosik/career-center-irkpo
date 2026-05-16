@@ -161,8 +161,10 @@
         <aside class="student-vacancy-side-v2">
           <div class="student-vacancy-side-meta">
             <p>
-              <i class="bi bi-geo-alt"></i>
-              <span>{{ v.format_type }}</span>
+              {% if v.map_url %}<a href="{{ v.map_url }}" target="_blank" rel="noopener" title="Открыть на карте">{% endif %}
+                <i class="bi bi-geo-alt"></i>
+                {% if v.address %}<span style="display:inline-block;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;">{{ v.address }}</span>{% endif %}
+              {% if v.map_url %}</a>{% endif %}
             </p>
 
             <p>

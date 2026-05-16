@@ -15,6 +15,8 @@ class Vacancy(models.Model):
     requirements = models.TextField(blank=True)
     conditions = models.TextField(blank=True)
     contacts = models.CharField(max_length=255)
+    address = models.CharField(max_length=255, blank=True)
+    map_url = models.URLField(blank=True)
     employment_type = models.CharField(max_length=120)
     format_type = models.CharField(max_length=120)
     direction = models.CharField(max_length=120)
