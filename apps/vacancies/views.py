@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.accounts.decorators import role_required
 from apps.accounts.models import ActivityLog, User
+from apps.accounts.permissions import can_apply_vacancies, can_manage_favorites
 
 from .models import StudentFavoriteVacancy, Vacancy, VacancyResponse
 
@@ -77,6 +78,8 @@ def vacancy_list(request):
 
         'responded_vacancy_ids': responded_vacancy_ids,
         'favorite_vacancy_ids': favorite_vacancy_ids,
+        'can_apply_vacancies': can_apply_vacancies(request.user),
+        'can_favorite_vacancies': can_manage_favorites(request.user, target='vacancies'),
     })
 
 
@@ -94,6 +97,8 @@ def vacancy_detail(request, pk):
         'resume_pdf_url': f'{resume_public_url}?download=pdf' if resume_public_url else '',
         'just_responded': request.GET.get('responded') == '1',
         'is_favorite': StudentFavoriteVacancy.objects.filter(student=request.user, vacancy=vacancy).exists(),
+        'can_apply_vacancies': can_apply_vacancies(request.user),
+        'can_favorite_vacancies': can_manage_favorites(request.user, target='vacancies'),
     })
 
 
@@ -101,6 +106,9 @@ def vacancy_detail(request, pk):
 def respond(request, pk):
     if request.method != 'POST':
         return redirect('vacancies:detail', pk=pk)
+    if not can_apply_vacancies(request.user):
+        messages.error(request, 'Отклик на вакансии недоступен для вашего учебного статуса.')
+        return _redirect_back(request, 'vacancies:detail', pk=pk)
 
     vacancy = get_object_or_404(Vacancy, pk=pk, status=Vacancy.Status.ACTIVE)
     profile = getattr(request.user, 'student_profile', None)
@@ -141,6 +149,9 @@ def respond(request, pk):
 def toggle_favorite(request, pk):
     vacancy = get_object_or_404(Vacancy, pk=pk, status=Vacancy.Status.ACTIVE)
     if request.method == 'POST':
+        if not can_manage_favorites(request.user, target='vacancies'):
+            messages.error(request, 'Добавление вакансий в избранное недоступно для вашего учебного статуса.')
+            return _redirect_back(request, 'vacancies:detail', pk=pk)
         favorite, created = StudentFavoriteVacancy.objects.get_or_create(student=request.user, vacancy=vacancy)
         if not created:
             favorite.delete()

@@ -148,7 +148,8 @@
                     Записаться снова
                   </button>
                 </form>
-              {% elif c.format_type == 'offline' and c.available_places_count <= 0 %}
+              {% elif not can_register_courses %}<span class="student-course-status-badge student-course-status-side is-cancelled">Недоступно по учебному статусу</span>
+  {% elif c.available_places_count == 0 %}
                 <button class="btn student-course-disabled-btn" type="button" disabled>
                   Нет мест
                 </button>
@@ -162,7 +163,7 @@
                 </form>
               {% endif %}
 
-              <form method="post" action="{% url 'courses:toggle_favorite' c.pk %}">
+              {% if can_favorite_courses %}<form method="post" action="{% url 'courses:toggle_favorite' c.pk %}">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
                 <button
@@ -176,7 +177,7 @@
                     <i class="bi bi-bookmark"></i>
                   {% endif %}
                 </button>
-              </form>
+              </form>{% else %}<span class="student-course-status-badge is-cancelled">Курсы в избранное недоступны</span>{% endif %}
             </div>
           </div>
 
@@ -184,7 +185,7 @@
   {% if c.format_type == 'offline' %}
     <div class="student-course-places-side">
       <i class="bi bi-people"></i>
-      <span>Занято {{ c.occupied_places_count }} из {{ c.places }}</span>
+      <span>{% if c.has_unlimited_places %}Места не ограничены{% else %}Занято {{ c.occupied_places_count }} из {{ c.places }} · Свободно: {{ c.available_places_count }}{% endif %}</span>
     </div>
   {% endif %}
 
@@ -197,7 +198,8 @@
     <span class="student-course-status-badge student-course-status-side is-cancelled">
       Запись отменена
     </span>
-  {% elif c.format_type == 'offline' and c.available_places_count <= 0 %}
+  {% elif not can_register_courses %}<span class="student-course-status-badge student-course-status-side is-cancelled">Недоступно по учебному статусу</span>
+  {% elif c.available_places_count == 0 %}
     <span class="student-course-status-badge student-course-status-side is-full">
       Мест нет
     </span>

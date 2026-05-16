@@ -1,11 +1,13 @@
 import logging
 
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 
 from apps.accounts.decorators import role_required
 from apps.accounts.models import StudentProfile, User
+from apps.accounts.permissions import can_edit_resume
 from apps.portfolio.models import PortfolioEntry
 
 from .forms import ResumeSettingsForm
@@ -83,6 +85,9 @@ def builder(request):
         settings_obj.save(update_fields=['photo_source'])
 
     if request.method == 'POST':
+        if not can_edit_resume(request.user):
+            messages.error(request, 'Редактирование резюме недоступно для вашего учебного статуса.')
+            return redirect('resumes:builder')
         form = ResumeSettingsForm(request.POST, request.FILES, instance=settings_obj)
         if form.is_valid():
             settings_obj = form.save(commit=False)
@@ -150,6 +155,7 @@ def builder(request):
             'about_text': about_text,
             'resume_template': resume_template,
             'resume_font_size': resume_font_size,
+            'can_edit_resume': can_edit_resume(request.user),
         },
     )
 

@@ -117,6 +117,18 @@
         </section>
       {% endif %}
 
+      
+          {% if vacancy.address or vacancy.map_url %}
+          <div class="student-vacancy-info-item-v2">
+            <span class="student-vacancy-info-icon"><i class="bi bi-geo-alt"></i></span>
+            <div>
+              <span>Адрес</span>
+              <strong>{{ vacancy.address|default:'—' }}</strong>
+              {% if vacancy.map_url %}<div><a class="btn btn-link" href="{{ vacancy.map_url }}" target="_blank" rel="noopener">Открыть на карте</a></div>{% endif %}
+            </div>
+          </div>
+          {% endif %}
+
       {% if vacancy.conditions %}
         <section class="card student-vacancy-detail-section-v2">
           <span class="student-vacancy-detail-section-icon">

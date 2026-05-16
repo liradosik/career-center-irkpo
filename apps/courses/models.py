@@ -1,13 +1,14 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 
 
 class Course(models.Model):
     class Kind(models.TextChoices):
         COURSE = 'course', 'Курс'
         SEMINAR = 'seminar', 'Семинар'
-        PRACTICE = 'practice', 'Практика'
+        PRACTICE = 'practice', 'Учебная практика'
 
     class Format(models.TextChoices):
         ONLINE = 'online', 'Онлайн'
@@ -24,6 +25,9 @@ class Course(models.Model):
     description = models.TextField()
     organization = models.CharField(max_length=255)
     contacts = models.CharField(max_length=255)
+    address = models.CharField(max_length=255, blank=True)
+    map_url = models.URLField(blank=True)
+    online_url = models.URLField(blank=True)
     date = models.DateField()
     places = models.PositiveIntegerField(default=0)
     status = models.CharField(max_length=16, choices=Status.choices, default=Status.ACTIVE)
@@ -42,10 +46,32 @@ class Course(models.Model):
         return self.registrations.filter(status=CourseRegistration.Status.REGISTERED).count()
 
     @property
+    def occupied_places_count(self):
+        return self.occupied_places
+
+    @property
+    def has_unlimited_places(self):
+        return not self.places
+
+    @property
+    def available_places_count(self):
+        if self.has_unlimited_places:
+            return None
+        return max(self.places - self.occupied_places_count, 0)
+
+    @property
+    def is_full(self):
+        if self.has_unlimited_places:
+            return False
+        return self.occupied_places_count >= self.places
+
+    @property
+    def is_past(self):
+        return bool(self.date and self.date < timezone.localdate())
+
+    @property
     def has_available_places(self):
-        if self.format_type == self.Format.ONLINE:
-            return True
-        return self.occupied_places < self.places
+        return not self.is_full
 
     def __str__(self):
         return self.title
@@ -69,10 +95,9 @@ class CourseRegistration(models.Model):
     def clean(self):
         if (
             self.status == self.Status.REGISTERED
-            and self.course.format_type == Course.Format.OFFLINE
             and not self.course.has_available_places
         ):
-            raise ValidationError('На очный курс больше нет мест.')
+            raise ValidationError('На это мероприятие больше нет мест.')
 
     def save(self, *args, **kwargs):
         self.clean()

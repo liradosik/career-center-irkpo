@@ -131,16 +131,16 @@
                 Откликнулись
               </span>
             {% else %}
-              <form method="post" action="{% url 'vacancies:respond' v.pk %}">
+              {% if can_apply_vacancies %}<form method="post" action="{% url 'vacancies:respond' v.pk %}">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
                 <button class="btn btn-primary student-vacancy-action-btn" type="submit">
                   Откликнуться
                 </button>
-              </form>
+              </form>{% else %}<span class="student-vacancy-responded-badge">Отклик недоступен по учебному статусу</span>{% endif %}
             {% endif %}
 
-            <form method="post" action="{% url 'vacancies:toggle_favorite' v.pk %}">
+            {% if can_favorite_vacancies %}<form method="post" action="{% url 'vacancies:toggle_favorite' v.pk %}">
               {% csrf_token %}
               <input type="hidden" name="next" value="{{ request.get_full_path }}">
               <button
@@ -154,15 +154,17 @@
                   <i class="bi bi-bookmark"></i>
                 {% endif %}
               </button>
-            </form>
+            </form>{% else %}<span class="student-vacancy-responded-badge">Избранное недоступно</span>{% endif %}
           </div>
         </div>
 
         <aside class="student-vacancy-side-v2">
           <div class="student-vacancy-side-meta">
             <p>
-              <i class="bi bi-geo-alt"></i>
-              <span>{{ v.format_type }}</span>
+              {% if v.map_url %}<a href="{{ v.map_url }}" target="_blank" rel="noopener" title="Открыть на карте">{% endif %}
+                <i class="bi bi-geo-alt"></i>
+                {% if v.address %}<span style="display:inline-block;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;">{{ v.address }}</span>{% endif %}
+              {% if v.map_url %}</a>{% endif %}
             </p>
 
             <p>
