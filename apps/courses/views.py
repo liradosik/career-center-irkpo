@@ -22,7 +22,7 @@ def _redirect_back(request, fallback_name, **kwargs):
 def course_list(request):
     today = timezone.localdate()
     courses = Course.objects.filter(status=Course.Status.ACTIVE, date__gte=today).annotate(
-        occupied_places_count=Count(
+        active_registrations_count=Count(
             'registrations',
             filter=Q(registrations__status=CourseRegistration.Status.REGISTERED),
         )
@@ -57,7 +57,7 @@ def course_list(request):
 
     for course in courses:
         reg = registration_map.get(course.id)
-        occupied = course.occupied_places_count
+        occupied = course.active_registrations_count
         is_unlimited = not course.places
         available = is_unlimited or occupied < course.places
 
@@ -77,9 +77,6 @@ def course_list(request):
         if registration_filter == 'full' and available:
             continue
 
-        course.occupied_places_count = occupied
-        course.available_places_count = None if is_unlimited else max(course.places - occupied, 0)
-        course.has_unlimited_places = is_unlimited
         filtered_courses.append(course)
 
     paginator = Paginator(filtered_courses, 12)
@@ -109,11 +106,9 @@ def course_list(request):
 @role_required(User.Role.STUDENT, User.Role.CURATOR, User.Role.ADMIN)
 def course_detail(request, pk):
     course = get_object_or_404(Course.objects.filter(status=Course.Status.ACTIVE).annotate(
-        occupied_places_count=Count('registrations', filter=Q(registrations__status=CourseRegistration.Status.REGISTERED))
+        active_registrations_count=Count('registrations', filter=Q(registrations__status=CourseRegistration.Status.REGISTERED))
     ), pk=pk)
     course.is_past = course.date < timezone.localdate()
-    course.has_unlimited_places = not course.places
-    course.available_places_count = None if course.has_unlimited_places else max(course.places - course.occupied_places_count, 0)
     registration = None
     if request.user.role == User.Role.STUDENT:
         registration = CourseRegistration.objects.filter(student=request.user, course=course).first()
