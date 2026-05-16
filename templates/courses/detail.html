@@ -21,7 +21,7 @@
           <span class="is-success">Вы записаны</span>
         {% elif registration and registration.status == 'cancelled' %}
           <span class="is-muted">Запись отменена</span>
-        {% elif course.format_type == 'offline' and course.available_places_count <= 0 %}
+        {% elif course.available_places_count == 0 %}
           <span class="is-danger">Мест нет</span>
         {% else %}
           <span class="is-success">Идёт набор</span>
@@ -43,7 +43,7 @@
             <i class="bi bi-check2-circle"></i>
             Вы записаны
           </span>
-        {% elif course.format_type == 'offline' and course.available_places_count <= 0 %}
+        {% elif course.available_places_count == 0 %}
           <span class="student-course-detail-full">
             <i class="bi bi-x-circle"></i>
             Запись недоступна
@@ -158,7 +158,7 @@
                 <i class="bi bi-arrow-counterclockwise"></i>
               </span>
               <h2>Запись отменена</h2>
-            {% elif course.format_type == 'offline' and course.available_places_count <= 0 %}
+            {% elif course.available_places_count == 0 %}
               <span class="student-course-response-icon is-danger">
                 <i class="bi bi-x-circle"></i>
               </span>
@@ -175,7 +175,7 @@
             <p>Вы можете отменить запись, если больше не планируете участвовать.</p>
           {% elif registration and registration.status == 'cancelled' %}
             <p>Вы отменили запись, но можете записаться снова, если набор ещё доступен.</p>
-          {% elif course.format_type == 'offline' and course.available_places_count <= 0 %}
+          {% elif course.available_places_count == 0 %}
             <p>На очное мероприятие закончились свободные места.</p>
           {% else %}
             <p>Проверьте дату, формат и контакты организатора перед записью.</p>
@@ -190,7 +190,7 @@
                   Отменить запись
                 </button>
               </form>
-            {% elif course.format_type == 'offline' and course.available_places_count <= 0 %}
+            {% elif course.available_places_count == 0 %}
               <button class="btn" type="button" disabled>
                 Запись недоступна
               </button>
@@ -288,7 +288,7 @@
         </div>
       </section>
 
-      {% if course.format_type == 'offline' %}
+      {% if not course.has_unlimited_places %}
         <section class="card student-course-places-card-v2">
           <h2>Места</h2>
 
@@ -310,9 +310,10 @@
             </article>
           </div>
 
-          {% if course.available_places_count <= 0 and not registration %}
-            <span class="student-course-status-badge is-full">Мест нет</span>
-          {% endif %}
+          {% if course.available_places_count <= 0 and not registration %}<span class="student-course-status-badge is-full">Мест нет</span>{% endif %}
+        {% else %}
+          <section class="card student-course-places-card-v2"><h2>Места</h2><p>Места не ограничены</p></section>
+          
         </section>
       {% endif %}
 
@@ -323,7 +324,7 @@
 
         <h2>Как участвовать</h2>
         <p>
-          Запишитесь на мероприятие и проверьте контакты организатора. Если планы изменятся,
+          {% if course.is_past %}Мероприятие уже завершено.{% else %}Запишитесь на мероприятие и проверьте контакты организатора.{% endif %} Если планы изменятся,
           запись можно отменить на этой странице.
         </p>
       </section>

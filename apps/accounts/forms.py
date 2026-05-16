@@ -16,7 +16,7 @@ RUS_STATUS_CHOICES = [
 RUS_KIND_CHOICES = [
     ('course', 'Курс'),
     ('seminar', 'Семинар'),
-    ('practice', 'Практика'),
+    ('practice', 'Учебная практика'),
 ]
 RUS_FORMAT_CHOICES = [
     ('online', 'Онлайн'),
@@ -239,7 +239,7 @@ class AdminVacancyForm(forms.ModelForm):
         model = Vacancy
         fields = (
             'title', 'company', 'description', 'responsibilities', 'requirements', 'conditions',
-            'contacts', 'employment_type', 'format_type', 'direction', 'status'
+            'contacts', 'address', 'map_url', 'employment_type', 'format_type', 'direction', 'status'
         )
         labels = {
             'title': 'Название',
@@ -249,6 +249,8 @@ class AdminVacancyForm(forms.ModelForm):
             'requirements': 'Требования',
             'conditions': 'Условия',
             'contacts': 'Контакты',
+            'address': 'Адрес',
+            'map_url': 'Ссылка на карту',
             'employment_type': 'Тип занятости',
             'format_type': 'Формат',
             'direction': 'Направление',
@@ -264,7 +266,7 @@ class AdminCourseForm(forms.ModelForm):
     class Meta:
         model = Course
         fields = (
-            'title', 'kind', 'format_type', 'description', 'organization', 'contacts', 'date', 'places', 'status'
+            'title', 'kind', 'format_type', 'description', 'organization', 'contacts', 'date', 'places', 'online_url', 'address', 'map_url', 'status'
         )
         labels = {
             'title': 'Название',
@@ -275,6 +277,9 @@ class AdminCourseForm(forms.ModelForm):
             'contacts': 'Контакты',
             'date': 'Дата',
             'places': 'Количество мест',
+            'online_url': 'Ссылка на онлайн-встречу',
+            'address': 'Адрес',
+            'map_url': 'Ссылка на карту',
             'status': 'Статус',
         }
         widgets = {
@@ -286,6 +291,7 @@ class AdminCourseForm(forms.ModelForm):
         self.fields['status'].choices = RUS_STATUS_CHOICES
         self.fields['kind'].choices = RUS_KIND_CHOICES
         self.fields['format_type'].choices = RUS_FORMAT_CHOICES
+        self.fields['places'].help_text = 'Оставьте 0 или пустым, если количество мест не ограничено.'
 
 
 class AdminSpecialtyForm(forms.ModelForm):
