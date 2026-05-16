@@ -77,8 +77,8 @@ IMPORT_TEMPLATES = {
     },
     'groups': {
         'sheet_title': 'Группы',
-        'headers': ['name', 'specialty_letter', 'admission_year', 'course_number', 'curator_email'],
-        'example': ['Н - 121/2', 'Н', '2021', '1', 'ivanova.curator@example.com'],
+        'headers': ['specialty_letter', 'admission_year', 'course_number', 'subgroup_number', 'curator_email'],
+        'example': ['Н', '2021', '1', '2', 'ivanova.curator@example.com'],
         'filename_prefix': 'groups_import_template',
     },
 }
@@ -1300,27 +1300,22 @@ def admin_group_import(request):
             errors = []
             rows, parse_errors = parse_import_file(
                 form.cleaned_data['import_file'],
-                ['name', 'specialty_letter', 'admission_year', 'course_number', 'curator_email'],
+                ['specialty_letter', 'admission_year', 'course_number', 'curator_email'],
             )
             if parse_errors:
                 messages.error(request, parse_errors[0])
                 return redirect('accounts:admin_group_import')
 
             for row_idx, row in enumerate(rows, start=2):
-                name = (row.get('name') or '').strip()
                 specialty_letter = (row.get('specialty_letter') or '').strip().upper()
                 admission_year = (row.get('admission_year') or '').strip()
                 course_number = (row.get('course_number') or '').strip()
+                subgroup_number = (row.get('subgroup_number') or '').strip()
                 curator_email = (row.get('curator_email') or '').strip().lower()
 
-                if not name or not specialty_letter or not admission_year or not course_number:
+                if not specialty_letter or not admission_year or not course_number:
                     skipped += 1
                     errors.append(f'Строка {row_idx}: пропущены обязательные поля.')
-                    continue
-
-                if StudyGroup.objects.filter(name=name).exists():
-                    skipped += 1
-                    errors.append(f'Строка {row_idx}: группа "{name}" уже существует.')
                     continue
 
                 specialty = Specialty.objects.filter(letter_code__iexact=specialty_letter).first()
@@ -1332,9 +1327,10 @@ def admin_group_import(request):
                 try:
                     admission_year_int = int(admission_year)
                     course_number_int = int(course_number)
+                    subgroup_number_int = int(subgroup_number) if subgroup_number else None
                 except ValueError:
                     skipped += 1
-                    errors.append(f'Строка {row_idx}: admission_year и course_number должны быть числами.')
+                    errors.append(f'Строка {row_idx}: admission_year, course_number и subgroup_number должны быть числами.')
                     continue
 
                 curator = None
@@ -1352,15 +1348,19 @@ def admin_group_import(request):
                         curator = curator_candidate
 
                 group = StudyGroup(
-                    name=name,
                     specialty_ref=specialty,
-                    specialty=specialty.name,
                     admission_year=admission_year_int,
                     course_number=course_number_int,
+                    subgroup_number=subgroup_number_int,
                     curator=curator,
                     is_active=True,
                     last_promoted_year=None,
                 )
+                group.refresh_name()
+                if StudyGroup.objects.filter(name=group.name).exists():
+                    skipped += 1
+                    errors.append(f'Строка {row_idx}: группа "{group.name}" уже существует.')
+                    continue
                 group.save()
                 created += 1
 
@@ -1497,8 +1497,7 @@ def admin_groups(request):
         form = AdminStudyGroupForm(request.POST)
         if form.is_valid():
             group = form.save(commit=False)
-            if group.specialty_ref:
-                group.specialty = group.specialty_ref.name
+            group.refresh_name()
             group.save()
             sync_group_students(group)
             messages.success(request, 'Группа сохранена.')
@@ -1541,14 +1540,17 @@ def admin_group_detail(request, group_id):
     if request.method == 'POST':
         action = request.POST.get('action')
         if action == 'update':
-            old_sync_signature = (group.name, group.specialty_ref_id, group.admission_year, group.curator_id)
+            old_sync_signature = (
+                group.name, group.specialty_ref_id, group.admission_year, group.course_number, group.subgroup_number, group.curator_id
+            )
             form = AdminStudyGroupForm(request.POST, instance=group)
             if form.is_valid():
                 group = form.save(commit=False)
-                if group.specialty_ref:
-                    group.specialty = group.specialty_ref.name
+                group.refresh_name()
                 group.save()
-                new_sync_signature = (group.name, group.specialty_ref_id, group.admission_year, group.curator_id)
+                new_sync_signature = (
+                    group.name, group.specialty_ref_id, group.admission_year, group.course_number, group.subgroup_number, group.curator_id
+                )
                 if old_sync_signature != new_sync_signature:
                     sync_group_students(group)
                 messages.success(request, 'Данные группы обновлены.')
