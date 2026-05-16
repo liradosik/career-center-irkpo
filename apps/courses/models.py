@@ -67,7 +67,11 @@ class CourseRegistration(models.Model):
         ]
 
     def clean(self):
-        if self.course.format_type == Course.Format.OFFLINE and not self.course.has_available_places:
+        if (
+            self.status == self.Status.REGISTERED
+            and self.course.format_type == Course.Format.OFFLINE
+            and not self.course.has_available_places
+        ):
             raise ValidationError('На очный курс больше нет мест.')
 
     def save(self, *args, **kwargs):
