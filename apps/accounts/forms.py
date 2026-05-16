@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import PasswordChangeForm
 
 from apps.courses.models import Course
 from apps.vacancies.models import Vacancy
@@ -25,6 +26,12 @@ RUS_FORMAT_CHOICES = [
 
 class EmailAuthenticationForm(AuthenticationForm):
     username = forms.EmailField(label='Email')
+
+
+class AccountPasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(label='Старый пароль', widget=forms.PasswordInput(attrs={'autocomplete': 'current-password'}))
+    new_password1 = forms.CharField(label='Новый пароль', widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}))
+    new_password2 = forms.CharField(label='Повторите новый пароль', widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}))
 
 
 class StudentProfileForm(forms.ModelForm):
@@ -142,6 +149,7 @@ class AdminStudentCreateForm(forms.ModelForm):
         user = super().save(commit=False)
         user.role = User.Role.STUDENT
         user.academic_status = User.AcademicStatus.STUDYING
+        user.must_change_password = True
         user.set_password(self.cleaned_data['password'])
         sync_student_with_group(user, self.cleaned_data.get('study_group'))
         if commit:
@@ -199,6 +207,7 @@ class AdminCuratorCreateForm(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.role = User.Role.CURATOR
+        user.must_change_password = True
         user.set_password(self.cleaned_data['password'])
         if commit:
             user.save()
@@ -358,19 +367,24 @@ class SupportTicketAdminUpdateForm(forms.ModelForm):
 class AdminStudyGroupForm(forms.ModelForm):
     class Meta:
         model = StudyGroup
-        fields = ('name', 'specialty_ref', 'admission_year', 'course_number', 'curator', 'is_active')
+        fields = ('name', 'specialty_ref', 'admission_year', 'course_number', 'subgroup_number', 'curator', 'is_active')
         labels = {
             'name': 'Название группы',
             'specialty_ref': 'Специальность',
             'admission_year': 'Год поступления',
             'course_number': 'Курс',
+            'subgroup_number': 'Подгруппа',
             'curator': 'Куратор',
             'is_active': 'Активна',
         }
+        help_texts = {
+            'subgroup_number': 'Необязательно. Заполните, если группа делится на /1, /2 и т.д.',
+        }
         widgets = {
-            'name': forms.TextInput(attrs={'placeholder': 'Например, Н-121/1 или И-422'}),
+            'name': forms.TextInput(attrs={'readonly': 'readonly'}),
             'admission_year': forms.NumberInput(attrs={'placeholder': 'Например, 2024'}),
             'course_number': forms.NumberInput(attrs={'placeholder': '1, 2, 3 или 4', 'min': 1, 'max': 4}),
+            'subgroup_number': forms.NumberInput(attrs={'placeholder': 'Например, 1', 'min': 1}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -379,18 +393,22 @@ class AdminStudyGroupForm(forms.ModelForm):
         self.fields['curator'].queryset = User.objects.filter(role=User.Role.CURATOR, is_active=True).order_by('full_name')
         self.fields['curator'].empty_label = 'Выберите куратора группы'
         self.fields['name'].required = False
+        if self.instance and self.instance.pk:
+            self.fields['name'].initial = self.instance.build_group_name() or self.instance.name
 
-    def clean_name(self):
-        name = (self.cleaned_data.get('name') or '').strip()
-        if name:
-            return name
+    def clean(self):
+        cleaned_data = super().clean()
+        specialty = cleaned_data.get('specialty_ref')
+        admission_year = cleaned_data.get('admission_year')
+        course_number = cleaned_data.get('course_number')
 
-        specialty = self.cleaned_data.get('specialty_ref')
-        admission_year = self.cleaned_data.get('admission_year')
-        course_number = self.cleaned_data.get('course_number')
         if specialty and admission_year and course_number:
-            return f'{specialty.letter_code}{course_number}{str(admission_year)[-2:]}'
-        raise forms.ValidationError('Укажите название группы или заполните специальность, курс и год поступления для автозаполнения.')
+            self.instance.specialty_ref = specialty
+            self.instance.admission_year = admission_year
+            self.instance.course_number = course_number
+            self.instance.subgroup_number = cleaned_data.get('subgroup_number')
+            cleaned_data['name'] = self.instance.build_group_name()
+        return cleaned_data
 
 
 class StudentImportForm(forms.Form):

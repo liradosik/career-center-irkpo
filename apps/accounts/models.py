@@ -2,6 +2,7 @@ import secrets
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models.functions import Coalesce
 
 
 class Specialty(models.Model):
@@ -28,9 +29,34 @@ class StudyGroup(models.Model):
     )
     admission_year = models.PositiveIntegerField()
     course_number = models.PositiveSmallIntegerField(default=1)
+    subgroup_number = models.PositiveSmallIntegerField(null=True, blank=True)
     last_promoted_year = models.PositiveIntegerField(null=True, blank=True)
     curator = models.ForeignKey('User', null=True, blank=True, on_delete=models.SET_NULL, related_name='managed_study_groups')
     is_active = models.BooleanField(default=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                'specialty_ref',
+                'admission_year',
+                'course_number',
+                Coalesce('subgroup_number', 0),
+                name='accounts_group_specialty_year_course_subgroup_uniq',
+            ),
+        ]
+
+    def build_group_name(self):
+        if not self.specialty_ref or not self.specialty_ref.letter_code or not self.admission_year or not self.course_number:
+            return (self.name or '').strip()
+        group_code = f'{self.specialty_ref.letter_code}-{self.course_number}{str(self.admission_year)[-2:]}'
+        if self.subgroup_number:
+            return f'{group_code}/{self.subgroup_number}'
+        return group_code
+
+    def refresh_name(self):
+        self.name = self.build_group_name()
+        if self.specialty_ref:
+            self.specialty = self.specialty_ref.name
 
     @property
     def specialty_name(self):
@@ -64,6 +90,7 @@ class User(AbstractUser):
     specialty = models.CharField(max_length=255, blank=True)
     admission_year = models.PositiveIntegerField(null=True, blank=True)
     academic_status = models.CharField(max_length=16, choices=AcademicStatus.choices, default=AcademicStatus.STUDYING)
+    must_change_password = models.BooleanField(default=False)
     curator = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='students')
     study_group = models.ForeignKey(StudyGroup, null=True, blank=True, on_delete=models.SET_NULL, related_name='students')
     photo = models.ImageField(upload_to='users/photos/', blank=True, null=True)
@@ -210,4 +237,3 @@ class SupportTicket(models.Model):
 
     def __str__(self):
         return f'{self.author_label}: {self.subject}'
-

@@ -3,16 +3,20 @@ import base64
 import csv
 import io
 import uuid
+from urllib.parse import quote
 
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
 
 from django.contrib import messages
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView, LogoutView
+from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.paginator import Paginator
+from django.core.validators import validate_email
 from django.db import transaction
 from django.db.models import Count, F, Max, Q
 from django.http import HttpResponse
@@ -39,6 +43,7 @@ from .forms import (
     CuratorImportForm,
     EmailAuthenticationForm,
     GroupImportForm,
+    AccountPasswordChangeForm,
     StudentImportForm,
     SupportTicketAdminUpdateForm,
     SupportTicketCreateForm,
@@ -66,20 +71,20 @@ IMPORT_TEMPLATES = {
     'students': {
         'sheet_title': 'Студенты',
         'headers': ['full_name', 'email', 'password', 'group'],
-        'example': ['Иванова Анна Сергеевна', 'anna.ivanova@example.com', 'TempPass123', 'Н - 121/2'],
-        'filename_prefix': 'students_import_template',
+        'example': ['Иванова Анна Сергеевна', 'anna.ivanova@example.com', 'TempPass123', 'Н-121/2'],
+        'download_filename': 'шаблон_импорта_студентов',
     },
     'curators': {
         'sheet_title': 'Кураторы',
         'headers': ['full_name', 'email', 'password'],
         'example': ['Иванова Ольга Сергеевна', 'ivanova.curator@example.com', 'TempPass123'],
-        'filename_prefix': 'curators_import_template',
+        'download_filename': 'шаблон_импорта_кураторов',
     },
     'groups': {
         'sheet_title': 'Группы',
-        'headers': ['name', 'specialty_letter', 'admission_year', 'course_number', 'curator_email'],
-        'example': ['Н - 121/2', 'Н', '2021', '1', 'ivanova.curator@example.com'],
-        'filename_prefix': 'groups_import_template',
+        'headers': ['specialty_letter', 'admission_year', 'course_number', 'subgroup_number', 'curator_email'],
+        'example': ['Н', '2021', '1', '2', 'ivanova.curator@example.com'],
+        'download_filename': 'шаблон_импорта_групп',
     },
 }
 
@@ -113,7 +118,7 @@ def parse_import_file(uploaded_file, required_columns):
     normalized_headers = {str(header).strip() for header in (fieldnames or []) if header}
     missing = [col for col in required_columns if col not in normalized_headers]
     if missing:
-        return [], [f'Отсутствуют обязательные колонки: {", ".join(missing)}.']
+        return [], [f'В файле отсутствуют обязательные колонки: {", ".join(missing)}.']
 
     normalized_rows = []
     for row in rows:
@@ -121,10 +126,27 @@ def parse_import_file(uploaded_file, required_columns):
     return normalized_rows, []
 
 
+def set_download_filename(response, base_filename, extension):
+    filename = f'{base_filename}.{extension}'
+    response['Content-Disposition'] = f"attachment; filename*=UTF-8''{quote(filename)}"
+
+
+def is_empty_import_row(row):
+    return not any((value or '').strip() for value in row.values())
+
+
+def normalize_group_code(raw_value):
+    value = (raw_value or '').strip()
+    value = ' '.join(value.split())
+    value = value.replace(' - ', '-').replace(' -', '-').replace('- ', '-')
+    value = value.replace(' / ', '/').replace(' /', '/').replace('/ ', '/')
+    return value
+
+
 def build_template_csv_response(template_key):
     template_data = IMPORT_TEMPLATES[template_key]
     response = HttpResponse(content_type='text/csv; charset=utf-8')
-    response['Content-Disposition'] = f'attachment; filename="{template_data["filename_prefix"]}.csv"'
+    set_download_filename(response, template_data['download_filename'], 'csv')
     response.write('﻿')
     writer = csv.writer(response)
     writer.writerow(template_data['headers'])
@@ -149,7 +171,7 @@ def build_template_xlsx_response(template_key):
         sheet.column_dimensions[get_column_letter(idx)].width = max_len + 6
 
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = f'attachment; filename="{template_data["filename_prefix"]}.xlsx"'
+    set_download_filename(response, template_data['download_filename'], 'xlsx')
     workbook.save(response)
     return response
 
@@ -186,6 +208,23 @@ def home(request):
 
 def redirect_by_role(request):
     return redirect(role_redirect(request.user))
+
+
+@login_required
+def change_password(request):
+    forced = bool(request.user.must_change_password)
+    if request.method == 'POST':
+        form = AccountPasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            user.must_change_password = False
+            user.save(update_fields=['password', 'must_change_password'])
+            update_session_auth_hash(request, user)
+            messages.success(request, 'Пароль успешно изменён.')
+            return redirect('accounts:redirect_by_role')
+    else:
+        form = AccountPasswordChangeForm(request.user)
+    return render(request, 'accounts/change_password.html', {'form': form, 'forced': forced})
 
 
 @role_required(User.Role.STUDENT)
@@ -1155,7 +1194,8 @@ def admin_student_detail(request, student_id):
             new_password = request.POST.get('temp_password', '').strip()
             if new_password:
                 student.set_password(new_password)
-                student.save(update_fields=['password'])
+                student.must_change_password = True
+                student.save(update_fields=['password', 'must_change_password'])
                 messages.success(request, 'Пароль студента сброшен.')
             else:
                 messages.error(request, 'Введите временный пароль.')
@@ -1197,46 +1237,78 @@ def admin_student_import(request):
             created = 0
             skipped = 0
             errors = []
+            warnings = []
             rows, parse_errors = parse_import_file(form.cleaned_data['import_file'], ['full_name', 'email', 'password', 'group'])
             if parse_errors:
                 messages.error(request, parse_errors[0])
                 return redirect('accounts:admin_student_import')
 
             for row_idx, row in enumerate(rows, start=2):
-                full_name = (row.get('full_name') or '').strip()
-                email = (row.get('email') or '').strip().lower()
-                password = (row.get('password') or '').strip()
-                group_name = (row.get('group') or '').strip()
+                try:
+                    if is_empty_import_row(row):
+                        skipped += 1
+                        warnings.append(f'Строка {row_idx}: пустая строка пропущена.')
+                        continue
 
-                if not full_name or not email or not password or not group_name:
+                    full_name = (row.get('full_name') or '').strip()
+                    email = (row.get('email') or '').strip().lower()
+                    password = (row.get('password') or '').strip()
+                    group_name = (row.get('group') or '').strip()
+
+                    if not full_name:
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: не указано ФИО.')
+                        continue
+                    if not email:
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: не указан email.')
+                        continue
+                    try:
+                        validate_email(email)
+                    except ValidationError:
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: неверный формат email.')
+                        continue
+                    if not password:
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: не указан временный пароль.')
+                        continue
+                    if not group_name:
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: не указана группа.')
+                        continue
+                    if User.objects.filter(email=email).exists():
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: пользователь с email {email} уже существует.')
+                        continue
+
+                    normalized_group_name = normalize_group_code(group_name)
+                    study_group = StudyGroup.objects.select_related('specialty_ref', 'curator').filter(name=group_name).first()
+                    if not study_group and normalized_group_name != group_name:
+                        study_group = StudyGroup.objects.select_related('specialty_ref', 'curator').filter(name=normalized_group_name).first()
+                    if not study_group:
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: группа {group_name} не найдена.')
+                        continue
+
+                    with transaction.atomic():
+                        student = User(
+                            full_name=full_name,
+                            email=email,
+                            role=User.Role.STUDENT,
+                            academic_status=User.AcademicStatus.STUDYING,
+                            is_active=True,
+                        )
+                        student.set_password(password)
+                        student.must_change_password = True
+                        sync_student_with_group(student, study_group)
+                        student.save()
+                    created += 1
+                except Exception as exc:
                     skipped += 1
-                    errors.append(f'Строка {row_idx}: пропущены обязательные поля.')
-                    continue
-                if User.objects.filter(email=email).exists():
-                    skipped += 1
-                    errors.append(f'Строка {row_idx}: email {email} уже существует.')
-                    continue
+                    errors.append(f'Строка {row_idx}: ошибка обработки: {str(exc)}.')
 
-                study_group = StudyGroup.objects.select_related('specialty_ref', 'curator').filter(name=group_name).first()
-                if not study_group:
-                    skipped += 1
-                    errors.append(f'Строка {row_idx}: группа "{group_name}" не найдена.')
-                    continue
-
-                with transaction.atomic():
-                    student = User(
-                        full_name=full_name,
-                        email=email,
-                        role=User.Role.STUDENT,
-                        academic_status=User.AcademicStatus.STUDYING,
-                        is_active=True,
-                    )
-                    student.set_password(password)
-                    sync_student_with_group(student, study_group)
-                    student.save()
-                created += 1
-
-            report = {'created': created, 'skipped': skipped, 'errors': errors}
+            report = {'created': created, 'skipped': skipped, 'errors': errors, 'warnings': warnings}
             if created:
                 messages.success(request, f'Импорт завершён. Создано: {created}.')
             if skipped:
@@ -1255,31 +1327,55 @@ def admin_curator_import(request):
             created = 0
             skipped = 0
             errors = []
+            warnings = []
             rows, parse_errors = parse_import_file(form.cleaned_data['import_file'], ['full_name', 'email', 'password'])
             if parse_errors:
                 messages.error(request, parse_errors[0])
                 return redirect('accounts:admin_curator_import')
 
             for row_idx, row in enumerate(rows, start=2):
-                full_name = (row.get('full_name') or '').strip()
-                email = (row.get('email') or '').strip().lower()
-                password = (row.get('password') or '').strip()
+                try:
+                    if is_empty_import_row(row):
+                        skipped += 1
+                        warnings.append(f'Строка {row_idx}: пустая строка пропущена.')
+                        continue
 
-                if not full_name or not email or not password:
+                    full_name = (row.get('full_name') or '').strip()
+                    email = (row.get('email') or '').strip().lower()
+                    password = (row.get('password') or '').strip()
+
+                    if not full_name:
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: не указано ФИО.')
+                        continue
+                    if not email:
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: не указан email.')
+                        continue
+                    try:
+                        validate_email(email)
+                    except ValidationError:
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: неверный формат email.')
+                        continue
+                    if not password:
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: не указан временный пароль.')
+                        continue
+                    if User.objects.filter(email=email).exists():
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: пользователь с email {email} уже существует.')
+                        continue
+
+                    curator = User(full_name=full_name, email=email, role=User.Role.CURATOR, is_active=True, must_change_password=True)
+                    curator.set_password(password)
+                    curator.save()
+                    created += 1
+                except Exception as exc:
                     skipped += 1
-                    errors.append(f'Строка {row_idx}: пропущены обязательные поля.')
-                    continue
-                if User.objects.filter(email=email).exists():
-                    skipped += 1
-                    errors.append(f'Строка {row_idx}: email {email} уже существует.')
-                    continue
+                    errors.append(f'Строка {row_idx}: ошибка обработки: {str(exc)}.')
 
-                curator = User(full_name=full_name, email=email, role=User.Role.CURATOR, is_active=True)
-                curator.set_password(password)
-                curator.save()
-                created += 1
-
-            report = {'created': created, 'skipped': skipped, 'errors': errors}
+            report = {'created': created, 'skipped': skipped, 'errors': errors, 'warnings': warnings}
             if created:
                 messages.success(request, f'Импорт завершён. Создано: {created}.')
             if skipped:
@@ -1298,73 +1394,101 @@ def admin_group_import(request):
             created = 0
             skipped = 0
             errors = []
+            warnings = []
             rows, parse_errors = parse_import_file(
                 form.cleaned_data['import_file'],
-                ['name', 'specialty_letter', 'admission_year', 'course_number', 'curator_email'],
+                ['specialty_letter', 'admission_year', 'course_number', 'curator_email'],
             )
             if parse_errors:
                 messages.error(request, parse_errors[0])
                 return redirect('accounts:admin_group_import')
 
             for row_idx, row in enumerate(rows, start=2):
-                name = (row.get('name') or '').strip()
-                specialty_letter = (row.get('specialty_letter') or '').strip().upper()
-                admission_year = (row.get('admission_year') or '').strip()
-                course_number = (row.get('course_number') or '').strip()
-                curator_email = (row.get('curator_email') or '').strip().lower()
-
-                if not name or not specialty_letter or not admission_year or not course_number:
-                    skipped += 1
-                    errors.append(f'Строка {row_idx}: пропущены обязательные поля.')
-                    continue
-
-                if StudyGroup.objects.filter(name=name).exists():
-                    skipped += 1
-                    errors.append(f'Строка {row_idx}: группа "{name}" уже существует.')
-                    continue
-
-                specialty = Specialty.objects.filter(letter_code__iexact=specialty_letter).first()
-                if not specialty:
-                    skipped += 1
-                    errors.append(f'Строка {row_idx}: специальность с кодом "{specialty_letter}" не найдена.')
-                    continue
-
                 try:
-                    admission_year_int = int(admission_year)
-                    course_number_int = int(course_number)
-                except ValueError:
-                    skipped += 1
-                    errors.append(f'Строка {row_idx}: admission_year и course_number должны быть числами.')
-                    continue
+                    if is_empty_import_row(row):
+                        skipped += 1
+                        warnings.append(f'Строка {row_idx}: пустая строка пропущена.')
+                        continue
 
-                curator = None
-                if not curator_email:
-                    errors.append(f'Строка {row_idx}: куратор не указан, группа создана без куратора.')
-                else:
-                    curator_candidate = User.objects.filter(email=curator_email).first()
-                    if not curator_candidate:
-                        errors.append(f'Строка {row_idx}: куратор {curator_email} не найден, группа создана без куратора.')
-                    elif curator_candidate.role != User.Role.CURATOR:
-                        errors.append(
-                            f'Строка {row_idx}: пользователь {curator_email} не является куратором, группа создана без куратора.'
-                        )
+                    specialty_letter = (row.get('specialty_letter') or '').strip().upper()
+                    admission_year = (row.get('admission_year') or '').strip()
+                    course_number = (row.get('course_number') or '').strip()
+                    subgroup_number = (row.get('subgroup_number') or '').strip()
+                    curator_email = (row.get('curator_email') or '').strip().lower()
+
+                    if not specialty_letter:
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: не указан буквенный код специальности.')
+                        continue
+                    if not admission_year:
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: не указан год поступления.')
+                        continue
+                    if not course_number:
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: не указан курс.')
+                        continue
+
+                    try:
+                        admission_year_int = int(admission_year)
+                    except ValueError:
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: неверный год поступления.')
+                        continue
+                    try:
+                        course_number_int = int(course_number)
+                    except ValueError:
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: неверный номер курса.')
+                        continue
+                    try:
+                        subgroup_number_int = int(subgroup_number) if subgroup_number else None
+                    except ValueError:
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: неверный номер подгруппы.')
+                        continue
+
+                    specialty = Specialty.objects.filter(letter_code__iexact=specialty_letter).first()
+                    if not specialty:
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: специальность с буквенным кодом {specialty_letter} не найдена.')
+                        continue
+
+                    curator = None
+                    if not curator_email:
+                        warnings.append(f'Строка {row_idx}: куратор не указан, группа создана без куратора.')
                     else:
-                        curator = curator_candidate
+                        curator_candidate = User.objects.filter(email=curator_email).first()
+                        if not curator_candidate:
+                            warnings.append(f'Строка {row_idx}: куратор {curator_email} не найден, группа создана без куратора.')
+                        elif curator_candidate.role != User.Role.CURATOR:
+                            warnings.append(
+                                f'Строка {row_idx}: пользователь {curator_email} не является куратором, группа создана без куратора.'
+                            )
+                        else:
+                            curator = curator_candidate
 
-                group = StudyGroup(
-                    name=name,
-                    specialty_ref=specialty,
-                    specialty=specialty.name,
-                    admission_year=admission_year_int,
-                    course_number=course_number_int,
-                    curator=curator,
-                    is_active=True,
-                    last_promoted_year=None,
-                )
-                group.save()
-                created += 1
+                    group = StudyGroup(
+                        specialty_ref=specialty,
+                        admission_year=admission_year_int,
+                        course_number=course_number_int,
+                        subgroup_number=subgroup_number_int,
+                        curator=curator,
+                        is_active=True,
+                        last_promoted_year=None,
+                    )
+                    group.refresh_name()
+                    if StudyGroup.objects.filter(name=group.name).exists():
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: группа {group.name} уже существует.')
+                        continue
+                    group.save()
+                    created += 1
+                except Exception as exc:
+                    skipped += 1
+                    errors.append(f'Строка {row_idx}: ошибка обработки: {str(exc)}.')
 
-            report = {'created': created, 'skipped': skipped, 'errors': errors}
+            report = {'created': created, 'skipped': skipped, 'errors': errors, 'warnings': warnings}
             if created:
                 messages.success(request, f'Импорт завершён. Создано: {created}.')
             if skipped:
@@ -1497,8 +1621,7 @@ def admin_groups(request):
         form = AdminStudyGroupForm(request.POST)
         if form.is_valid():
             group = form.save(commit=False)
-            if group.specialty_ref:
-                group.specialty = group.specialty_ref.name
+            group.refresh_name()
             group.save()
             sync_group_students(group)
             messages.success(request, 'Группа сохранена.')
@@ -1541,14 +1664,17 @@ def admin_group_detail(request, group_id):
     if request.method == 'POST':
         action = request.POST.get('action')
         if action == 'update':
-            old_sync_signature = (group.name, group.specialty_ref_id, group.admission_year, group.curator_id)
+            old_sync_signature = (
+                group.name, group.specialty_ref_id, group.admission_year, group.course_number, group.subgroup_number, group.curator_id
+            )
             form = AdminStudyGroupForm(request.POST, instance=group)
             if form.is_valid():
                 group = form.save(commit=False)
-                if group.specialty_ref:
-                    group.specialty = group.specialty_ref.name
+                group.refresh_name()
                 group.save()
-                new_sync_signature = (group.name, group.specialty_ref_id, group.admission_year, group.curator_id)
+                new_sync_signature = (
+                    group.name, group.specialty_ref_id, group.admission_year, group.course_number, group.subgroup_number, group.curator_id
+                )
                 if old_sync_signature != new_sync_signature:
                     sync_group_students(group)
                 messages.success(request, 'Данные группы обновлены.')
@@ -1617,7 +1743,8 @@ def admin_curator_detail(request, curator_id):
             new_password = request.POST.get('temp_password', '').strip()
             if new_password:
                 curator.set_password(new_password)
-                curator.save(update_fields=['password'])
+                curator.must_change_password = True
+                curator.save(update_fields=['password', 'must_change_password'])
                 messages.success(request, 'Пароль куратора сброшен.')
             else:
                 messages.error(request, 'Введите временный пароль.')
