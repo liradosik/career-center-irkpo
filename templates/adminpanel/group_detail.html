@@ -27,7 +27,7 @@
 
       <div class="admin-info-list">
         <div>
-          <span>Учебная группа</span>
+          <span>Код группы</span>
           <strong>{{ group.name }}</strong>
         </div>
 
@@ -49,6 +49,16 @@
         <div>
           <span>Год поступления</span>
           <strong>{{ group.admission_year|default:'—' }}</strong>
+        </div>
+
+        <div>
+          <span>Курс</span>
+          <strong>{{ group.course_number|default:'—' }}</strong>
+        </div>
+
+        <div>
+          <span>Подгруппа</span>
+          <strong>{{ group.subgroup_number|default:'—' }}</strong>
         </div>
 
         <div>
@@ -95,8 +105,9 @@
 
         <div class="group-detail-fields">
           <div class="form-field">
-            <label for="{{ form.name.id_for_label }}">Название группы</label>
+            <label for="{{ form.name.id_for_label }}">Код группы (авто)</label>
             {{ form.name }}
+            <small class="form-hint">Код формируется автоматически при сохранении.</small>
             {{ form.name.errors }}
           </div>
 
@@ -116,6 +127,13 @@
             <label for="{{ form.course_number.id_for_label }}">Курс</label>
             {{ form.course_number }}
             {{ form.course_number.errors }}
+          </div>
+
+          <div class="form-field">
+            <label for="{{ form.subgroup_number.id_for_label }}">Подгруппа</label>
+            {{ form.subgroup_number }}
+            <small class="form-hint">{{ form.subgroup_number.help_text }}</small>
+            {{ form.subgroup_number.errors }}
           </div>
 
           <div class="form-field">

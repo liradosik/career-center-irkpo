@@ -41,15 +41,16 @@
     <h2>Формат файла</h2>
 
     <div class="csv-format-box">
-      <code>name,specialty_letter,admission_year,course_number,curator_email</code>
+      <code>specialty_letter,admission_year,course_number,subgroup_number,curator_email</code>
     </div>
 
     <div class="csv-example">
       <strong>Пример строки:</strong>
-      <code>Н - 121/2,Н,2021,1,ivanova.curator@example.com</code>
+      <code>Н,2022,4,,curator@example.com</code><br>
+      <code>Н,2022,4,1,curator@example.com</code>
     </div>
 
-    <p class="muted">Название группы должно совпадать с группой в системе.</p>
+    <p class="muted">Название (код) группы формируется автоматически при импорте.</p>
 
     <div class="import-template-box">
       <div>
