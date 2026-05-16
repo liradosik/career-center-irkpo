@@ -19,10 +19,10 @@
       </p>
 
       <div class="student-resume-hero-actions">
-        <button class="btn btn-primary" type="submit" form="resume-settings-form">
+        {% if can_edit_resume %}<button class="btn btn-primary" type="submit" form="resume-settings-form">
           <i class="bi bi-check2"></i>
           Сохранить
-        </button>
+        </button>{% else %}<span class="student-course-status-badge is-cancelled">Редактирование резюме недоступно</span>{% endif %}
 
         {% if profile %}
           <a class="btn" target="_blank" href="{% url 'resumes:public' profile.public_resume_token %}?download=pdf">

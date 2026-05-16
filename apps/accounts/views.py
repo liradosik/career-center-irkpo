@@ -193,11 +193,12 @@ def sync_group_students(group):
 
 def curator_students_queryset(curator, include_graduates=False):
     qs = User.objects.filter(role=User.Role.STUDENT).filter(
-        Q(study_group__curator=curator, study_group__is_active=True) |
-        Q(study_group__isnull=True, curator=curator)
+        Q(study_group__curator=curator) | Q(curator=curator)
     )
-    if not include_graduates:
-        qs = qs.exclude(academic_status=User.AcademicStatus.GRADUATED)
+    if include_graduates:
+        return qs.distinct()
+
+    qs = qs.filter(study_group__is_active=True).exclude(academic_status=User.AcademicStatus.GRADUATED)
     return qs.distinct()
 
 
