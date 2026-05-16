@@ -15,7 +15,7 @@ def ui_labels(_request):
         'KIND_LABELS': {
             'course': 'Курс',
             'seminar': 'Семинар',
-            'practice': 'Практика',
+            'practice': 'Учебная практика',
         },
         'PORTFOLIO_TYPE_LABELS': {
             'academic': 'Учебные достижения',
