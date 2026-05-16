@@ -50,6 +50,7 @@
       <strong>Пример строки:</strong>
       <code>Иванова Ольга Сергеевна,ivanova.curator@example.com,TempPass123</code>
     </div>
+    <p class="muted">Email куратора должен быть уникальным в системе.</p>
 
     <div class="import-template-box">
       <div>
@@ -86,10 +87,20 @@
 
   {% if report.errors %}
     <div class="import-errors">
-      <h3>Ошибки и предупреждения</h3>
+      <h3>Ошибки</h3>
       <ul>
         {% for err in report.errors %}
           <li>{{ err }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+  {% if report.warnings %}
+    <div class="import-errors">
+      <h3>Предупреждения</h3>
+      <ul>
+        {% for warn in report.warnings %}
+          <li>{{ warn }}</li>
         {% endfor %}
       </ul>
     </div>

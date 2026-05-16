@@ -48,10 +48,10 @@
 
     <div class="csv-example">
       <strong>Пример строки:</strong>
-      <code>Иванова Анна Сергеевна,anna.ivanova@example.com,TempPass123,Н - 121/2</code>
+      <code>Иванова Анна Сергеевна,anna.ivanova@example.com,TempPass123,Н-121/2</code>
     </div>
 
-    <p class="muted">Название группы должно совпадать с группой в системе.</p>
+    <p class="muted">Укажите код группы в формате Н-121/2 или И-422. Код должен совпадать с группой в системе.</p>
 
     <div class="import-template-box">
       <div>
@@ -88,10 +88,20 @@
 
   {% if report.errors %}
     <div class="import-errors">
-      <h3>Ошибки и предупреждения</h3>
+      <h3>Ошибки</h3>
       <ul>
         {% for err in report.errors %}
           <li>{{ err }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+  {% if report.warnings %}
+    <div class="import-errors">
+      <h3>Предупреждения</h3>
+      <ul>
+        {% for warn in report.warnings %}
+          <li>{{ warn }}</li>
         {% endfor %}
       </ul>
     </div>
