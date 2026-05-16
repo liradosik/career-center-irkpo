@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from apps.accounts.decorators import role_required
 from apps.accounts.models import ActivityLog, User
+from apps.accounts.permissions import can_create_portfolio_entries, can_edit_portfolio_entries
 
 from .forms import PortfolioEntryForm
 from .models import PortfolioAttachment, PortfolioEntry
@@ -75,11 +76,16 @@ def list_entries(request):
         'portfolio_total': portfolio_total,
         'portfolio_pending': portfolio_pending,
         'portfolio_approved': portfolio_approved,
+        'can_create_portfolio_entries': can_create_portfolio_entries(request.user),
+        'can_edit_portfolio_entries': can_edit_portfolio_entries(request.user),
     })
 
 
 @role_required(User.Role.STUDENT)
 def create_entry(request):
+    if not can_create_portfolio_entries(request.user):
+        messages.error(request, 'Добавление достижений недоступно для вашего учебного статуса.')
+        return redirect('portfolio:list')
     if request.method == 'POST':
         form = PortfolioEntryForm(request.POST, request.FILES)
         if form.is_valid():
@@ -99,6 +105,9 @@ def create_entry(request):
 
 @role_required(User.Role.STUDENT)
 def edit_entry(request, pk):
+    if not can_edit_portfolio_entries(request.user):
+        messages.error(request, 'Добавление достижений недоступно для вашего учебного статуса.')
+        return redirect('portfolio:list')
     entry = get_object_or_404(PortfolioEntry, pk=pk, student=request.user)
     if request.method == 'POST':
         form = PortfolioEntryForm(request.POST, request.FILES, instance=entry)
@@ -150,6 +159,9 @@ def review_queue(request):
 
 @role_required(User.Role.STUDENT)
 def delete_entry(request, pk):
+    if not can_edit_portfolio_entries(request.user):
+        messages.error(request, 'Добавление достижений недоступно для вашего учебного статуса.')
+        return redirect('portfolio:list')
     entry = get_object_or_404(PortfolioEntry, pk=pk, student=request.user)
     if request.method == 'POST':
         entry.delete()

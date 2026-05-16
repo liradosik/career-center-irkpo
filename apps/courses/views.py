@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from apps.accounts.decorators import role_required
 from apps.accounts.models import ActivityLog, User
+from apps.accounts.permissions import can_manage_favorites, can_register_courses
 
 from .models import Course, CourseRegistration, StudentFavoriteCourse
 
@@ -100,6 +101,8 @@ def course_list(request):
         'KIND_CHOICES': Course.Kind.choices,
         'FORMAT_CHOICES': Course.Format.choices,
         'favorite_course_ids': favorite_course_ids,
+        'can_register_courses': can_register_courses(request.user),
+        'can_favorite_courses': can_manage_favorites(request.user, target='courses'),
     })
 
 
@@ -150,6 +153,8 @@ def course_detail(request, pk):
         'cancelled_registrations_count': cancelled_count,
         'free_places_count': None if not course.places else max(course.places - registered_count, 0),
         'is_favorite': is_favorite,
+        'can_register_courses': request.user.role == User.Role.STUDENT and can_register_courses(request.user),
+        'can_favorite_courses': request.user.role == User.Role.STUDENT and can_manage_favorites(request.user, target='courses'),
     })
 
 
@@ -157,6 +162,9 @@ def course_detail(request, pk):
 def register_course(request, pk):
     if request.method != 'POST':
         return redirect('courses:detail', pk=pk)
+    if not can_register_courses(request.user):
+        messages.error(request, 'Запись на курсы недоступна для вашего учебного статуса.')
+        return _redirect_back(request, 'courses:detail', pk=pk)
     course = get_object_or_404(Course, pk=pk, status=Course.Status.ACTIVE)
     if course.date < timezone.localdate():
         messages.error(request, 'Мероприятие уже завершено.')
@@ -210,6 +218,9 @@ def cancel_registration(request, pk):
 def toggle_favorite_course(request, pk):
     course = get_object_or_404(Course, pk=pk, status=Course.Status.ACTIVE)
     if request.method == 'POST':
+        if not can_manage_favorites(request.user, target='courses'):
+            messages.error(request, 'Добавление курсов в избранное недоступно для вашего учебного статуса.')
+            return _redirect_back(request, 'courses:detail', pk=pk)
         favorite, created = StudentFavoriteCourse.objects.get_or_create(student=request.user, course=course)
         if not created:
             favorite.delete()

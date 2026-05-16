@@ -148,7 +148,8 @@
                     Записаться снова
                   </button>
                 </form>
-              {% elif c.available_places_count == 0 %}
+              {% elif not can_register_courses %}<span class="student-course-status-badge student-course-status-side is-cancelled">Недоступно по учебному статусу</span>
+  {% elif c.available_places_count == 0 %}
                 <button class="btn student-course-disabled-btn" type="button" disabled>
                   Нет мест
                 </button>
@@ -162,7 +163,7 @@
                 </form>
               {% endif %}
 
-              <form method="post" action="{% url 'courses:toggle_favorite' c.pk %}">
+              {% if can_favorite_courses %}<form method="post" action="{% url 'courses:toggle_favorite' c.pk %}">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
                 <button
@@ -176,7 +177,7 @@
                     <i class="bi bi-bookmark"></i>
                   {% endif %}
                 </button>
-              </form>
+              </form>{% else %}<span class="student-course-status-badge is-cancelled">Курсы в избранное недоступны</span>{% endif %}
             </div>
           </div>
 
@@ -197,6 +198,7 @@
     <span class="student-course-status-badge student-course-status-side is-cancelled">
       Запись отменена
     </span>
+  {% elif not can_register_courses %}<span class="student-course-status-badge student-course-status-side is-cancelled">Недоступно по учебному статусу</span>
   {% elif c.available_places_count == 0 %}
     <span class="student-course-status-badge student-course-status-side is-full">
       Мест нет
