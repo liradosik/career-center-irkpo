@@ -927,7 +927,10 @@ def admin_dashboard(request):
         'support_in_progress_total': SupportTicket.objects.filter(status=SupportTicket.Status.IN_PROGRESS).count(),
         'support_public_total': SupportTicket.objects.filter(source=SupportTicket.Source.PUBLIC).count(),
         'offline_full_courses': Course.objects.filter(format_type=Course.Format.OFFLINE).annotate(
-            reg_total=Count('registrations')
+            reg_total=Count(
+                'registrations',
+                filter=Q(registrations__status=CourseRegistration.Status.REGISTERED),
+            )
         ).filter(reg_total__gte=F('places')).count(),
         'vacancy_summary': {
             'active': vacancy_summary.get(Vacancy.Status.ACTIVE, 0),
@@ -1856,7 +1859,12 @@ def admin_courses(request):
             messages.success(request, 'Курс создан.')
             return redirect('accounts:admin_courses')
 
-    courses = Course.objects.annotate(registrations_count=Count('registrations')).order_by('-created_at')
+    courses = Course.objects.annotate(
+        registrations_count=Count(
+            'registrations',
+            filter=Q(registrations__status=CourseRegistration.Status.REGISTERED),
+        )
+    ).order_by('-created_at')
     if q:
         courses = courses.filter(Q(title__icontains=q) | Q(organization__icontains=q))
     if status_filter in {Course.Status.ACTIVE, Course.Status.HIDDEN, Course.Status.ARCHIVE}:
