@@ -1003,21 +1003,12 @@ def admin_activity(request):
         created_at__lt=period_start,
     ).count()
 
-    activity_portfolio_total = ActivityLog.objects.filter(
-        event_type__startswith='portfolio_',
+    activity_portfolio_total = PortfolioEntry.objects.filter(
         created_at__gte=period_start,
         created_at__lt=now,
     ).count()
-    activity_courses_total = ActivityLog.objects.filter(
-        event_type=ActivityLog.EventType.COURSE_REGISTERED,
-        created_at__gte=period_start,
-        created_at__lt=now,
-    ).count()
-    activity_vacancies_total = ActivityLog.objects.filter(
-        event_type=ActivityLog.EventType.VACANCY_APPLIED,
-        created_at__gte=period_start,
-        created_at__lt=now,
-    ).count()
+    activity_courses_total = registrations_registered_total
+    activity_vacancies_total = responses_total
 
     activity_total = activity_courses_total + activity_vacancies_total + activity_portfolio_total
 
