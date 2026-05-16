@@ -190,10 +190,7 @@
 
   {% if page_obj.paginator.count %}
     <section class="student-vacancies-pagination-wrap">
-      <p>
-        Показано {{ page_start }}–{{ page_end }} из {{ page_obj.paginator.count }} вакансий
-      </p>
-
+     
       {% if page_obj.paginator.num_pages > 1 %}
         <nav class="student-vacancies-pagination" aria-label="Пагинация вакансий">
           {% if page_obj.has_previous %}
