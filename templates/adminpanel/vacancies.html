@@ -38,7 +38,7 @@
             <option value="Частичная занятость">Частичная занятость</option>
             <option value="Полная занятость">Полная занятость</option>
             <option value="Проектная работа">Проектная работа</option>
-            <option value="Практика">Практика</option>
+            <option value="Практика">Практика у работодателя</option>
           </select>
           {{ form.employment_type.errors }}
         </div>
@@ -65,6 +65,12 @@
           {{ form.contacts }}
           {{ form.contacts.errors }}
         </div>
+
+        <div class="form-field"><label>{{ form.address.label }}</label>{{ form.address }}</div>
+        <div class="form-field"><label>{{ form.map_url.label }}</label>{{ form.map_url }}</div>
+
+        <div class="form-field"><label>{{ form.address.label }}</label>{{ form.address }}</div>
+        <div class="form-field"><label>{{ form.map_url.label }}</label>{{ form.map_url }}</div>
 
         <div class="form-field">
           <label>{{ form.status.label }}</label>
@@ -132,7 +138,7 @@
       <option value="Частичная занятость" {% if request.GET.employment_type == 'Частичная занятость' %}selected{% endif %}>Частичная занятость</option>
       <option value="Полная занятость" {% if request.GET.employment_type == 'Полная занятость' %}selected{% endif %}>Полная занятость</option>
       <option value="Проектная работа" {% if request.GET.employment_type == 'Проектная работа' %}selected{% endif %}>Проектная работа</option>
-      <option value="Практика" {% if request.GET.employment_type == 'Практика' %}selected{% endif %}>Практика</option>
+      <option value="Практика" {% if request.GET.employment_type == 'Практика' %}selected{% endif %}>Практика у работодателя</option>
     </select>
 
     <input name="direction" placeholder="Направление" value="{{ request.GET.direction }}">

@@ -148,7 +148,7 @@
                     Записаться снова
                   </button>
                 </form>
-              {% elif c.format_type == 'offline' and c.available_places_count <= 0 %}
+              {% elif c.available_places_count == 0 %}
                 <button class="btn student-course-disabled-btn" type="button" disabled>
                   Нет мест
                 </button>
@@ -184,7 +184,7 @@
   {% if c.format_type == 'offline' %}
     <div class="student-course-places-side">
       <i class="bi bi-people"></i>
-      <span>Занято {{ c.occupied_places_count }} из {{ c.places }}</span>
+      <span>{% if c.has_unlimited_places %}Места не ограничены{% else %}Занято {{ c.occupied_places_count }} из {{ c.places }} · Свободно: {{ c.available_places_count }}{% endif %}</span>
     </div>
   {% endif %}
 
@@ -197,7 +197,7 @@
     <span class="student-course-status-badge student-course-status-side is-cancelled">
       Запись отменена
     </span>
-  {% elif c.format_type == 'offline' and c.available_places_count <= 0 %}
+  {% elif c.available_places_count == 0 %}
     <span class="student-course-status-badge student-course-status-side is-full">
       Мест нет
     </span>
