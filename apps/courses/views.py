@@ -108,7 +108,6 @@ def course_detail(request, pk):
     course = get_object_or_404(Course.objects.filter(status=Course.Status.ACTIVE).annotate(
         active_registrations_count=Count('registrations', filter=Q(registrations__status=CourseRegistration.Status.REGISTERED))
     ), pk=pk)
-    course.is_past = course.date < timezone.localdate()
     registration = None
     if request.user.role == User.Role.STUDENT:
         registration = CourseRegistration.objects.filter(student=request.user, course=course).first()
