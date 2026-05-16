@@ -50,7 +50,7 @@
       <code>Н,2022,4,1,curator@example.com</code>
     </div>
 
-    <p class="muted">Название (код) группы формируется автоматически при импорте.</p>
+    <p class="muted">Название (код) группы формируется автоматически при импорте. Поле subgroup_number можно оставить пустым.</p>
 
     <div class="import-template-box">
       <div>
@@ -83,10 +83,20 @@
 
   {% if report.errors %}
     <div class="import-errors">
-      <h3>Ошибки и предупреждения</h3>
+      <h3>Ошибки</h3>
       <ul>
         {% for err in report.errors %}
           <li>{{ err }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+  {% if report.warnings %}
+    <div class="import-errors">
+      <h3>Предупреждения</h3>
+      <ul>
+        {% for warn in report.warnings %}
+          <li>{{ warn }}</li>
         {% endfor %}
       </ul>
     </div>
