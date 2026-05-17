@@ -106,7 +106,7 @@
 
       {% if 'contacts' in selected_sections %}
         {% if student.email or profile.phone or profile.city or profile.contact_link %}
-        <section class="public-resume-block-v4">
+        <section class="public-resume-block-v4 public-resume-section-contacts-v4">
           <h2><i class="bi bi-person"></i>Контактная информация</h2>
 
           <div class="public-resume-info-v4">
@@ -132,7 +132,7 @@
 
       {% if 'education' in selected_sections %}
         {% if student.specialty or student.group %}
-        <section class="public-resume-block-v4">
+        <section class="public-resume-block-v4 public-resume-section-basic-v4">
           <h2><i class="bi bi-info-circle"></i>Основная информация</h2>
 
           <div class="public-resume-info-v4">
@@ -151,7 +151,7 @@
       {% endif %}
 
       {% if 'skills' in selected_sections %}
-      <section class="public-resume-block-v4">
+      <section class="public-resume-block-v4 public-resume-section-skills-v4">
         <h2><i class="bi bi-star"></i>Навыки</h2>
 
         {% if grouped_entries.skills %}
@@ -167,7 +167,7 @@
       {% endif %}
 
       {% if 'education' in selected_sections %}
-      <section class="public-resume-block-v4">
+      <section class="public-resume-block-v4 public-resume-section-education-v4">
         <h2><i class="bi bi-mortarboard"></i>Образование</h2>
 
         <div class="public-resume-entry-v4">
@@ -184,8 +184,22 @@
 
     <div class="public-resume-column-v4">
 
+      <section class="public-resume-modern-intro-v4">
+        <h1>{{ student.full_name|default:"ФИО не указано" }}</h1>
+
+        {% if resume.title %}
+          <p class="public-resume-modern-position-v4">{{ resume.title }}</p>
+        {% else %}
+          <p class="public-resume-modern-position-v4">Студент / Начинающий специалист</p>
+        {% endif %}
+
+        <p class="public-resume-modern-about-v4">
+          {{ about_text|default:"Краткая информация о студенте пока не добавлена." }}
+        </p>
+      </section>
+
       {% if 'projects' in selected_sections %}
-      <section class="public-resume-block-v4">
+      <section class="public-resume-block-v4 public-resume-section-projects-v4">
         <h2><i class="bi bi-folder2-open"></i>Проекты и работы</h2>
 
         {% for e in grouped_entries.projects %}
@@ -213,7 +227,7 @@
       {% endif %}
 
       {% if 'achievements' in selected_sections %}
-      <section class="public-resume-block-v4">
+      <section class="public-resume-block-v4 public-resume-section-achievements-v4">
         <h2><i class="bi bi-trophy"></i>Достижения</h2>
 
         {% for e in grouped_entries.achievements %}
@@ -241,7 +255,7 @@
       {% endif %}
 
       {% if 'certificates' in selected_sections %}
-      <section class="public-resume-block-v4">
+      <section class="public-resume-block-v4 public-resume-section-certificates-v4">
         <h2><i class="bi bi-card-checklist"></i>Сертификаты и курсы</h2>
 
         {% for e in grouped_entries.certificates %}
@@ -269,7 +283,7 @@
       {% endif %}
 
       {% if 'recommendations' in selected_sections %}
-      <section class="public-resume-block-v4">
+      <section class="public-resume-block-v4 public-resume-section-recommendations-v4">
         <h2><i class="bi bi-chat"></i>Отзывы и рекомендации</h2>
 
         {% for e in grouped_entries.recommendations %}
