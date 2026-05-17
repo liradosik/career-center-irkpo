@@ -15,243 +15,88 @@
     {% endif %}
     {% if is_owner_view %}
     <div class="public-resume-owner-actions-v4">
-      <a class="btn btn-primary" href="{% url 'resumes:builder' %}">
-        Вернуться в конструктор резюме
-      </a>
+      <a class="btn btn-primary" href="{% url 'resumes:builder' %}">Вернуться в конструктор резюме</a>
     </div>
     {% endif %}
   </div>
 </section>
-
 {% else %}
-<section class="public-resume-page-v4 resume-template-{{ resume_template|default:'classic' }} resume-font-{{ resume_font_size|default:'standard' }} {% if is_pdf_mode %}is-pdf-mode{% endif %}">
+<section class="public-resume-page-v4 {% if resume_template == 'modern' %}resume-template-modern{% elif resume_template == 'academic' %}resume-template-academic{% else %}resume-template-classic{% endif %} resume-font-{{ resume_font_size|default:'standard' }} {% if is_pdf_mode %}is-pdf-mode{% endif %}">
   {% if is_owner_view and not is_pdf_mode %}
-<div class="public-resume-owner-bar-v4">
-  <div class="public-resume-owner-note-v4">
-    <span class="public-resume-owner-label-v4">Предпросмотр</span>
-    <p>Так страницу увидит работодатель по публичной ссылке.</p>
+  <div class="public-resume-owner-bar-v4">
+    <div class="public-resume-owner-note-v4">
+      <span class="public-resume-owner-label-v4">Предпросмотр</span>
+      <p>Так страницу увидит работодатель по публичной ссылке.</p>
+    </div>
+    <a class="public-resume-owner-back-v4" href="{% url 'resumes:builder' %}">Вернуться в конструктор</a>
   </div>
+  {% endif %}
 
-  <a class="public-resume-owner-back-v4" href="{% url 'resumes:builder' %}">
-    Вернуться в конструктор
-  </a>
-</div>
-{% endif %}
   <article class="public-resume-hero-v4 {% if resume_photo_source == 'hidden' %}public-resume-hero-no-photo{% else %}public-resume-hero-has-photo{% endif %}">
     {% if resume_photo_source != 'hidden' %}
       {% if resume_photo_url %}
       <img class="public-resume-photo-v4" src="{{ resume_photo_url }}" alt="Фото {{ student.full_name|default:'студента' }}">
       {% else %}
-      <div class="public-resume-avatar-v4" aria-label="Фото не задано">
-        {{ student.full_name|default:"Р"|slice:":1" }}
-      </div>
+      <div class="public-resume-avatar-v4" aria-label="Фото не задано">{{ student.full_name|default:"Р"|slice:":1" }}</div>
       {% endif %}
     {% endif %}
 
     <div class="public-resume-person-v4">
       <h1>{{ student.full_name|default:"ФИО не указано" }}</h1>
       <p class="public-resume-position-v4">{{ resume.title|default:"Студент / Начинающий специалист" }}</p>
-
-      <p class="public-resume-contacts-v4">
-        {% if student.email %}<span>{{ student.email }}</span>{% endif %}
-        {% if profile.phone %}<span>{{ profile.phone }}</span>{% endif %}
-        {% if profile.city %}<span>{{ profile.city }}</span>{% endif %}
-        {% if profile.contact_link %}<span>{{ profile.contact_link }}</span>{% endif %}
-      </p>
-    </div>
-
-    <div class="public-resume-about-v4">
-      <p>{{ about_text|default:"Краткая информация о студенте пока не добавлена." }}</p>
+      <p class="public-resume-about-v4">{{ about_text|default:"Краткая информация о студенте пока не добавлена." }}</p>
+      <ul class="public-resume-contacts-v4">
+        {% if student.email %}<li><strong>Email</strong><span>{{ student.email }}</span></li>{% endif %}
+        {% if profile.phone %}<li><strong>Телефон</strong><span>{{ profile.phone }}</span></li>{% endif %}
+        {% if profile.city %}<li><strong>Город</strong><span>{{ profile.city }}</span></li>{% endif %}
+        {% if profile.contact_link %}<li><strong>Контакт</strong><span>{{ profile.contact_link }}</span></li>{% endif %}
+      </ul>
     </div>
   </article>
 
   <main class="public-resume-sheet-v4">
     <div class="public-resume-column-v4">
-
       {% if 'contacts' in selected_sections %}
       {% if student.email or profile.phone or profile.city or profile.contact_link %}
-      <section class="public-resume-block-v4">
-        <h2>Контактная информация</h2>
-        <div class="public-resume-info-v4">
-          {% if student.email %}
-          <p>
-            <strong>Email:</strong>
-            <span>{{ student.email }}</span>
-          </p>
-          {% endif %}
-          {% if profile.phone %}
-          <p>
-            <strong>Телефон:</strong>
-            <span>{{ profile.phone }}</span>
-          </p>
-          {% endif %}
-          {% if profile.city %}
-          <p>
-            <strong>Город:</strong>
-            <span>{{ profile.city }}</span>
-          </p>
-          {% endif %}
-          {% if profile.contact_link %}
-          <p>
-            <strong>Дополнительный контакт:</strong>
-            <span>{{ profile.contact_link }}</span>
-          </p>
-          {% endif %}
-        </div>
-      </section>
+      <section class="public-resume-block-v4"><h2>Контактная информация</h2><div class="public-resume-info-v4">
+        {% if student.email %}<p><strong>Email:</strong><span>{{ student.email }}</span></p>{% endif %}
+        {% if profile.phone %}<p><strong>Телефон:</strong><span>{{ profile.phone }}</span></p>{% endif %}
+        {% if profile.city %}<p><strong>Город:</strong><span>{{ profile.city }}</span></p>{% endif %}
+        {% if profile.contact_link %}<p><strong>Дополнительный контакт:</strong><span>{{ profile.contact_link }}</span></p>{% endif %}
+      </div></section>
       {% endif %}
       {% endif %}
 
       {% if 'education' in selected_sections %}
       {% if student.specialty or student.group %}
-      <section class="public-resume-block-v4">
-        <h2>Основная информация</h2>
-
-        <div class="public-resume-info-v4">
-          <p>
-            <strong>Учебное заведение:</strong>
-            <span>ИРКПО</span>
-          </p>
-
-          {% if student.specialty %}
-          <p>
-            <strong>Специальность:</strong>
-            <span>{{ student.specialty }}</span>
-          </p>
-          {% endif %}
-
-          {% if student.group %}
-          <p>
-            <strong>Группа:</strong>
-            <span>{{ student.group }}</span>
-          </p>
-          {% endif %}
-        </div>
-      </section>
+      <section class="public-resume-block-v4"><h2>Основная информация</h2><div class="public-resume-info-v4">
+        <p><strong>Учебное заведение:</strong><span>ИРКПО</span></p>
+        {% if student.specialty %}<p><strong>Специальность:</strong><span>{{ student.specialty }}</span></p>{% endif %}
+        {% if student.group %}<p><strong>Группа:</strong><span>{{ student.group }}</span></p>{% endif %}
+      </div></section>
       {% endif %}
       {% endif %}
 
       {% if 'skills' in selected_sections %}
-      <section class="public-resume-block-v4">
-        <h2>Навыки</h2>
-
-        {% if grouped_entries.skills %}
-        <div class="public-resume-skills-v4">
-          {% for e in grouped_entries.skills %}
-          <span>{{ e.title }}</span>
-          {% endfor %}
-        </div>
-        {% else %}
-        <p class="public-resume-muted-v4">Нет подтверждённых навыков.</p>
-        {% endif %}
+      <section class="public-resume-block-v4"><h2>Навыки</h2>
+        {% if grouped_entries.skills %}<div class="public-resume-skills-v4">{% for e in grouped_entries.skills %}<span>{{ e.title }}</span>{% endfor %}</div>
+        {% else %}<p class="public-resume-muted-v4">Нет подтверждённых навыков.</p>{% endif %}
       </section>
       {% endif %}
 
       {% if 'education' in selected_sections %}
-      <section class="public-resume-block-v4">
-        <h2>Образование</h2>
-        <div class="public-resume-entry-v4">
-          <h3>Иркутский региональный колледж педагогического образования</h3>
-          <p>{{ student.group|default:"Группа не указана" }} · {{ student.specialty|default:"Специальность не указана" }}</p>
-        </div>
-      </section>
+      <section class="public-resume-block-v4"><h2>Образование</h2><div class="public-resume-entry-v4"><h3>Иркутский региональный колледж педагогического образования</h3><p>{{ student.group|default:"Группа не указана" }} · {{ student.specialty|default:"Специальность не указана" }}</p></div></section>
       {% endif %}
-
     </div>
 
     <div class="public-resume-column-v4">
-
-      {% if 'projects' in selected_sections %}
-      <section class="public-resume-block-v4">
-        <h2>Проекты и работы</h2>
-
-        {% for e in grouped_entries.projects %}
-        <article class="public-resume-entry-v4">
-          <h3>{{ e.title }}</h3>
-          {% if e.date %}<span>{{ e.date|date:"Y" }}</span>{% endif %}
-          {% if e.description %}<p>{{ e.description }}</p>{% endif %}
-
-          {% if e.attachments.all or e.file %}
-          <div class="public-resume-attachments-v4">
-            {% include 'portfolio/_attachments.html' with attachments=e.attachments.all legacy_file=e.file %}
-          </div>
-          {% endif %}
-        </article>
-        {% empty %}
-        <p class="public-resume-muted-v4">Нет подтверждённых проектов.</p>
-        {% endfor %}
-      </section>
-      {% endif %}
-
-      {% if 'achievements' in selected_sections %}
-      <section class="public-resume-block-v4">
-        <h2>Достижения</h2>
-
-        {% for e in grouped_entries.achievements %}
-        <article class="public-resume-entry-v4">
-          <h3>{{ e.title }}</h3>
-          {% if e.date %}<span>{{ e.date|date:"Y" }}</span>{% endif %}
-          {% if e.description %}<p>{{ e.description }}</p>{% endif %}
-
-          {% if e.attachments.all or e.file %}
-          <div class="public-resume-attachments-v4">
-            {% include 'portfolio/_attachments.html' with attachments=e.attachments.all legacy_file=e.file %}
-          </div>
-          {% endif %}
-        </article>
-        {% empty %}
-        <p class="public-resume-muted-v4">Нет подтверждённых достижений.</p>
-        {% endfor %}
-      </section>
-      {% endif %}
-
-      {% if 'certificates' in selected_sections %}
-      <section class="public-resume-block-v4">
-        <h2>Сертификаты и курсы</h2>
-
-        {% for e in grouped_entries.certificates %}
-        <article class="public-resume-entry-v4">
-          <h3>{{ e.title }}</h3>
-          {% if e.date %}<span>{{ e.date|date:"Y" }}</span>{% endif %}
-          {% if e.description %}<p>{{ e.description }}</p>{% endif %}
-
-          {% if e.attachments.all or e.file %}
-          <div class="public-resume-attachments-v4">
-            {% include 'portfolio/_attachments.html' with attachments=e.attachments.all legacy_file=e.file %}
-          </div>
-          {% endif %}
-        </article>
-        {% empty %}
-        <p class="public-resume-muted-v4">Нет подтверждённых сертификатов.</p>
-        {% endfor %}
-      </section>
-      {% endif %}
-
-      {% if 'recommendations' in selected_sections %}
-      <section class="public-resume-block-v4">
-        <h2>Отзывы и рекомендации</h2>
-
-        {% for e in grouped_entries.recommendations %}
-        <article class="public-resume-entry-v4">
-          {% if e.title %}<h3>{{ e.title }}</h3>{% endif %}
-          {% if e.description %}<p>{{ e.description }}</p>{% endif %}
-        </article>
-        {% empty %}
-        <p class="public-resume-muted-v4">Нет подтверждённых отзывов.</p>
-        {% endfor %}
-      </section>
-      {% endif %}
-
+      {% if 'projects' in selected_sections %}<section class="public-resume-block-v4"><h2>Проекты и работы</h2>{% for e in grouped_entries.projects %}<article class="public-resume-entry-v4"><h3>{{ e.title }}</h3>{% if e.date %}<span>{{ e.date|date:"Y" }}</span>{% endif %}{% if e.description %}<p>{{ e.description }}</p>{% endif %}{% if e.attachments.all or e.file %}<div class="public-resume-attachments-v4">{% include 'portfolio/_attachments.html' with attachments=e.attachments.all legacy_file=e.file %}</div>{% endif %}</article>{% empty %}<p class="public-resume-muted-v4">Нет подтверждённых проектов.</p>{% endfor %}</section>{% endif %}
+      {% if 'achievements' in selected_sections %}<section class="public-resume-block-v4"><h2>Достижения</h2>{% for e in grouped_entries.achievements %}<article class="public-resume-entry-v4"><h3>{{ e.title }}</h3>{% if e.date %}<span>{{ e.date|date:"Y" }}</span>{% endif %}{% if e.description %}<p>{{ e.description }}</p>{% endif %}{% if e.attachments.all or e.file %}<div class="public-resume-attachments-v4">{% include 'portfolio/_attachments.html' with attachments=e.attachments.all legacy_file=e.file %}</div>{% endif %}</article>{% empty %}<p class="public-resume-muted-v4">Нет подтверждённых достижений.</p>{% endfor %}</section>{% endif %}
+      {% if 'certificates' in selected_sections %}<section class="public-resume-block-v4"><h2>Сертификаты и курсы</h2>{% for e in grouped_entries.certificates %}<article class="public-resume-entry-v4"><h3>{{ e.title }}</h3>{% if e.date %}<span>{{ e.date|date:"Y" }}</span>{% endif %}{% if e.description %}<p>{{ e.description }}</p>{% endif %}{% if e.attachments.all or e.file %}<div class="public-resume-attachments-v4">{% include 'portfolio/_attachments.html' with attachments=e.attachments.all legacy_file=e.file %}</div>{% endif %}</article>{% empty %}<p class="public-resume-muted-v4">Нет подтверждённых сертификатов.</p>{% endfor %}</section>{% endif %}
+      {% if 'recommendations' in selected_sections %}<section class="public-resume-block-v4"><h2>Отзывы и рекомендации</h2>{% for e in grouped_entries.recommendations %}<article class="public-resume-entry-v4">{% if e.title %}<h3>{{ e.title }}</h3>{% endif %}{% if e.description %}<p>{{ e.description }}</p>{% endif %}</article>{% empty %}<p class="public-resume-muted-v4">Нет подтверждённых отзывов.</p>{% endfor %}</section>{% endif %}
     </div>
   </main>
-
-  {% if not is_pdf_mode %}
-  <footer class="public-resume-footer-v4">
-    Публичная страница резюме сформирована на платформе «Центр карьеры ИРКПО».
-  </footer>
-  {% endif %}
-
+  {% if not is_pdf_mode %}<footer class="public-resume-footer-v4">Публичная страница резюме сформирована на платформе «Центр карьеры ИРКПО».</footer>{% endif %}
 </section>
-
 {% endif %}
 {% endblock %}
