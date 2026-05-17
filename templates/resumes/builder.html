@@ -372,7 +372,6 @@
 
   const templateLabels = {
     classic: 'Классический',
-    compact: 'Компактный',
     modern: 'Современный',
     academic: 'Академический'
   };
@@ -439,11 +438,11 @@
   function updateTemplate(){
     if (!doc || !templateInput) return;
 
-    const tpl = templateInput.value || 'classic';
+    const rawTpl = templateInput.value || 'classic';
+    const tpl = ['classic', 'modern', 'academic'].includes(rawTpl) ? rawTpl : 'classic';
 
     doc.classList.remove(
       'resume-template-classic',
-      'resume-template-compact',
       'resume-template-modern',
       'resume-template-academic'
     );

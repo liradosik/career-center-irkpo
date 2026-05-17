@@ -6,7 +6,6 @@ from .models import ResumeSettings
 class ResumeSettingsForm(forms.ModelForm):
     TEMPLATE_CHOICES = [
         ('classic', 'Классический'),
-        ('compact', 'Компактный'),
         ('modern', 'Современный'),
         ('academic', 'Академический'),
     ]
