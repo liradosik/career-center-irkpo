@@ -121,9 +121,20 @@
           </div>
 
           <div class="student-vacancy-actions-v2">
-            <a class="btn student-vacancy-detail-btn" href="{% url 'vacancies:detail' v.pk %}">
-              Подробнее
-            </a>
+            {% if request.user.academic_status == 'academic_leave' or request.user.academic_status == 'expelled' %}
+  <button
+    class="btn student-vacancy-detail-btn student-vacancy-disabled-detail-btn"
+    type="button"
+    disabled
+    title="Просмотр подробностей недоступен для вашего учебного статуса"
+  >
+    Подробнее
+  </button>
+{% else %}
+  <a class="btn student-vacancy-detail-btn" href="{% url 'vacancies:detail' v.pk %}">
+    Подробнее
+  </a>
+{% endif %}
 
             {% if v.id in responded_vacancy_ids %}
               <span class="student-vacancy-responded-badge">
@@ -131,30 +142,48 @@
                 Откликнулись
               </span>
             {% else %}
-              {% if can_apply_vacancies %}<form method="post" action="{% url 'vacancies:respond' v.pk %}">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                <button class="btn btn-primary student-vacancy-action-btn" type="submit">
-                  Откликнуться
-                </button>
-              </form>{% else %}<span class="student-vacancy-responded-badge">Отклик недоступен по учебному статусу</span>{% endif %}
+              {% if can_apply_vacancies %}
+  <form method="post" action="{% url 'vacancies:respond' v.pk %}">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <button class="btn btn-primary student-vacancy-action-btn" type="submit">
+      Откликнуться
+    </button>
+  </form>
+{% else %}
+  <span
+    class="student-vacancy-responded-badge"
+    title="Отклик на вакансии недоступен для вашего учебного статуса"
+  >
+    Отклик недоступен
+  </span>
+{% endif %}
             {% endif %}
 
-            {% if can_favorite_vacancies %}<form method="post" action="{% url 'vacancies:toggle_favorite' v.pk %}">
-              {% csrf_token %}
-              <input type="hidden" name="next" value="{{ request.get_full_path }}">
-              <button
-                class="student-vacancy-save-btn student-vacancy-save-inline {% if v.id in favorite_vacancy_ids %}is-active{% endif %}"
-                type="submit"
-                title="Избранное"
-              >
-                {% if v.id in favorite_vacancy_ids %}
-                  <i class="bi bi-bookmark-check-fill"></i>
-                {% else %}
-                  <i class="bi bi-bookmark"></i>
-                {% endif %}
-              </button>
-            </form>{% else %}<span class="student-vacancy-responded-badge">Избранное недоступно</span>{% endif %}
+            {% if can_favorite_vacancies %}
+  <form method="post" action="{% url 'vacancies:toggle_favorite' v.pk %}">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <button
+      class="student-vacancy-save-btn student-vacancy-save-inline {% if v.id in favorite_vacancy_ids %}is-active{% endif %}"
+      type="submit"
+      title="Избранное"
+    >
+      {% if v.id in favorite_vacancy_ids %}
+        <i class="bi bi-bookmark-check-fill"></i>
+      {% else %}
+        <i class="bi bi-bookmark"></i>
+      {% endif %}
+    </button>
+  </form>
+{% else %}
+  <span
+    class="student-vacancy-save-btn student-vacancy-save-inline student-vacancy-save-disabled"
+    title="Добавление в избранное недоступно для вашего учебного статуса"
+  >
+    <i class="bi bi-bookmark"></i>
+  </span>
+{% endif %}
           </div>
         </div>
 

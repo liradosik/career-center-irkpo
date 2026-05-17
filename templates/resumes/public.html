@@ -53,11 +53,19 @@
       <p class="public-resume-position-v4">{{ resume.title|default:"Студент / Начинающий специалист" }}</p>
 
       <p class="public-resume-contacts-v4">
-        {% if student.email %}<span>{{ student.email }}</span>{% endif %}
-        {% if profile.phone %}<span>{{ profile.phone }}</span>{% endif %}
-        {% if profile.city %}<span>{{ profile.city }}</span>{% endif %}
-        {% if profile.contact_link %}<span>{{ profile.contact_link }}</span>{% endif %}
-      </p>
+  {% if student.email %}
+    <span><i class="bi bi-envelope"></i>{{ student.email }}</span>
+  {% endif %}
+  {% if profile.phone %}
+    <span><i class="bi bi-telephone"></i>{{ profile.phone }}</span>
+  {% endif %}
+  {% if profile.city %}
+    <span><i class="bi bi-geo-alt"></i>{{ profile.city }}</span>
+  {% endif %}
+  {% if profile.contact_link %}
+    <span><i class="bi bi-send"></i>{{ profile.contact_link }}</span>
+  {% endif %}
+</p>
     </div>
 
     <div class="public-resume-about-v4">
@@ -71,7 +79,7 @@
       {% if 'contacts' in selected_sections %}
       {% if student.email or profile.phone or profile.city or profile.contact_link %}
       <section class="public-resume-block-v4">
-        <h2>Контактная информация</h2>
+       <h2><i class="bi bi-person"></i>Контактная информация</h2>
         <div class="public-resume-info-v4">
           {% if student.email %}
           <p>
@@ -105,7 +113,7 @@
       {% if 'education' in selected_sections %}
       {% if student.specialty or student.group %}
       <section class="public-resume-block-v4">
-        <h2>Основная информация</h2>
+        <h2><i class="bi bi-info-circle"></i>Основная информация</h2>
 
         <div class="public-resume-info-v4">
           <p>
@@ -133,7 +141,7 @@
 
       {% if 'skills' in selected_sections %}
       <section class="public-resume-block-v4">
-        <h2>Навыки</h2>
+        <h2><i class="bi bi-star"></i>Навыки</h2>
 
         {% if grouped_entries.skills %}
         <div class="public-resume-skills-v4">
@@ -149,7 +157,7 @@
 
       {% if 'education' in selected_sections %}
       <section class="public-resume-block-v4">
-        <h2>Образование</h2>
+        <h2><i class="bi bi-mortarboard"></i>Образование</h2>
         <div class="public-resume-entry-v4">
           <h3>Иркутский региональный колледж педагогического образования</h3>
           <p>{{ student.group|default:"Группа не указана" }} · {{ student.specialty|default:"Специальность не указана" }}</p>
@@ -163,7 +171,7 @@
 
       {% if 'projects' in selected_sections %}
       <section class="public-resume-block-v4">
-        <h2>Проекты и работы</h2>
+        <h2><i class="bi bi-folder2-open"></i>Проекты и работы</h2>
 
         {% for e in grouped_entries.projects %}
         <article class="public-resume-entry-v4">
@@ -185,7 +193,7 @@
 
       {% if 'achievements' in selected_sections %}
       <section class="public-resume-block-v4">
-        <h2>Достижения</h2>
+        <h2><i class="bi bi-trophy"></i>Достижения</h2>
 
         {% for e in grouped_entries.achievements %}
         <article class="public-resume-entry-v4">
@@ -207,7 +215,7 @@
 
       {% if 'certificates' in selected_sections %}
       <section class="public-resume-block-v4">
-        <h2>Сертификаты и курсы</h2>
+        <h2><i class="bi bi-card-checklist"></i>Сертификаты и курсы</h2>
 
         {% for e in grouped_entries.certificates %}
         <article class="public-resume-entry-v4">
@@ -229,7 +237,7 @@
 
       {% if 'recommendations' in selected_sections %}
       <section class="public-resume-block-v4">
-        <h2>Отзывы и рекомендации</h2>
+        <h2><i class="bi bi-chat"></i>Отзывы и рекомендации</h2>
 
         {% for e in grouped_entries.recommendations %}
         <article class="public-resume-entry-v4">
