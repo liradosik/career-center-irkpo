@@ -451,6 +451,13 @@ def curator_support_tickets(request):
 
 
 def public_support_ticket_create(request):
+    if request.user.is_authenticated:
+        if request.user.role == User.Role.STUDENT:
+            return redirect('accounts:student_support_tickets')
+        if request.user.role == User.Role.CURATOR:
+            return redirect('accounts:curator_support_tickets')
+        return redirect('accounts:admin_support_tickets')
+
     form = PublicSupportTicketCreateForm()
     if request.method == 'POST':
         form = PublicSupportTicketCreateForm(request.POST)
@@ -514,7 +521,8 @@ def curator_activity(request):
     period_start = now - timedelta(days=period_days)
     prev_period_start = period_start - timedelta(days=period_days)
 
-    students = curator_students_queryset(request.user)
+    include_graduates = request.GET.get('graduates') == '1'
+    students = curator_students_queryset(request.user, include_graduates=include_graduates)
     student_ids = students.values_list('id', flat=True)
 
     current_registrations = CourseRegistration.objects.filter(
@@ -652,6 +660,7 @@ def curator_activity(request):
     context = {
         'selected_period': selected_period,
         'period_options': period_options,
+        'include_graduates': include_graduates,
 
         'registrations_total': registrations_total,
         'responses_total': responses_total,
@@ -1093,6 +1102,7 @@ def admin_activity(request):
         'vacancies_active': Vacancy.objects.filter(status=Vacancy.Status.ACTIVE).count(),
         'selected_period': selected_period,
         'period_options': period_options,
+        'include_graduates': include_graduates,
 
         'activity_total': activity_total,
         'activity_portfolio_total': activity_portfolio_total,
