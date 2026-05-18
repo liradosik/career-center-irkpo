@@ -87,3 +87,9 @@ AUTH_USER_MODEL = 'accounts.User'
 LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'accounts:redirect_by_role'
 LOGOUT_REDIRECT_URL = 'public:home'
+
+
+# Длительная сессия (около 30 дней)
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 30
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
