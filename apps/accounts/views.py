@@ -1102,7 +1102,6 @@ def admin_activity(request):
         'vacancies_active': Vacancy.objects.filter(status=Vacancy.Status.ACTIVE).count(),
         'selected_period': selected_period,
         'period_options': period_options,
-        'include_graduates': include_graduates,
 
         'activity_total': activity_total,
         'activity_portfolio_total': activity_portfolio_total,
