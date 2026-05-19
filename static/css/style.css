@@ -26561,3 +26561,203 @@ html {
 .public-resume-page-v4.resume-template-academic .public-resume-hero-v4::after {
   display: none !important;
 }
+/* Public resume final visual fix after portfolio-only sections */
+.public-resume-page-v4.resume-template-classic,
+.public-resume-page-v4.resume-template-modern,
+.public-resume-page-v4.resume-template-academic {
+  width: min(1120px, calc(100% - 48px));
+  margin: 24px auto 32px;
+  padding: 0;
+  display: grid;
+  gap: 20px;
+}
+
+.public-resume-page-v4 .public-resume-owner-bar-v4,
+.public-resume-page-v4 .public-resume-hero-v4,
+.public-resume-page-v4 .public-resume-sheet-v4 {
+  width: 100%;
+}
+
+.public-resume-page-v4 .public-resume-hero-v4,
+.public-resume-page-v4 .public-resume-sheet-v4 {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.08);
+}
+
+.public-resume-page-v4 .public-resume-hero-v4 {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  padding: 26px;
+}
+
+.public-resume-page-v4 .public-resume-hero-v4.public-resume-hero-no-photo {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.public-resume-page-v4 .public-resume-photo-v4,
+.public-resume-page-v4 .public-resume-avatar-v4 {
+  width: 140px;
+  height: 140px;
+  min-width: 140px;
+  min-height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+}
+
+.public-resume-page-v4 .public-resume-person-v4 { min-width: 0; }
+.public-resume-page-v4 .public-resume-position-v4 { margin: 8px 0 14px; }
+.public-resume-page-v4 .public-resume-about-v4 { margin: 0 0 16px; }
+.public-resume-page-v4 .public-resume-contacts-v4 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0;
+  padding: 0;
+}
+.public-resume-page-v4 .public-resume-contacts-v4 li {
+  min-width: 0;
+  max-width: 100%;
+}
+.public-resume-page-v4 .public-resume-contacts-v4 span {
+  overflow-wrap: anywhere;
+}
+
+.public-resume-page-v4 .public-resume-sheet-v4 {
+  padding: 24px 28px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 28px;
+}
+
+.public-resume-page-v4 .public-resume-column-v4 { min-width: 0; }
+
+.public-resume-page-v4 .public-resume-block-v4 {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
+  padding: 0 0 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.public-resume-page-v4 .public-resume-block-v4:last-child { border-bottom-color: transparent; }
+
+.public-resume-page-v4 .public-resume-section-education-v4 {
+  grid-column: 1 / -1;
+  padding-bottom: 14px;
+  margin-bottom: 2px;
+}
+
+.public-resume-page-v4 .public-resume-entry-v4 {
+  margin: 0;
+  padding: 8px 0 0;
+  border: 0;
+}
+
+.public-resume-page-v4 .public-resume-skills-v4,
+.public-resume-page-v4 .public-resume-attachments-v4 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* classic */
+.public-resume-page-v4.resume-template-classic {
+  grid-template-columns: 1fr;
+}
+
+/* modern */
+.public-resume-page-v4.resume-template-modern {
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  align-items: start;
+}
+.public-resume-page-v4.resume-template-modern .public-resume-owner-bar-v4 { grid-column: 1 / -1; }
+.public-resume-page-v4.resume-template-modern .public-resume-hero-v4 {
+  position: sticky;
+  top: 20px;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  text-align: left;
+  padding: 24px;
+}
+.public-resume-page-v4.resume-template-modern .public-resume-person-v4 { width: 100%; }
+.public-resume-page-v4.resume-template-modern .public-resume-sheet-v4 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-content: start;
+}
+.public-resume-page-v4.resume-template-modern .public-resume-section-education-v4 { grid-column: 1 / -1; }
+.public-resume-page-v4.resume-template-modern .public-resume-block-v4 {
+  background: #fff;
+  border: 1px solid #dbeafe;
+  border-radius: 24px;
+  box-shadow: 0 8px 24px rgba(30, 64, 175, 0.10);
+  padding: 18px 18px 14px;
+}
+.public-resume-page-v4.resume-template-modern .public-resume-entry-v4:last-child { padding-bottom: 2px; }
+
+/* academic */
+.public-resume-page-v4.resume-template-academic {
+  grid-template-columns: 1fr;
+}
+.public-resume-page-v4.resume-template-academic .public-resume-hero-v4,
+.public-resume-page-v4.resume-template-academic .public-resume-sheet-v4 {
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+}
+.public-resume-page-v4.resume-template-academic .public-resume-hero-v4 {
+  border-left: 4px solid #1e3a8a;
+}
+.public-resume-page-v4.resume-template-academic .public-resume-person-v4 h1,
+.public-resume-page-v4.resume-template-academic .public-resume-position-v4,
+.public-resume-page-v4.resume-template-academic .public-resume-block-v4 h2,
+.public-resume-page-v4.resume-template-academic .public-resume-entry-v4 h3 {
+  font-family: Georgia, "Times New Roman", Times, serif;
+}
+.public-resume-page-v4.resume-template-academic .public-resume-sheet-v4 {
+  border: 1px solid #d7deea;
+  gap: 8px 26px;
+}
+.public-resume-page-v4.resume-template-academic .public-resume-block-v4 {
+  padding-bottom: 10px;
+  border-bottom: 1px solid #d7deea;
+}
+
+@media (max-width: 900px) {
+  .public-resume-page-v4.resume-template-classic,
+  .public-resume-page-v4.resume-template-modern,
+  .public-resume-page-v4.resume-template-academic {
+    width: calc(100% - 24px);
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .public-resume-page-v4 .public-resume-hero-v4,
+  .public-resume-page-v4 .public-resume-sheet-v4,
+  .public-resume-page-v4.resume-template-modern .public-resume-sheet-v4 {
+    grid-template-columns: 1fr;
+    padding: 18px;
+  }
+
+  .public-resume-page-v4 .public-resume-photo-v4,
+  .public-resume-page-v4 .public-resume-avatar-v4 {
+    width: 120px;
+    height: 120px;
+    min-width: 120px;
+    min-height: 120px;
+  }
+
+  .public-resume-page-v4.resume-template-modern .public-resume-hero-v4 {
+    position: static;
+    justify-items: start;
+  }
+
+  .public-resume-page-v4 .public-resume-section-education-v4,
+  .public-resume-page-v4.resume-template-modern .public-resume-section-education-v4 {
+    grid-column: auto;
+  }
+}
