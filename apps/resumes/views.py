@@ -92,7 +92,7 @@ def _resume_payload(student, resume, profile):
         'skills': [e for e in entries if e.type == 'skill'],
         'projects': [e for e in entries if e.type == 'project'],
         'achievements': [e for e in entries if e.type == 'academic'],
-        'certificates': [e for e in entries if e.type in {'creative', 'sport', 'social'}],
+        'certificates': [e for e in entries if e.type == 'certificates'],
         'recommendations': [e for e in entries if e.type == 'recommendation'],
     }
     return entries, grouped, about_text, selected_sections

@@ -11,8 +11,19 @@ class PortfolioEntry(models.Model):
         APPROVED = 'approved', 'Подтверждено'
         REJECTED = 'rejected', 'Отклонено'
 
+    TYPE_CHOICES = [
+        ('academic', 'Учебные достижения'),
+        ('project', 'Проекты и работы'),
+        ('skill', 'Навыки'),
+        ('certificates', 'Сертификаты и курсы'),
+        ('recommendation', 'Отзывы и рекомендации'),
+        ('creative', 'Творческая деятельность'),
+        ('sport', 'Спортивная деятельность'),
+        ('social', 'Общественная деятельность'),
+    ]
+
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='portfolio_entries')
-    type = models.CharField(max_length=64)
+    type = models.CharField(max_length=64, choices=TYPE_CHOICES)
     title = models.CharField(max_length=255)
     description = models.TextField()
     date = models.DateField()

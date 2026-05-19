@@ -134,7 +134,7 @@
         {% elif section == 'achievements' %}
           <section class="public-resume-block-v4 public-resume-section-achievements-v4"><h2><i class="bi bi-trophy"></i>Достижения</h2>{% for e in grouped_entries.achievements %}<article class="public-resume-entry-v4"><h3>{{ e.title }}</h3>{% if e.date %}<span>{{ e.date|date:"Y" }}</span>{% endif %}{% if e.description %}<p>{{ e.description }}</p>{% endif %}{% if e.attachments.all or e.file %}<div class="public-resume-attachments-v4">{% include 'portfolio/_attachments.html' with attachments=e.attachments.all legacy_file=e.file %}</div>{% endif %}</article>{% empty %}<p class="public-resume-muted-v4">Нет подтверждённых достижений.</p>{% endfor %}</section>
         {% elif section == 'certificates' %}
-          <section class="public-resume-block-v4 public-resume-section-certificates-v4"><h2><i class="bi bi-card-checklist"></i>Сертификаты и курсы</h2>{% for e in grouped_entries.certificates %}<article class="public-resume-entry-v4"><h3>{{ e.title }}</h3>{% if e.date %}<span>{{ e.date|date:"Y" }}</span>{% endif %}{% if e.description %}<p>{{ e.description }}</p>{% endif %}{% if e.attachments.all or e.file %}<div class="public-resume-attachments-v4">{% include 'portfolio/_attachments.html' with attachments=e.attachments.all legacy_file=e.file %}</div>{% endif %}</article>{% empty %}<p class="public-resume-muted-v4">Нет подтверждённых сертификатов.</p>{% endfor %}</section>
+          <section class="public-resume-block-v4 public-resume-section-certificates-v4"><h2><i class="bi bi-card-checklist"></i>Сертификаты и курсы</h2>{% for e in grouped_entries.certificates %}<article class="public-resume-entry-v4"><h3>{{ e.title }}</h3>{% if e.date %}<span>{{ e.date|date:"Y" }}</span>{% endif %}{% if e.description %}<p>{{ e.description }}</p>{% endif %}{% if e.attachments.all or e.file %}<div class="public-resume-attachments-v4">{% include 'portfolio/_attachments.html' with attachments=e.attachments.all legacy_file=e.file %}</div>{% endif %}</article>{% empty %}<p class="public-resume-muted-v4">Нет подтверждённых сертификатов и курсов.</p>{% endfor %}</section>
         {% elif section == 'recommendations' %}
           <section class="public-resume-block-v4 public-resume-section-recommendations-v4"><h2><i class="bi bi-chat"></i>Отзывы и рекомендации</h2>{% for e in grouped_entries.recommendations %}<article class="public-resume-entry-v4">{% if e.title %}<h3>{{ e.title }}</h3>{% endif %}{% if e.description %}<p>{{ e.description }}</p>{% endif %}</article>{% empty %}<p class="public-resume-muted-v4">Нет подтверждённых отзывов.</p>{% endfor %}</section>
         {% endif %}
@@ -281,7 +281,7 @@
           {% endif %}
         </article>
         {% empty %}
-          <p class="public-resume-muted-v4">Нет подтверждённых сертификатов.</p>
+          <p class="public-resume-muted-v4">Нет подтверждённых сертификатов и курсов.</p>
         {% endfor %}
       </section>
       {% elif section == 'recommendations' %}
