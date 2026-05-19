@@ -168,6 +168,43 @@ class ActivityLog(models.Model):
         return f'{self.student} — {self.get_event_type_display()}'
 
 
+class AdminActivityLog(models.Model):
+    class Action(models.TextChoices):
+        CREATE = 'create', 'Создание'
+        UPDATE = 'update', 'Обновление'
+        DELETE = 'delete', 'Удаление'
+        STATUS_CHANGE = 'status_change', 'Смена статуса'
+        RESET_PASSWORD = 'reset_password', 'Сброс пароля'
+
+    class ObjectType(models.TextChoices):
+        STUDENT = 'student', 'Студент'
+        CURATOR = 'curator', 'Куратор'
+        GROUP = 'group', 'Группа'
+        SPECIALTY = 'specialty', 'Специальность'
+        VACANCY = 'vacancy', 'Вакансия'
+        COURSE = 'course', 'Курс'
+        SUPPORT_TICKET = 'support_ticket', 'Обращение'
+
+    actor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='admin_actions')
+    action = models.CharField(max_length=32, choices=Action.choices)
+    object_type = models.CharField(max_length=32, choices=ObjectType.choices)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    object_repr = models.CharField(max_length=255, blank=True)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ('-created_at',)
+        indexes = [
+            models.Index(fields=['-created_at'], name='accounts_admlog_created_idx'),
+            models.Index(fields=['object_type', 'action'], name='accounts_admlog_oa_idx'),
+            models.Index(fields=['actor', '-created_at'], name='accounts_admlog_ac_idx'),
+        ]
+
+    def __str__(self):
+        return f'{self.actor} — {self.object_type}:{self.action}'
+
+
 class SupportTicket(models.Model):
     class Category(models.TextChoices):
         LOGIN = 'login', 'Проблема со входом'

@@ -1,0 +1,67 @@
+{% extends 'base_dashboard.html' %}
+
+{% block content %}
+<div class="admin-dashboard">
+  <section class="dashboard-section">
+    <div class="section-heading section-heading-simple">
+      <h2>Журнал действий</h2>
+    </div>
+    <p class="muted">История действий администраторов по основным объектам системы.</p>
+
+    <form method="get" class="filters-grid" style="margin: 1rem 0;">
+      <input type="text" name="q" value="{{ q }}" placeholder="Поиск по администратору, объекту, описанию">
+      <select name="object_type">
+        <option value="">Все объекты</option>
+        {% for value, label in object_type_choices %}
+          <option value="{{ value }}" {% if object_type_filter == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="action">
+        <option value="">Все действия</option>
+        {% for value, label in action_choices %}
+          <option value="{{ value }}" {% if action_filter == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="actor">
+        <option value="">Все администраторы</option>
+        {% for admin in admin_users %}
+          <option value="{{ admin.id }}" {% if actor_filter == admin.id|stringformat:'s' %}selected{% endif %}>{{ admin.full_name }} ({{ admin.email }})</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn">Применить</button>
+    </form>
+
+    <div class="card" style="overflow:auto;">
+      <table class="table" style="width:100%;">
+        <thead>
+          <tr>
+            <th>Дата и время</th><th>Администратор</th><th>Действие</th><th>Тип объекта</th><th>Объект</th><th>Описание</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr>
+            <td>{{ log.created_at|date:'d.m.Y H:i' }}</td>
+            <td>{{ log.actor.full_name|default:log.actor.email|default:'Система' }}</td>
+            <td>{{ log.get_action_display }}</td>
+            <td>{{ log.get_object_type_display }}</td>
+            <td>{{ log.object_repr|default:'—' }}</td>
+            <td>{{ log.description|default:'—' }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6">Записей пока нет.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+      <div class="pagination" style="margin-top:1rem;">
+        {% if page_obj.has_previous %}<a href="?q={{ q }}&object_type={{ object_type_filter }}&action={{ action_filter }}&actor={{ actor_filter }}&page={{ page_obj.previous_page_number }}">← Назад</a>{% endif %}
+        <span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}<a href="?q={{ q }}&object_type={{ object_type_filter }}&action={{ action_filter }}&actor={{ actor_filter }}&page={{ page_obj.next_page_number }}">Вперёд →</a>{% endif %}
+      </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
