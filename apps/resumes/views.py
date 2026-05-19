@@ -16,7 +16,16 @@ from .models import ResumeSettings
 logger = logging.getLogger(__name__)
 
 
-SECTION_DEFAULT_ORDER = ['contacts', 'education', 'skills', 'projects', 'achievements', 'certificates', 'recommendations']
+SECTION_DEFAULT_ORDER = [
+    'projects',
+    'academic',
+    'certificates',
+    'skills',
+    'recommendations',
+    'creative',
+    'sport',
+    'social',
+]
 SECTION_KEY_SET = set(SECTION_DEFAULT_ORDER)
 
 
@@ -89,11 +98,14 @@ def _resume_payload(student, resume, profile):
     raw_selected_sections = getattr(resume, 'selected_sections', None)
     selected_sections = _normalize_selected_sections(raw_selected_sections)
     grouped = {
-        'skills': [e for e in entries if e.type == 'skill'],
         'projects': [e for e in entries if e.type == 'project'],
-        'achievements': [e for e in entries if e.type == 'academic'],
+        'academic': [e for e in entries if e.type == 'academic'],
         'certificates': [e for e in entries if e.type == 'certificates'],
+        'skills': [e for e in entries if e.type == 'skill'],
         'recommendations': [e for e in entries if e.type == 'recommendation'],
+        'creative': [e for e in entries if e.type == 'creative'],
+        'sport': [e for e in entries if e.type == 'sport'],
+        'social': [e for e in entries if e.type == 'social'],
     }
     return entries, grouped, about_text, selected_sections
 
