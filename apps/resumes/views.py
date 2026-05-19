@@ -15,7 +15,30 @@ from .models import ResumeSettings
 
 logger = logging.getLogger(__name__)
 
-ALLOWED_RESUME_TEMPLATES = {'classic', 'compact', 'modern', 'academic'}
+
+SECTION_DEFAULT_ORDER = ['contacts', 'education', 'skills', 'projects', 'achievements', 'certificates', 'recommendations']
+SECTION_KEY_SET = set(SECTION_DEFAULT_ORDER)
+
+
+def _normalize_selected_sections(raw_selected_sections):
+    if not raw_selected_sections:
+        return SECTION_DEFAULT_ORDER.copy()
+
+    normalized = []
+    for key in raw_selected_sections:
+        if key in SECTION_KEY_SET and key not in normalized:
+            normalized.append(key)
+
+    if not normalized:
+        return SECTION_DEFAULT_ORDER.copy()
+
+    return normalized
+
+
+def _split_sections_for_two_columns(selected_sections):
+    midpoint = (len(selected_sections) + 1) // 2
+    return selected_sections[:midpoint], selected_sections[midpoint:]
+ALLOWED_RESUME_TEMPLATES = {'classic', 'modern', 'academic'}
 ALLOWED_RESUME_FONT_SIZES = {'small', 'standard', 'large'}
 
 
@@ -26,6 +49,8 @@ def _normalize_font_size(font_size):
 
 
 def _normalize_template(template_code):
+    if template_code == 'compact':
+        return 'classic'
     if template_code in ALLOWED_RESUME_TEMPLATES:
         return template_code
     return 'classic'
@@ -61,9 +86,8 @@ def _resume_payload(student, resume, profile):
         .order_by('-date', '-created_at')
     )
     about_text = ((getattr(resume, 'about', '') or '') or getattr(profile, 'about', '') or '').strip()
-    section_defaults = ['contacts', 'education', 'skills', 'projects', 'achievements', 'certificates', 'recommendations']
     raw_selected_sections = getattr(resume, 'selected_sections', None)
-    selected_sections = section_defaults if raw_selected_sections is None else raw_selected_sections
+    selected_sections = _normalize_selected_sections(raw_selected_sections)
     grouped = {
         'skills': [e for e in entries if e.type == 'skill'],
         'projects': [e for e in entries if e.type == 'project'],
@@ -98,9 +122,9 @@ def builder(request):
 
             if section_order:
                 ordered_selected_sections = [key for key in section_order if key in checked_sections]
-                settings_obj.selected_sections = ordered_selected_sections
+                settings_obj.selected_sections = _normalize_selected_sections(ordered_selected_sections)
             else:
-                settings_obj.selected_sections = checked_sections
+                settings_obj.selected_sections = _normalize_selected_sections(checked_sections)
 
             if settings_obj.photo_source != ResumeSettings.PhotoSource.CUSTOM:
                 settings_obj.photo = None
@@ -206,6 +230,9 @@ def public_resume(request, token):
     if resume_photo_source == ResumeSettings.PhotoSource.PROFILE:
         resume_photo_source = ResumeSettings.PhotoSource.ACCOUNT
 
+    left_sections, right_sections = _split_sections_for_two_columns(selected_sections)
+    modern_sections = [key for key in selected_sections if key != 'contacts']
+
     context = {
         'student': student,
         'profile': profile,
@@ -215,6 +242,9 @@ def public_resume(request, token):
         'about_text': about_text,
         'has_resume_data': has_resume_data,
         'selected_sections': selected_sections,
+        'left_sections': left_sections,
+        'right_sections': right_sections,
+        'modern_sections': modern_sections,
         'is_owner_view': is_owner_view,
         'resume_template': resume_template,
         'resume_font_size': resume_font_size,
