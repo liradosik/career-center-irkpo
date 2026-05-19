@@ -16,18 +16,35 @@ from .models import ResumeSettings
 logger = logging.getLogger(__name__)
 
 
-SECTION_DEFAULT_ORDER = ['contacts', 'education', 'skills', 'projects', 'achievements', 'certificates', 'recommendations']
+SECTION_DEFAULT_ORDER = [
+    'projects',
+    'academic',
+    'certificates',
+    'skills',
+    'recommendations',
+    'creative',
+    'sport',
+    'social',
+]
 SECTION_KEY_SET = set(SECTION_DEFAULT_ORDER)
+SECTION_LEGACY_ALIASES = {
+    'achievements': 'academic',
+}
+SECTION_IGNORED_KEYS = {'contacts', 'education'}
 
 
 def _normalize_selected_sections(raw_selected_sections):
-    if not raw_selected_sections:
+    if not isinstance(raw_selected_sections, (list, tuple)) or not raw_selected_sections:
         return SECTION_DEFAULT_ORDER.copy()
 
     normalized = []
     for key in raw_selected_sections:
-        if key in SECTION_KEY_SET and key not in normalized:
-            normalized.append(key)
+        if key in SECTION_IGNORED_KEYS:
+            continue
+
+        mapped_key = SECTION_LEGACY_ALIASES.get(key, key)
+        if mapped_key in SECTION_KEY_SET and mapped_key not in normalized:
+            normalized.append(mapped_key)
 
     if not normalized:
         return SECTION_DEFAULT_ORDER.copy()
@@ -89,11 +106,14 @@ def _resume_payload(student, resume, profile):
     raw_selected_sections = getattr(resume, 'selected_sections', None)
     selected_sections = _normalize_selected_sections(raw_selected_sections)
     grouped = {
-        'skills': [e for e in entries if e.type == 'skill'],
         'projects': [e for e in entries if e.type == 'project'],
-        'achievements': [e for e in entries if e.type == 'academic'],
+        'academic': [e for e in entries if e.type == 'academic'],
         'certificates': [e for e in entries if e.type == 'certificates'],
+        'skills': [e for e in entries if e.type == 'skill'],
         'recommendations': [e for e in entries if e.type == 'recommendation'],
+        'creative': [e for e in entries if e.type == 'creative'],
+        'sport': [e for e in entries if e.type == 'sport'],
+        'social': [e for e in entries if e.type == 'social'],
     }
     return entries, grouped, about_text, selected_sections
 
@@ -231,7 +251,7 @@ def public_resume(request, token):
         resume_photo_source = ResumeSettings.PhotoSource.ACCOUNT
 
     left_sections, right_sections = _split_sections_for_two_columns(selected_sections)
-    modern_sections = [key for key in selected_sections if key != 'contacts']
+    modern_sections = selected_sections
 
     context = {
         'student': student,
