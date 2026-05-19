@@ -29,6 +29,7 @@ class PortfolioEntryForm(forms.ModelForm):
         ('project', 'Проекты и работы'),
         ('skill', 'Навыки'),
         ('recommendation', 'Отзывы и рекомендации'),
+        ('certificates', 'Сертификаты и курсы'),
         ('creative', 'Творческая деятельность'),
         ('sport', 'Спортивная деятельность'),
         ('social', 'Общественная деятельность'),

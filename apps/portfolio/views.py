@@ -18,7 +18,7 @@ SECTION_DEFINITIONS = OrderedDict(
         ('academic', ('Учебные достижения', ['academic'])),
         ('project', ('Проекты и работы', ['project'])),
         ('skill', ('Навыки', ['skill'])),
-        ('certificates', ('Сертификаты и курсы', ['academic'])),
+        ('certificates', ('Сертификаты и курсы', ['certificates'])),
         ('social_creative', ('Общественная и творческая деятельность', ['creative', 'social', 'sport'])),
         ('recommendation', ('Отзывы и рекомендации', ['recommendation'])),
     ]
