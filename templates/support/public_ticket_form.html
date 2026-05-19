@@ -23,9 +23,11 @@
         {% if messages %}
           <div class="public-support-messages">
             {% for message in messages %}
-              <div class="public-support-message public-support-message-{{ message.tags }}">
-                {{ message }}
-              </div>
+              {% if 'public-support' in message.tags %}
+                <div class="public-support-message public-support-message-{{ message.level_tag }}">
+                  {{ message }}
+                </div>
+              {% endif %}
             {% endfor %}
           </div>
         {% endif %}

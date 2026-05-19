@@ -466,7 +466,7 @@ def public_support_ticket_create(request):
             ticket.source = SupportTicket.Source.PUBLIC
             ticket.requester_type = form.cleaned_data['requester_type']
             ticket.save()
-            messages.success(request, 'Обращение отправлено. Администратор свяжется с вами по указанным контактам.')
+            messages.success(request, 'Обращение отправлено. Администратор свяжется с вами по указанным контактам.', extra_tags='public-support')
             return redirect('accounts:public_support_ticket_create')
     return render(request, 'support/public_ticket_form.html', {'form': form})
 
