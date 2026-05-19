@@ -17,13 +17,14 @@ class ResumeSettingsForm(forms.ModelForm):
     ]
 
     SECTION_CHOICES = [
-        ('contacts', 'Контактная информация'),
-        ('education', 'Образование'),
-        ('skills', 'Навыки'),
         ('projects', 'Проекты и работы'),
-        ('achievements', 'Достижения'),
+        ('academic', 'Учебные достижения'),
         ('certificates', 'Сертификаты и курсы'),
+        ('skills', 'Навыки'),
         ('recommendations', 'Отзывы и рекомендации'),
+        ('creative', 'Творческая деятельность'),
+        ('sport', 'Спортивная деятельность'),
+        ('social', 'Общественная деятельность'),
     ]
 
     PHOTO_SOURCE_CHOICES = [
