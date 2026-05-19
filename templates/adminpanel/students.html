@@ -93,10 +93,10 @@
 
       <select name="academic_status">
         <option value="">Учебный статус</option>
-        <option value="studying" {% if academic_status_filter == 'studying' %}selected{% endif %}>Обучаются</option>
+        <option value="studying" {% if academic_status_filter == 'studying' %}selected{% endif %}>Обучается</option>
         <option value="academic_leave" {% if academic_status_filter == 'academic_leave' %}selected{% endif %}>Академический отпуск</option>
-        <option value="graduate" {% if academic_status_filter == 'graduate' %}selected{% endif %}>Выпускники</option>
-        <option value="inactive" {% if academic_status_filter == 'inactive' %}selected{% endif %}>Отчисленные</option>
+        <option value="graduated" {% if academic_status_filter == 'graduated' %}selected{% endif %}>Выпускник</option>
+        <option value="expelled" {% if academic_status_filter == 'expelled' %}selected{% endif %}>Отчислен</option>
       </select>
 
       <button class="btn btn-link" type="submit">Применить</button>
