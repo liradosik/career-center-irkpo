@@ -3,6 +3,7 @@ import uuid
 
 from django.core.files.base import ContentFile
 
+from .models import AdminActivityLog
 
 def apply_user_photo_update(request, user):
     previous_photo = user.photo if user.photo else None
@@ -36,3 +37,17 @@ def apply_user_photo_update(request, user):
         user.save(update_fields=['photo'])
         if previous_photo and previous_photo.name != user.photo.name:
             previous_photo.delete(save=False)
+
+
+def log_admin_action(actor, action, object_type, obj=None, description=''):
+    try:
+        AdminActivityLog.objects.create(
+            actor=actor if getattr(actor, 'is_authenticated', False) else None,
+            action=action,
+            object_type=object_type,
+            object_id=getattr(obj, 'id', None) if obj is not None else None,
+            object_repr=str(obj)[:255] if obj is not None else '',
+            description=description or '',
+        )
+    except Exception:
+        return

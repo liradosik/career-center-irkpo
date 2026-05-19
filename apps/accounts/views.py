@@ -54,8 +54,8 @@ from .forms import (
     UserProfileSettingsForm,
     sync_student_with_group,
 )
-from .models import ActivityLog, Specialty, StudyGroup, SupportTicket, User
-from .utils import apply_user_photo_update
+from .models import ActivityLog, AdminActivityLog, Specialty, StudyGroup, SupportTicket, User
+from .utils import apply_user_photo_update, log_admin_action
 
 
 class CustomLoginView(LoginView):
@@ -1126,7 +1126,8 @@ def admin_students(request):
     if request.method == 'POST':
         form = AdminStudentCreateForm(request.POST)
         if form.is_valid():
-            form.save()
+            student = form.save()
+            log_admin_action(request.user, AdminActivityLog.Action.CREATE, AdminActivityLog.ObjectType.STUDENT, student, f'Создан студент {student.full_name}.')
             messages.success(request, 'Студент создан.')
             return redirect('accounts:admin_students')
 
@@ -1191,7 +1192,8 @@ def admin_student_detail(request, student_id):
         if action == 'update_profile':
             form = AdminStudentUpdateForm(request.POST, instance=student)
             if form.is_valid():
-                form.save()
+                student = form.save()
+                log_admin_action(request.user, AdminActivityLog.Action.UPDATE, AdminActivityLog.ObjectType.STUDENT, student, f'Обновлён студент {student.full_name}.')
                 messages.success(request, 'Данные студента обновлены.')
                 return redirect('accounts:admin_student_detail', student_id=student.id)
         elif action == 'reset_password':
@@ -1200,6 +1202,7 @@ def admin_student_detail(request, student_id):
                 student.set_password(new_password)
                 student.must_change_password = True
                 student.save(update_fields=['password', 'must_change_password'])
+                log_admin_action(request.user, AdminActivityLog.Action.RESET_PASSWORD, AdminActivityLog.ObjectType.STUDENT, student, f'Сброшен пароль студента {student.full_name}.')
                 messages.success(request, 'Пароль студента сброшен.')
             else:
                 messages.error(request, 'Введите временный пароль.')
@@ -1207,7 +1210,9 @@ def admin_student_detail(request, student_id):
         elif action == 'delete':
             confirm_email = request.POST.get('confirm_email', '').strip().lower()
             if confirm_email and confirm_email == (student.email or '').lower():
+                student_repr = str(student)
                 student.delete()
+                log_admin_action(request.user, AdminActivityLog.Action.DELETE, AdminActivityLog.ObjectType.STUDENT, description=f'Удалён студент {student_repr}.')
                 messages.success(request, 'Студент удалён.')
                 return redirect('accounts:admin_students')
             messages.error(request, 'Email подтверждения не совпадает.')
@@ -1537,7 +1542,9 @@ def admin_specialties(request):
         instance = edit_specialty if action == 'update' else None
         form = AdminSpecialtyForm(request.POST, instance=instance)
         if form.is_valid():
-            form.save()
+            specialty = form.save()
+            action_type = AdminActivityLog.Action.UPDATE if instance else AdminActivityLog.Action.CREATE
+            log_admin_action(request.user, action_type, AdminActivityLog.ObjectType.SPECIALTY, specialty, f'Сохранена специальность {specialty.name}.')
             messages.success(request, 'Специальность сохранена.')
             return redirect('accounts:admin_specialties')
 
@@ -1577,7 +1584,8 @@ def admin_specialty_detail(request, specialty_id):
 
         form = AdminSpecialtyForm(request.POST, instance=specialty)
         if form.is_valid():
-            form.save()
+            specialty = form.save()
+            log_admin_action(request.user, AdminActivityLog.Action.UPDATE, AdminActivityLog.ObjectType.SPECIALTY, specialty, f'Обновлена специальность {specialty.name}.')
             messages.success(request, 'Данные специальности обновлены.')
             return redirect('accounts:admin_specialty_detail', specialty_id=specialty.id)
 
@@ -1628,6 +1636,7 @@ def admin_groups(request):
             group.refresh_name()
             group.save()
             sync_group_students(group)
+            log_admin_action(request.user, AdminActivityLog.Action.CREATE, AdminActivityLog.ObjectType.GROUP, group, f'Создана группа {group.name}.')
             messages.success(request, 'Группа сохранена.')
             return redirect('accounts:admin_groups')
 
@@ -1681,6 +1690,7 @@ def admin_group_detail(request, group_id):
                 )
                 if old_sync_signature != new_sync_signature:
                     sync_group_students(group)
+                log_admin_action(request.user, AdminActivityLog.Action.UPDATE, AdminActivityLog.ObjectType.GROUP, group, f'Обновлена группа {group.name}.')
                 messages.success(request, 'Данные группы обновлены.')
                 return redirect('accounts:admin_group_detail', group_id=group.id)
         elif action == 'toggle_active':
@@ -1707,7 +1717,8 @@ def admin_curators(request):
     if request.method == 'POST':
         form = AdminCuratorCreateForm(request.POST)
         if form.is_valid():
-            form.save()
+            curator = form.save()
+            log_admin_action(request.user, AdminActivityLog.Action.CREATE, AdminActivityLog.ObjectType.CURATOR, curator, f'Создан куратор {curator.full_name}.')
             messages.success(request, 'Куратор создан.')
             return redirect('accounts:admin_curators')
 
@@ -1735,7 +1746,8 @@ def admin_curator_detail(request, curator_id):
         if action == 'update_profile':
             form = AdminCuratorUpdateForm(request.POST, instance=curator)
             if form.is_valid():
-                form.save()
+                curator = form.save()
+                log_admin_action(request.user, AdminActivityLog.Action.UPDATE, AdminActivityLog.ObjectType.CURATOR, curator, f'Обновлён куратор {curator.full_name}.')
                 messages.success(request, 'Данные куратора обновлены.')
                 return redirect('accounts:admin_curator_detail', curator_id=curator.id)
         elif action == 'toggle_active':
@@ -1749,6 +1761,7 @@ def admin_curator_detail(request, curator_id):
                 curator.set_password(new_password)
                 curator.must_change_password = True
                 curator.save(update_fields=['password', 'must_change_password'])
+                log_admin_action(request.user, AdminActivityLog.Action.RESET_PASSWORD, AdminActivityLog.ObjectType.CURATOR, curator, f'Сброшен пароль куратора {curator.full_name}.')
                 messages.success(request, 'Пароль куратора сброшен.')
             else:
                 messages.error(request, 'Введите временный пароль.')
@@ -1788,7 +1801,8 @@ def admin_vacancies(request):
     if request.method == 'POST':
         form = AdminVacancyForm(request.POST)
         if form.is_valid():
-            form.save()
+            vacancy = form.save()
+            log_admin_action(request.user, AdminActivityLog.Action.CREATE, AdminActivityLog.ObjectType.VACANCY, vacancy, f'Создана вакансия {vacancy.title}.')
             messages.success(request, 'Вакансия создана.')
             return redirect('accounts:admin_vacancies')
 
@@ -1823,7 +1837,8 @@ def admin_vacancy_detail(request, vacancy_id):
         if action == 'update':
             form = AdminVacancyForm(request.POST, instance=vacancy)
             if form.is_valid():
-                form.save()
+                vacancy = form.save()
+                log_admin_action(request.user, AdminActivityLog.Action.UPDATE, AdminActivityLog.ObjectType.VACANCY, vacancy, f'Обновлена вакансия {vacancy.title}.')
                 messages.success(request, 'Вакансия обновлена.')
                 return redirect('accounts:admin_vacancy_detail', vacancy_id=vacancy.id)
         elif action == 'set_status':
@@ -1831,6 +1846,7 @@ def admin_vacancy_detail(request, vacancy_id):
             if new_status in {Vacancy.Status.ACTIVE, Vacancy.Status.HIDDEN, Vacancy.Status.ARCHIVE}:
                 vacancy.status = new_status
                 vacancy.save(update_fields=['status', 'updated_at'])
+                log_admin_action(request.user, AdminActivityLog.Action.STATUS_CHANGE, AdminActivityLog.ObjectType.VACANCY, vacancy, f'Статус вакансии изменён на "{vacancy.get_status_display()}".')
                 messages.success(request, 'Статус вакансии обновлён.')
                 return redirect('accounts:admin_vacancy_detail', vacancy_id=vacancy.id)
         elif action == 'delete':
@@ -1856,7 +1872,8 @@ def admin_courses(request):
     if request.method == 'POST':
         form = AdminCourseForm(request.POST)
         if form.is_valid():
-            form.save()
+            course = form.save()
+            log_admin_action(request.user, AdminActivityLog.Action.CREATE, AdminActivityLog.ObjectType.COURSE, course, f'Создан курс {course.title}.')
             messages.success(request, 'Курс создан.')
             return redirect('accounts:admin_courses')
 
@@ -1894,7 +1911,8 @@ def admin_course_detail(request, course_id):
         if action == 'update':
             form = AdminCourseForm(request.POST, instance=course)
             if form.is_valid():
-                form.save()
+                course = form.save()
+                log_admin_action(request.user, AdminActivityLog.Action.UPDATE, AdminActivityLog.ObjectType.COURSE, course, f'Обновлён курс {course.title}.')
                 messages.success(request, 'Курс обновлён.')
                 return redirect('accounts:admin_course_detail', course_id=course.id)
         elif action == 'set_status':
@@ -1902,6 +1920,7 @@ def admin_course_detail(request, course_id):
             if new_status in {Course.Status.ACTIVE, Course.Status.HIDDEN, Course.Status.ARCHIVE}:
                 course.status = new_status
                 course.save(update_fields=['status', 'updated_at'])
+                log_admin_action(request.user, AdminActivityLog.Action.STATUS_CHANGE, AdminActivityLog.ObjectType.COURSE, course, f'Статус курса изменён на "{course.get_status_display()}".')
                 messages.success(request, 'Статус курса обновлён.')
                 return redirect('accounts:admin_course_detail', course_id=course.id)
         elif action == 'delete':
@@ -2216,14 +2235,65 @@ def admin_support_ticket_detail(request, ticket_id):
         form = SupportTicketAdminUpdateForm(request.POST, instance=ticket)
         if form.is_valid():
             updated_ticket = form.save(commit=False)
+            old_status = ticket.status
             if updated_ticket.status in {SupportTicket.Status.RESOLVED, SupportTicket.Status.CLOSED}:
                 updated_ticket.resolved_at = updated_ticket.resolved_at or timezone.now()
             else:
                 updated_ticket.resolved_at = None
             updated_ticket.save()
+            if old_status != updated_ticket.status:
+                log_admin_action(
+                    request.user,
+                    AdminActivityLog.Action.STATUS_CHANGE,
+                    AdminActivityLog.ObjectType.SUPPORT_TICKET,
+                    updated_ticket,
+                    f'Статус обращения изменён: {ticket.get_status_display()} → {updated_ticket.get_status_display()}.',
+                )
             messages.success(request, 'Обращение обновлено.')
             return redirect('accounts:admin_support_ticket_detail', ticket_id=ticket.id)
+    
     return render(request, 'adminpanel/support_ticket_detail.html', {'ticket': ticket, 'form': form})
+
+
+@role_required(User.Role.ADMIN)
+def admin_activity_log(request):
+    logs = AdminActivityLog.objects.select_related('actor').order_by('-created_at')
+    q = request.GET.get('q', '').strip()
+    object_type = request.GET.get('object_type', '').strip()
+    action = request.GET.get('action', '').strip()
+    actor = request.GET.get('actor', '').strip()
+
+    if q:
+        logs = logs.filter(
+            Q(actor__email__icontains=q) |
+            Q(actor__full_name__icontains=q) |
+            Q(object_repr__icontains=q) |
+            Q(description__icontains=q)
+        )
+    if object_type in {choice[0] for choice in AdminActivityLog.ObjectType.choices}:
+        logs = logs.filter(object_type=object_type)
+    if action in {choice[0] for choice in AdminActivityLog.Action.choices}:
+        logs = logs.filter(action=action)
+    if actor.isdigit():
+        logs = logs.filter(actor_id=int(actor))
+
+    paginator = Paginator(logs, 25)
+    page_obj = paginator.get_page(request.GET.get('page'))
+    return render(
+        request,
+        'adminpanel/activity_log.html',
+        {
+            'page_obj': page_obj,
+            'logs': page_obj.object_list,
+            'q': q,
+            'object_type_filter': object_type,
+            'action_filter': action,
+            'actor_filter': actor,
+            'object_type_choices': AdminActivityLog.ObjectType.choices,
+            'action_choices': AdminActivityLog.Action.choices,
+            'admin_users': User.objects.filter(role=User.Role.ADMIN).order_by('full_name'),
+        },
+    )
 
 
 @role_required(User.Role.STUDENT)
