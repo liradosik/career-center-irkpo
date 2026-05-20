@@ -58,7 +58,7 @@
       <h2>Список студентов</h2>
     </div>
 
-    <form method="get" action="#students-list" class="admin-student-filters-v3">
+    <form method="get" class="admin-student-filters-v3">
       <input
         class="admin-student-search-v2"
         name="q"
@@ -170,35 +170,35 @@
       </div>
     </div>
     {% if page_obj.paginator.count %}
-  <section class="student-vacancies-pagination-wrap">
+  <section class="admin-students-pagination-wrap-v3">
     {% if page_obj.paginator.num_pages > 1 %}
-      <nav class="student-vacancies-pagination" aria-label="Пагинация студентов">
+      <nav class="admin-students-pagination-v3" aria-label="Пагинация студентов">
         {% if page_obj.has_previous %}
-          <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}#students-list">
+          <a class="admin-students-page-arrow-v3" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}#students-list">
             <i class="bi bi-chevron-left"></i>
           </a>
         {% else %}
-          <span class="is-disabled">
+          <span class="admin-students-page-arrow-v3 is-disabled">
             <i class="bi bi-chevron-left"></i>
           </span>
         {% endif %}
 
         {% for num in page_obj.paginator.page_range %}
           {% if num == page_obj.number %}
-            <span class="is-current">{{ num }}</span>
+            <span class="admin-students-page-number-v3 is-active">{{ num }}</span>
           {% elif num <= 5 or num == page_obj.paginator.num_pages %}
-            <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}#students-list">{{ num }}</a>
+            <a class="admin-students-page-number-v3" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}#students-list">{{ num }}</a>
           {% elif num == 6 %}
-            <span class="is-gap">…</span>
+            <span class="admin-students-page-number-v3 is-gap">…</span>
           {% endif %}
         {% endfor %}
 
         {% if page_obj.has_next %}
-          <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}#students-list">
+          <a class="admin-students-page-arrow-v3" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}#students-list">
             <i class="bi bi-chevron-right"></i>
           </a>
         {% else %}
-          <span class="is-disabled">
+          <span class="admin-students-page-arrow-v3 is-disabled">
             <i class="bi bi-chevron-right"></i>
           </span>
         {% endif %}
