@@ -1191,14 +1191,19 @@ def admin_students(request):
     {
         'students': page_obj.object_list,
 
-        # Пагинация списка студентов.
-        # Используем отдельные имена, чтобы они не конфликтовали
-        # с похожими переменными на других страницах.
-        'students_page': page_obj,
-        'students_pages': page_obj.paginator.page_range,
-        'students_querystring': querystring,
-        'students_total_count': page_obj.paginator.count,
+        # Простые переменные для пагинации, чтобы шаблон не зависел
+        # от вложенных обращений page_obj.paginator.*
+        'students_page_obj': page_obj,
+        'students_page_range': list(page_obj.paginator.page_range),
+        'students_current_page': page_obj.number,
+        'students_total_pages': page_obj.paginator.num_pages,
+        'students_has_pages': page_obj.paginator.num_pages > 1,
+        'students_has_previous': page_obj.has_previous(),
+        'students_has_next': page_obj.has_next(),
+        'students_previous_page': page_obj.previous_page_number() if page_obj.has_previous() else None,
+        'students_next_page': page_obj.next_page_number() if page_obj.has_next() else None,
 
+        'querystring': querystring,
         'form': form,
         'filter_curators': filter_curators,
         'filter_groups': filter_groups,
