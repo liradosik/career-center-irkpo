@@ -153,7 +153,12 @@
   <div class="danger-inner">
     <p>Удаление требует подтверждения по email. Используйте только если запись действительно не нужна.</p>
 
-    <form method="post" class="curator-delete-form">
+    <form
+  method="post"
+  class="curator-delete-form"
+  data-confirm-delete
+  data-confirm-text="Удалить куратора? Это действие нельзя отменить."
+>
       {% csrf_token %}
       <input type="hidden" name="action" value="delete">
 

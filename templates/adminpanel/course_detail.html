@@ -188,7 +188,12 @@
       Удаление требует подтверждения по названию. Используйте только если курс действительно больше не нужен.
     </p>
 
-    <form method="post" class="detail-danger-form">
+    <form
+  method="post"
+  class="detail-danger-form"
+  data-confirm-delete
+  data-confirm-text="Удалить курс или семинар? Это действие нельзя отменить."
+>
       {% csrf_token %}
       <input type="hidden" name="action" value="delete">
 

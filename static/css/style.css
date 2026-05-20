@@ -26789,3 +26789,117 @@ html {
     grid-column: auto;
   }
 }
+/* === Universal delete confirmation modal === */
+
+.delete-modal-open {
+  overflow: hidden;
+}
+
+.delete-confirm-modal[hidden] {
+  display: none !important;
+}
+
+.delete-confirm-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.delete-confirm-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.52);
+  backdrop-filter: blur(5px);
+}
+
+.delete-confirm-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(460px, 100%);
+  display: grid;
+  gap: 18px;
+  padding: 28px;
+  border: 1px solid #fecaca;
+  border-radius: 26px;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.25);
+  animation: deleteModalIn 0.16s ease-out;
+}
+
+.delete-confirm-icon {
+  width: 56px;
+  height: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  color: #b91c1c;
+  background: #fff1f2;
+  font-size: 25px;
+}
+
+.delete-confirm-content h2 {
+  margin: 0 0 8px;
+  color: #1d3148;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.delete-confirm-content p {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.55;
+}
+
+.delete-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.delete-confirm-actions .btn {
+  min-width: 120px;
+  justify-content: center;
+}
+
+.delete-confirm-actions .btn-danger {
+  border-color: #dc2626;
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.delete-confirm-actions .btn-danger:hover {
+  border-color: #b91c1c;
+  background: #b91c1c;
+}
+
+@keyframes deleteModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 560px) {
+  .delete-confirm-dialog {
+    padding: 22px;
+    border-radius: 22px;
+  }
+
+  .delete-confirm-actions {
+    flex-direction: column-reverse;
+  }
+
+  .delete-confirm-actions .btn {
+    width: 100%;
+  }
+}

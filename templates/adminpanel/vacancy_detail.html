@@ -182,7 +182,12 @@
     <p>
       Удаление требует подтверждения по названию. Используйте только если вакансия действительно больше не нужна.</p>
 
-    <form method="post" class="curator-delete-form">
+    <form
+  method="post"
+  class="curator-delete-form"
+  data-confirm-delete
+  data-confirm-text="Удалить вакансию? Это действие нельзя отменить."
+>
       {% csrf_token %}
       <input type="hidden" name="action" value="delete">
 

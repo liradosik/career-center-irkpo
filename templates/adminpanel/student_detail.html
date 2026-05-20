@@ -167,9 +167,14 @@
         <div class="admin-danger-block admin-danger-delete">
           <p class="muted">Удаление требует подтверждения по email. Используйте только если запись действительно не нужна.</p>
 
-          <form method="post" class="admin-card-form">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="delete">
+          <form
+  method="post"
+  class="admin-card-form"
+  data-confirm-delete
+  data-confirm-text="Удалить студента? Это действие нельзя отменить."
+>
+  {% csrf_token %}
+  <input type="hidden" name="action" value="delete">
 
             <label>Введите email студента</label>
             <input name="confirm_email" type="text" placeholder="{{ student.email }}" required>

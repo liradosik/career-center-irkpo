@@ -165,7 +165,12 @@
                 Редактировать
               </a>
 
-              <form method="post" action="{% url 'portfolio:delete' entry.pk %}" onsubmit="return confirm('Удалить запись?');">
+              <form
+  method="post"
+  action="{% url 'portfolio:delete' entry.pk %}"
+  data-confirm-delete
+  data-confirm-text="Удалить запись портфолио? Это действие нельзя отменить."
+>
                 {% csrf_token %}
                 <button class="btn btn-danger" type="submit">
                   <i class="bi bi-trash"></i>
