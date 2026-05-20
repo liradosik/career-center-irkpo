@@ -113,7 +113,9 @@
 
           <div class="form-field">
             <label for="{{ form.specialty_ref.id_for_label }}">Специальность</label>
-            {{ form.specialty_ref }}
+            <div class="searchable-select" data-searchable-select data-search-placeholder="Найти специальность">
+  {{ form.specialty_ref }}
+</div>
             {{ form.specialty_ref.errors }}
           </div>
 
@@ -138,7 +140,9 @@
 
           <div class="form-field">
             <label for="{{ form.curator.id_for_label }}">Куратор</label>
-            {{ form.curator }}
+            <div class="searchable-select" data-searchable-select data-search-placeholder="Найти куратора по ФИО">
+  {{ form.curator }}
+</div>
             {{ form.curator.errors }}
           </div>
 

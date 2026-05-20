@@ -130,7 +130,9 @@
 
         <p>
           <label for="{{ form.study_group.id_for_label }}">Учебная группа:</label>
-          {{ form.study_group }}
+          <div class="searchable-select" data-searchable-select data-search-placeholder="Найти группу">
+  {{ form.study_group }}
+</div>
           {{ form.study_group.errors }}
         </p>
 

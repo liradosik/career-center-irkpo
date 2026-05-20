@@ -65,14 +65,16 @@
 
       <label class="student-vacancies-field-v2">
         <span>Направление</span>
-        <select name="direction">
-          <option value="">Все</option>
-          {% for option in direction_options %}
-            <option value="{{ option }}" {% if direction_filter == option %}selected{% endif %}>
-              {{ option }}
-            </option>
-          {% endfor %}
-        </select>
+        <div class="searchable-select" data-searchable-select data-search-placeholder="Найти направление">
+  <select name="direction">
+    <option value="">Все</option>
+    {% for option in direction_options %}
+      <option value="{{ option }}" {% if direction_filter == option %}selected{% endif %}>
+        {{ option }}
+      </option>
+    {% endfor %}
+  </select>
+</div>
       </label>
 
       <div class="student-vacancies-filter-actions-v2">

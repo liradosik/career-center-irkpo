@@ -40,7 +40,9 @@
 
       <div class="form-field">
         <label for="{{ form.study_group.id_for_label }}">Учебная группа</label>
-        {{ form.study_group }}
+        <div class="searchable-select" data-searchable-select data-search-placeholder="Найти группу">
+  {{ form.study_group }}
+</div>
         {{ form.study_group.errors }}
       </div>
 
@@ -64,26 +66,32 @@
     <form method="get" class="admin-filter-panel admin-student-filters">
       <input name="q" placeholder="ФИО или email" value="{{ request.GET.q }}">
 
-      <select name="group">
-        <option value="">Группа</option>
-        {% for g in filter_groups %}
-          <option value="{{ g.name }}" {% if request.GET.group == g.name %}selected{% endif %}>{{ g.name }}</option>
-        {% endfor %}
-      </select>
+      <div class="searchable-select" data-searchable-select data-search-placeholder="Найти группу">
+  <select name="group">
+    <option value="">Группа</option>
+    {% for g in filter_groups %}
+      <option value="{{ g.name }}" {% if request.GET.group == g.name %}selected{% endif %}>{{ g.name }}</option>
+    {% endfor %}
+  </select>
+</div>
 
-      <select name="curator">
-        <option value="">Куратор</option>
-        {% for c in filter_curators %}
-          <option value="{{ c.id }}" {% if request.GET.curator == c.id|stringformat:'s' %}selected{% endif %}>{{ c.full_name }}</option>
-        {% endfor %}
-      </select>
+      <div class="searchable-select" data-searchable-select data-search-placeholder="Найти куратора">
+  <select name="curator">
+    <option value="">Куратор</option>
+    {% for c in filter_curators %}
+      <option value="{{ c.id }}" {% if request.GET.curator == c.id|stringformat:'s' %}selected{% endif %}>{{ c.full_name }}</option>
+    {% endfor %}
+  </select>
+</div>
 
-      <select name="specialty">
-        <option value="">Специальность</option>
-        {% for s in filter_specialties %}
-          <option value="{{ s.name }}" {% if request.GET.specialty == s.name %}selected{% endif %}>{{ s.code }} • {{ s.name }}</option>
-        {% endfor %}
-      </select>
+      <div class="searchable-select" data-searchable-select data-search-placeholder="Найти специальность">
+  <select name="specialty">
+    <option value="">Специальность</option>
+    {% for s in filter_specialties %}
+      <option value="{{ s.name }}" {% if request.GET.specialty == s.name %}selected{% endif %}>{{ s.code }} • {{ s.name }}</option>
+    {% endfor %}
+  </select>
+</div>
 
       <select name="is_active">
         <option value="">Доступ</option>

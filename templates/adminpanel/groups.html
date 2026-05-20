@@ -28,7 +28,9 @@
 
       <div class="form-field">
         <label for="{{ form.specialty_ref.id_for_label }}">Специальность</label>
-        {{ form.specialty_ref }}
+        <div class="searchable-select" data-searchable-select data-search-placeholder="Найти специальность">
+  {{ form.specialty_ref }}
+</div>
         {{ form.specialty_ref.errors }}
       </div>
 
@@ -53,7 +55,9 @@
 
       <div class="form-field">
         <label for="{{ form.curator.id_for_label }}">Куратор</label>
-        {{ form.curator }}
+        <div class="searchable-select" data-searchable-select data-search-placeholder="Найти куратора по ФИО">
+  {{ form.curator }}
+</div>
         {{ form.curator.errors }}
       </div>
     </div>
@@ -71,23 +75,27 @@
   <form method="get" class="admin-groups-filters">
     <input name="q" placeholder="Название группы" value="{{ request.GET.q }}">
 
-    <select name="specialty">
-      <option value="">Специальность</option>
-      {% for specialty in specialties %}
-        <option value="{{ specialty.id }}" {% if request.GET.specialty == specialty.id|stringformat:'s' %}selected{% endif %}>
-          {{ specialty.code }} • {{ specialty.name }}
-        </option>
-      {% endfor %}
-    </select>
+    <div class="searchable-select" data-searchable-select data-search-placeholder="Найти специальность">
+  <select name="specialty">
+    <option value="">Специальность</option>
+    {% for specialty in specialties %}
+      <option value="{{ specialty.id }}" {% if request.GET.specialty == specialty.id|stringformat:'s' %}selected{% endif %}>
+        {{ specialty.code }} • {{ specialty.name }}
+      </option>
+    {% endfor %}
+  </select>
+</div>
 
-    <select name="curator">
-      <option value="">Куратор</option>
-      {% for curator in curators %}
-        <option value="{{ curator.id }}" {% if request.GET.curator == curator.id|stringformat:'s' %}selected{% endif %}>
-          {{ curator.full_name }}
-        </option>
-      {% endfor %}
-    </select>
+    <div class="searchable-select" data-searchable-select data-search-placeholder="Найти куратора">
+  <select name="curator">
+    <option value="">Куратор</option>
+    {% for curator in curators %}
+      <option value="{{ curator.id }}" {% if request.GET.curator == curator.id|stringformat:'s' %}selected{% endif %}>
+        {{ curator.full_name }}
+      </option>
+    {% endfor %}
+  </select>
+</div>
 
     <input name="course_number" type="number" min="1" placeholder="Курс" value="{{ request.GET.course_number }}">
     <input name="admission_year" type="number" min="2000" placeholder="Год поступления" value="{{ request.GET.admission_year }}">

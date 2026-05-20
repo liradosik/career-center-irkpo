@@ -295,5 +295,177 @@
       });
     })();
   </script>
+  <script>
+  (function () {
+    const wrappers = document.querySelectorAll('[data-searchable-select]');
+
+    wrappers.forEach(function (wrapper) {
+      const select = wrapper.querySelector('select');
+      if (!select) return;
+
+      const placeholder = wrapper.dataset.searchPlaceholder || 'Начните вводить для поиска';
+      const options = Array.from(select.options);
+
+      wrapper.classList.add('searchable-select-enhanced');
+
+      const control = document.createElement('div');
+      control.className = 'searchable-select-control';
+
+      const input = document.createElement('input');
+      input.type = 'search';
+      input.className = 'searchable-select-input';
+      input.placeholder = placeholder;
+      input.autocomplete = 'off';
+
+      const arrow = document.createElement('button');
+      arrow.type = 'button';
+      arrow.className = 'searchable-select-arrow';
+      arrow.setAttribute('aria-label', 'Открыть список');
+      arrow.innerHTML = '<i class="bi bi-chevron-down"></i>';
+
+      const dropdown = document.createElement('div');
+      dropdown.className = 'searchable-select-dropdown';
+      dropdown.hidden = true;
+
+      control.appendChild(input);
+      control.appendChild(arrow);
+
+      wrapper.insertBefore(control, select);
+      wrapper.appendChild(dropdown);
+
+      function normalize(value) {
+        return (value || '').toString().toLowerCase().trim();
+      }
+
+      function getOptionText(option) {
+        return option.textContent.trim();
+      }
+
+      function getSelectedOption() {
+        return options.find(function (option) {
+          return option.selected;
+        });
+      }
+
+      function syncInputFromSelect() {
+        const selected = getSelectedOption();
+
+        if (selected && selected.value) {
+          input.value = getOptionText(selected);
+        } else {
+          input.value = '';
+        }
+      }
+
+      function closeDropdown() {
+        dropdown.hidden = true;
+        wrapper.classList.remove('is-open');
+      }
+
+      function openDropdown() {
+        dropdown.hidden = false;
+        wrapper.classList.add('is-open');
+      }
+
+      function chooseOption(option) {
+        select.value = option.value;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+
+        if (option.value) {
+          input.value = getOptionText(option);
+        } else {
+          input.value = '';
+        }
+
+        closeDropdown();
+      }
+
+      function renderOptions() {
+        const query = normalize(input.value);
+        dropdown.innerHTML = '';
+
+        let visibleCount = 0;
+
+        options.forEach(function (option) {
+          const text = getOptionText(option);
+          const value = option.value;
+          const isEmptyOption = value === '';
+          const matches = normalize(text).includes(query);
+
+          if (query && !matches && !isEmptyOption) return;
+
+          const item = document.createElement('button');
+          item.type = 'button';
+          item.className = 'searchable-select-option';
+          item.textContent = text;
+
+          if (option.selected) {
+            item.classList.add('is-selected');
+          }
+
+          item.addEventListener('click', function () {
+            chooseOption(option);
+          });
+
+          dropdown.appendChild(item);
+          visibleCount += 1;
+        });
+
+        if (!visibleCount) {
+          const empty = document.createElement('div');
+          empty.className = 'searchable-select-empty';
+          empty.textContent = 'Совпадений не найдено';
+          dropdown.appendChild(empty);
+        }
+      }
+
+      syncInputFromSelect();
+      renderOptions();
+
+      input.addEventListener('focus', function () {
+        renderOptions();
+        openDropdown();
+      });
+
+      input.addEventListener('input', function () {
+        renderOptions();
+        openDropdown();
+
+        if (!input.value.trim()) {
+          select.value = '';
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+
+      arrow.addEventListener('click', function () {
+        if (dropdown.hidden) {
+          renderOptions();
+          openDropdown();
+          input.focus();
+        } else {
+          closeDropdown();
+        }
+      });
+
+      select.addEventListener('change', function () {
+        syncInputFromSelect();
+        renderOptions();
+      });
+
+      document.addEventListener('click', function (event) {
+        if (!wrapper.contains(event.target)) {
+          closeDropdown();
+        }
+      });
+
+      input.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+          closeDropdown();
+          input.blur();
+        }
+      });
+    });
+  })();
+</script>
 </body>
 </html>
