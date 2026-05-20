@@ -244,6 +244,9 @@ def public_resume(request, token):
     resume_font_size = _normalize_font_size(getattr(resume, 'font_size', 'standard'))
     has_resume_data = any([student.full_name, getattr(resume, 'title', ''), about_text, entries])
     resume_photo_url = resolve_resume_photo_url(resume, profile, student)
+    public_resume_url = None
+    if resume.is_public:
+        public_resume_url = request.build_absolute_uri(request.path)
 
     # Для старых записей profile в публичном резюме считаем как account.
     resume_photo_source = resume.photo_source
@@ -270,6 +273,7 @@ def public_resume(request, token):
         'resume_font_size': resume_font_size,
         'resume_photo_url': resume_photo_url,
         'resume_photo_source': resume_photo_source,
+        'public_resume_url': public_resume_url,
     }
 
     if request.GET.get('download') == 'pdf':
