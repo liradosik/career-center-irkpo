@@ -1,66 +1,168 @@
 {% extends 'base_dashboard.html' %}
 
-{% block content %}
-<div class="admin-dashboard">
-  <section class="dashboard-section">
-    <div class="section-heading section-heading-simple">
-      <h2>Журнал действий</h2>
-    </div>
-    <p class="muted">История действий администраторов по основным объектам системы.</p>
+{% block title %}Журнал действий{% endblock %}
 
-    <form method="get" class="filters-grid" style="margin: 1rem 0;">
-      <input type="text" name="q" value="{{ q }}" placeholder="Поиск по администратору, объекту, описанию">
-      <select name="object_type">
+{% block content %}
+<div class="admin-log-page-v3">
+  <nav class="admin-breadcrumb-v3" aria-label="Навигация">
+    <a href="{% url 'accounts:admin_dashboard' %}">Панель</a>
+    <span>•</span>
+    <span>Последние действия администраторов</span>
+  </nav>
+
+  <section class="dashboard-hero admin-log-hero-v3">
+    <div>
+      <div class="hero-kicker">Активность</div>
+      <h1>Журнал действий</h1>
+      <p>История изменений по студентам, группам, вакансиям, курсам, обращениям и другим объектам системы.</p>
+    </div>
+  </section>
+
+  <section class="dashboard-section admin-log-card-v3">
+    <div class="admin-log-card-head-v3">
+      <h2>Список действий</h2>
+
+      {% if q or object_type_filter or action_filter or actor_filter %}
+        <a class="admin-log-reset-v3" href="{% url 'accounts:admin_activity_log' %}">
+          Сбросить
+        </a>
+      {% endif %}
+    </div>
+
+    <form method="get" class="admin-log-filters-v3">
+      <input
+        class="admin-log-search-input-v3"
+        type="text"
+        name="q"
+        value="{{ q }}"
+        placeholder="Поиск"
+        aria-label="Поиск по администратору, объекту или описанию"
+      >
+
+      <select name="object_type" aria-label="Тип объекта">
         <option value="">Все объекты</option>
         {% for value, label in object_type_choices %}
-          <option value="{{ value }}" {% if object_type_filter == value %}selected{% endif %}>{{ label }}</option>
+          <option value="{{ value }}" {% if object_type_filter == value %}selected{% endif %}>
+            {{ label }}
+          </option>
         {% endfor %}
       </select>
-      <select name="action">
+
+      <select name="action" aria-label="Действие">
         <option value="">Все действия</option>
         {% for value, label in action_choices %}
-          <option value="{{ value }}" {% if action_filter == value %}selected{% endif %}>{{ label }}</option>
+          <option value="{{ value }}" {% if action_filter == value %}selected{% endif %}>
+            {{ label }}
+          </option>
         {% endfor %}
       </select>
-      <select name="actor">
+
+      <select name="actor" aria-label="Администратор">
         <option value="">Все администраторы</option>
         {% for admin in admin_users %}
-          <option value="{{ admin.id }}" {% if actor_filter == admin.id|stringformat:'s' %}selected{% endif %}>{{ admin.full_name }} ({{ admin.email }})</option>
+          <option value="{{ admin.id }}" {% if actor_filter == admin.id|stringformat:'s' %}selected{% endif %}>
+            {{ admin.full_name|default:admin.email }}
+          </option>
         {% endfor %}
       </select>
-      <button type="submit" class="btn">Применить</button>
+
+      <button type="submit" class="admin-log-apply-v3">
+        Применить
+      </button>
     </form>
 
-    <div class="card" style="overflow:auto;">
-      <table class="table" style="width:100%;">
-        <thead>
-          <tr>
-            <th>Дата и время</th><th>Администратор</th><th>Действие</th><th>Тип объекта</th><th>Объект</th><th>Описание</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for log in logs %}
-          <tr>
-            <td>{{ log.created_at|date:'d.m.Y H:i' }}</td>
-            <td>{{ log.actor.full_name|default:log.actor.email|default:'Система' }}</td>
-            <td>{{ log.get_action_display }}</td>
-            <td>{{ log.get_object_type_display }}</td>
-            <td>{{ log.object_repr|default:'—' }}</td>
-            <td>{{ log.description|default:'—' }}</td>
-          </tr>
-          {% empty %}
-          <tr><td colspan="6">Записей пока нет.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
+    <div class="admin-log-table-v3">
+      <div class="admin-log-table-head-v3">
+        <span>Объект</span>
+        <span>Тип</span>
+        <span>Действие</span>
+        <span>Администратор</span>
+        <span>Дата</span>
+      </div>
+
+      {% for log in logs %}
+        <article class="admin-log-row-v3">
+          <div class="admin-log-object-v3">
+            <span class="admin-log-icon-v3">
+              {% if log.object_type == 'student' %}
+                <i class="bi bi-person"></i>
+              {% elif log.object_type == 'curator' %}
+                <i class="bi bi-person-badge"></i>
+              {% elif log.object_type == 'group' %}
+                <i class="bi bi-diagram-3"></i>
+              {% elif log.object_type == 'specialty' %}
+                <i class="bi bi-diagram-2"></i>
+              {% elif log.object_type == 'vacancy' %}
+                <i class="bi bi-briefcase"></i>
+              {% elif log.object_type == 'course' %}
+                <i class="bi bi-mortarboard"></i>
+              {% elif log.object_type == 'support_ticket' %}
+                <i class="bi bi-chat-dots"></i>
+              {% else %}
+                <i class="bi bi-clock-history"></i>
+              {% endif %}
+            </span>
+
+            <div>
+              <strong>{{ log.object_repr|default:"Объект" }}</strong>
+              <p>{{ log.description|default:"Описание не указано." }}</p>
+            </div>
+          </div>
+
+          <div class="admin-log-cell-v3" data-label="Тип">
+            {{ log.get_object_type_display }}
+          </div>
+
+          <div class="admin-log-cell-v3" data-label="Действие">
+            <span class="admin-log-badge-v3 admin-log-badge-{{ log.action }}">
+              {{ log.get_action_display }}
+            </span>
+          </div>
+
+          <div class="admin-log-cell-v3" data-label="Администратор">
+            {% if log.actor %}
+              {{ log.actor.full_name|default:log.actor.email }}
+            {% else %}
+              Система
+            {% endif %}
+          </div>
+
+          <div class="admin-log-date-v3" data-label="Дата">
+            <span>{{ log.created_at|date:'d.m.Y' }}</span>
+            <small>{{ log.created_at|date:'H:i' }}</small>
+          </div>
+        </article>
+      {% empty %}
+        <div class="admin-log-empty-v3">
+          <i class="bi bi-search"></i>
+          <strong>Записи не найдены</strong>
+          <p>Попробуйте изменить фильтры или очистить поиск.</p>
+        </div>
+      {% endfor %}
     </div>
 
     {% if page_obj.paginator.num_pages > 1 %}
-      <div class="pagination" style="margin-top:1rem;">
-        {% if page_obj.has_previous %}<a href="?q={{ q }}&object_type={{ object_type_filter }}&action={{ action_filter }}&actor={{ actor_filter }}&page={{ page_obj.previous_page_number }}">← Назад</a>{% endif %}
-        <span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
-        {% if page_obj.has_next %}<a href="?q={{ q }}&object_type={{ object_type_filter }}&action={{ action_filter }}&actor={{ actor_filter }}&page={{ page_obj.next_page_number }}">Вперёд →</a>{% endif %}
-      </div>
+      <nav class="admin-log-pagination-v3" aria-label="Пагинация журнала действий">
+        {% if page_obj.has_previous %}
+          <a href="?q={{ q|urlencode }}&object_type={{ object_type_filter|urlencode }}&action={{ action_filter|urlencode }}&actor={{ actor_filter|urlencode }}&page={{ page_obj.previous_page_number }}">
+            Назад
+          </a>
+        {% else %}
+          <span class="disabled">Назад</span>
+        {% endif %}
+
+        <span class="admin-log-page-state-v3">
+          {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+          <a href="?q={{ q|urlencode }}&object_type={{ object_type_filter|urlencode }}&action={{ action_filter|urlencode }}&actor={{ actor_filter|urlencode }}&page={{ page_obj.next_page_number }}">
+            Вперёд
+          </a>
+        {% else %}
+          <span class="disabled">Вперёд</span>
+        {% endif %}
+      </nav>
     {% endif %}
   </section>
 </div>

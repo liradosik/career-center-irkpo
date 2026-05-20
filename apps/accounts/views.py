@@ -973,6 +973,7 @@ def admin_dashboard(request):
         'latest_vacancies': Vacancy.objects.order_by('-created_at')[:5],
         'latest_courses': Course.objects.order_by('-created_at')[:5],
         'latest_students': students_qs.order_by('-date_joined')[:5],
+        'latest_admin_actions': AdminActivityLog.objects.select_related('actor').order_by('-created_at')[:8],
     }
     return render(request, 'adminpanel/dashboard.html', context)
 
@@ -1127,7 +1128,13 @@ def admin_students(request):
         form = AdminStudentCreateForm(request.POST)
         if form.is_valid():
             student = form.save()
-            log_admin_action(request.user, AdminActivityLog.Action.CREATE, AdminActivityLog.ObjectType.STUDENT, student, f'Создан студент {student.full_name}.')
+            log_admin_action(
+                request.user,
+                AdminActivityLog.Action.CREATE,
+                AdminActivityLog.ObjectType.STUDENT,
+                student,
+                f'Создан студент {student.full_name}.'
+            )
             messages.success(request, 'Студент создан.')
             return redirect('accounts:admin_students')
 
@@ -1142,19 +1149,23 @@ def admin_students(request):
     group = request.GET.get('group', '').strip()
     curator = request.GET.get('curator', '').strip()
     specialty = request.GET.get('specialty', '').strip()
-    is_active = request.GET.get('is_active', '').strip()
     academic_status = request.GET.get('academic_status', '').strip()
 
     if q:
         students = students.filter(Q(full_name__icontains=q) | Q(email__icontains=q))
+
     if group:
         students = students.filter(Q(study_group__name=group) | Q(group__icontains=group))
+
     if curator:
         students = students.filter(curator_id=curator)
+
     if specialty:
-        students = students.filter(specialty__icontains=specialty)
-    if is_active in {'1', '0'}:
-        students = students.filter(is_active=(is_active == '1'))
+        students = students.filter(
+            Q(study_group__specialty_ref__name__icontains=specialty) |
+            Q(specialty__icontains=specialty)
+        )
+
     if academic_status in {
         User.AcademicStatus.STUDYING,
         User.AcademicStatus.ACADEMIC_LEAVE,
@@ -1163,24 +1174,38 @@ def admin_students(request):
     }:
         students = students.filter(academic_status=academic_status)
 
+    paginator = Paginator(students, 12)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    query_params = request.GET.copy()
+    query_params.pop('page', None)
+    querystring = query_params.urlencode()
+
     filter_curators = User.objects.filter(role=User.Role.CURATOR).order_by('full_name')
     filter_groups = StudyGroup.objects.order_by('name')
     filter_specialties = Specialty.objects.order_by('code', 'name')
 
     return render(
-        request,
-        'adminpanel/students.html',
-        {
-            'students': students,
-            'form': form,
-            'filter_curators': filter_curators,
-            'filter_groups': filter_groups,
-            'filter_specialties': filter_specialties,
-            'is_active_filter': is_active,
-            'academic_status_filter': academic_status,
-        },
-    )
+    request,
+    'adminpanel/students.html',
+    {
+        'students': page_obj.object_list,
 
+        # Пагинация списка студентов.
+        # Используем отдельные имена, чтобы они не конфликтовали
+        # с похожими переменными на других страницах.
+        'students_page': page_obj,
+        'students_pages': page_obj.paginator.page_range,
+        'students_querystring': querystring,
+        'students_total_count': page_obj.paginator.count,
+
+        'form': form,
+        'filter_curators': filter_curators,
+        'filter_groups': filter_groups,
+        'filter_specialties': filter_specialties,
+        'academic_status_filter': academic_status,
+    },
+)
 
 @role_required(User.Role.ADMIN)
 def admin_student_detail(request, student_id):

@@ -3,7 +3,7 @@
 {% block title %}Студенты{% endblock %}
 
 {% block content %}
-<section class="hero admin-page-hero admin-students-hero">
+<section class="hero admin-page-hero admin-students-hero admin-students-hero-v2">
   <div>
     <div class="hero-kicker">Администрирование</div>
     <h1>Студенты</h1>
@@ -11,95 +11,95 @@
   </div>
 </section>
 
-<section class="section admin-students-page">
-  <div class="card admin-create-card">
-    <div class="admin-card-head">
+<section class="section admin-students-page admin-students-page-v2">
+  <div class="card admin-create-card admin-create-student-card-v2">
+    <div class="admin-card-head admin-card-head-v2">
       <h2>Создать студента</h2>
     </div>
 
-    <form method="post" class="admin-create-student-form">
+    <form method="post" class="admin-create-student-form admin-create-student-form-v3">
       {% csrf_token %}
 
-      <div class="form-field">
+      <div class="form-field admin-create-student-name-field">
         <label for="{{ form.full_name.id_for_label }}">ФИО</label>
         {{ form.full_name }}
         {{ form.full_name.errors }}
       </div>
 
-      <div class="form-field">
+      <div class="form-field admin-create-student-email-field">
         <label for="{{ form.email.id_for_label }}">Email</label>
         {{ form.email }}
         {{ form.email.errors }}
       </div>
 
-      <div class="form-field">
+      <div class="form-field admin-create-student-password-field">
         <label for="{{ form.password.id_for_label }}">Временный пароль</label>
         {{ form.password }}
         {{ form.password.errors }}
       </div>
 
-      <div class="form-field">
+      <div class="form-field admin-create-student-group-field">
         <label for="{{ form.study_group.id_for_label }}">Учебная группа</label>
         <div class="searchable-select" data-searchable-select data-search-placeholder="Найти группу">
-  {{ form.study_group }}
-</div>
+          {{ form.study_group }}
+        </div>
         {{ form.study_group.errors }}
       </div>
 
-      <div class="form-note form-field-wide">
-        <strong>Данные подтянутся автоматически</strong>
-        <span>После выбора группы система определит специальность, год поступления и куратора.</span>
-      </div>
-
-      <div class="form-field-wide admin-form-actions">
+      <div class="form-field-wide admin-form-actions admin-student-create-actions-v2">
         <button class="btn btn-primary" type="submit">Создать студента</button>
         <a class="btn btn-link" href="{% url 'accounts:admin_student_import' %}">Импорт CSV / Excel</a>
       </div>
     </form>
   </div>
 
-  <div class="card admin-list-card">
-    <div class="admin-card-head">
+  <div class="card admin-list-card admin-students-list-card-v2" id="students-list">
+    <div class="admin-card-head admin-card-head-v2">
       <h2>Список студентов</h2>
     </div>
 
-    <form method="get" class="admin-filter-panel admin-student-filters">
-      <input name="q" placeholder="ФИО или email" value="{{ request.GET.q }}">
+    <form method="get" action="#students-list" class="admin-student-filters-v3">
+      <input
+        class="admin-student-search-v2"
+        name="q"
+        placeholder="ФИО или email"
+        value="{{ request.GET.q }}"
+      >
 
       <div class="searchable-select" data-searchable-select data-search-placeholder="Найти группу">
-  <select name="group">
-    <option value="">Группа</option>
-    {% for g in filter_groups %}
-      <option value="{{ g.name }}" {% if request.GET.group == g.name %}selected{% endif %}>{{ g.name }}</option>
-    {% endfor %}
-  </select>
-</div>
+        <select name="group">
+          <option value="">Группа</option>
+          {% for g in filter_groups %}
+            <option value="{{ g.name }}" {% if request.GET.group == g.name %}selected{% endif %}>
+              {{ g.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
 
       <div class="searchable-select" data-searchable-select data-search-placeholder="Найти куратора">
-  <select name="curator">
-    <option value="">Куратор</option>
-    {% for c in filter_curators %}
-      <option value="{{ c.id }}" {% if request.GET.curator == c.id|stringformat:'s' %}selected{% endif %}>{{ c.full_name }}</option>
-    {% endfor %}
-  </select>
-</div>
+        <select name="curator">
+          <option value="">Куратор</option>
+          {% for c in filter_curators %}
+            <option value="{{ c.id }}" {% if request.GET.curator == c.id|stringformat:'s' %}selected{% endif %}>
+              {{ c.full_name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
 
       <div class="searchable-select" data-searchable-select data-search-placeholder="Найти специальность">
-  <select name="specialty">
-    <option value="">Специальность</option>
-    {% for s in filter_specialties %}
-      <option value="{{ s.name }}" {% if request.GET.specialty == s.name %}selected{% endif %}>{{ s.code }} • {{ s.name }}</option>
-    {% endfor %}
-  </select>
-</div>
+        <select name="specialty">
+          <option value="">Специальность</option>
+          {% for s in filter_specialties %}
+            <option value="{{ s.name }}" {% if request.GET.specialty == s.name %}selected{% endif %}>
+              {{ s.code }} • {{ s.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
 
-      <select name="is_active">
-        <option value="">Доступ</option>
-        <option value="1" {% if is_active_filter == '1' %}selected{% endif %}>Открыт</option>
-        <option value="0" {% if is_active_filter == '0' %}selected{% endif %}>Закрыт</option>
-      </select>
-
-      <select name="academic_status">
+      <select class="admin-student-filter-status-v2" name="academic_status">
         <option value="">Учебный статус</option>
         <option value="studying" {% if academic_status_filter == 'studying' %}selected{% endif %}>Обучается</option>
         <option value="academic_leave" {% if academic_status_filter == 'academic_leave' %}selected{% endif %}>Академический отпуск</option>
@@ -107,49 +107,105 @@
         <option value="expelled" {% if academic_status_filter == 'expelled' %}selected{% endif %}>Отчислен</option>
       </select>
 
-      <button class="btn btn-link" type="submit">Применить</button>
+      <button class="btn btn-primary admin-student-filter-submit-v3" type="submit">Применить</button>
     </form>
+    <div class="admin-student-table-v2">
+      <div class="admin-student-table-head-v2">
+        <span>Студент</span>
+        <span>Группа</span>
+        <span>Куратор</span>
+        <span>Статус</span>
+        <span></span>
+      </div>
 
-    <div class="admin-student-list">
-      {% for student in students %}
-        <article class="admin-student-row">
-          <div class="admin-student-main">
-            {% if student.photo %}<img class="avatar-img avatar-md" src="{{ student.photo.url }}" alt="{{ student.full_name }}">{% else %}<div class="avatar-fallback avatar-md">{{ student.full_name|initials }}</div>{% endif %}
+      <div class="admin-student-list-v2">
+        {% for student in students %}
+          <article class="admin-student-row-v2">
+            <div class="admin-student-person-v2" data-label="Студент">
+              {% if student.photo %}
+                <img class="avatar-img avatar-md admin-student-avatar-v2" src="{{ student.photo.url }}" alt="{{ student.full_name }}">
+              {% else %}
+                <div class="avatar-fallback avatar-md admin-student-avatar-v2">{{ student.full_name|initials }}</div>
+              {% endif %}
 
-            <div class="admin-student-name">
-              <strong>{{ student.full_name }}</strong>
-              <span>{{ student.email }}</span>
+              <div class="admin-student-name-v2">
+                <strong>{{ student.full_name }}</strong>
+                <span>{{ student.email }}</span>
+              </div>
             </div>
-          </div>
 
-          <div class="admin-student-cell">
-            <span class="cell-label">Группа</span>
-            <strong>{{ student.study_group.name|default:student.group|default:'—' }}</strong>
-            <small>{{ student.study_group.specialty_ref.name|default:student.specialty|default:'—' }}</small>
-          </div>
+            <div class="admin-student-info-v2" data-label="Группа">
+              <strong>{{ student.study_group.name|default:student.group|default:'—' }}</strong>
+              <span>{{ student.study_group.specialty_ref.name|default:student.specialty|default:'—' }}</span>
+            </div>
 
-          <div class="admin-student-cell">
-            <span class="cell-label">Куратор</span>
-            <p>{{ student.study_group.curator.full_name|default:student.curator.full_name|default:'не назначен' }}</p>
-          </div>
+            <div class="admin-student-info-v2" data-label="Куратор">
+              <strong>{{ student.study_group.curator.full_name|default:student.curator.full_name|default:'не назначен' }}</strong>
+            </div>
 
-          <div class="student-status-plain">
-            <span class="student-status-text">
-              {{ student.get_academic_status_display }}
-            </span>
-          </div>
+            <div class="admin-student-status-v2" data-label="Статус">
+              {% if student.academic_status == 'studying' %}
+                <span class="admin-student-status-pill-v2 is-studying">{{ student.get_academic_status_display }}</span>
+              {% elif student.academic_status == 'academic_leave' %}
+                <span class="admin-student-status-pill-v2 is-leave">{{ student.get_academic_status_display }}</span>
+              {% elif student.academic_status == 'graduated' %}
+                <span class="admin-student-status-pill-v2 is-graduated">{{ student.get_academic_status_display }}</span>
+              {% elif student.academic_status == 'expelled' %}
+                <span class="admin-student-status-pill-v2 is-expelled">{{ student.get_academic_status_display }}</span>
+              {% else %}
+                <span class="admin-student-status-pill-v2">{{ student.get_academic_status_display }}</span>
+              {% endif %}
+            </div>
 
-          <a class="btn btn-link admin-row-action" href="{% url 'accounts:admin_student_detail' student.id %}">
-            Открыть
-          </a>
-        </article>
-      {% empty %}
-        <div class="admin-empty-state">
-          <strong>Студенты не найдены</strong>
-          <p>Попробуйте изменить фильтры или создать нового студента.</p>
-        </div>
-      {% endfor %}
+            <a class="btn btn-link admin-student-open-v2" href="{% url 'accounts:admin_student_detail' student.id %}">
+              Открыть
+            </a>
+          </article>
+        {% empty %}
+          <div class="admin-empty-state admin-student-empty-v2">
+            <strong>Студенты не найдены</strong>
+            <p>Попробуйте изменить фильтры или создать нового студента.</p>
+          </div>
+        {% endfor %}
+      </div>
     </div>
+    {% if page_obj.paginator.count %}
+  <section class="student-vacancies-pagination-wrap">
+    {% if page_obj.paginator.num_pages > 1 %}
+      <nav class="student-vacancies-pagination" aria-label="Пагинация студентов">
+        {% if page_obj.has_previous %}
+          <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}#students-list">
+            <i class="bi bi-chevron-left"></i>
+          </a>
+        {% else %}
+          <span class="is-disabled">
+            <i class="bi bi-chevron-left"></i>
+          </span>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+          {% if num == page_obj.number %}
+            <span class="is-current">{{ num }}</span>
+          {% elif num <= 5 or num == page_obj.paginator.num_pages %}
+            <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}#students-list">{{ num }}</a>
+          {% elif num == 6 %}
+            <span class="is-gap">…</span>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}#students-list">
+            <i class="bi bi-chevron-right"></i>
+          </a>
+        {% else %}
+          <span class="is-disabled">
+            <i class="bi bi-chevron-right"></i>
+          </span>
+        {% endif %}
+      </nav>
+    {% endif %}
+  </section>
+{% endif %}
   </div>
 </section>
 {% endblock %}
