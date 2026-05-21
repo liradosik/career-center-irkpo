@@ -1177,6 +1177,11 @@ def admin_students(request):
 
     paginator = Paginator(students, 12)
     page_obj = paginator.get_page(request.GET.get('page'))
+    page_range = paginator.get_elided_page_range(
+    number=page_obj.number,
+    on_each_side=1,
+    on_ends=1,
+)
 
     query_params = request.GET.copy()
     query_params.pop('page', None)
