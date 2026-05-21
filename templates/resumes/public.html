@@ -26,83 +26,106 @@
     </div>
   </section>
 {% else %}
-  <section class="public-resume-page-v4 {% if resume_template == 'modern' %}resume-template-modern{% elif resume_template == 'academic' %}resume-template-academic{% else %}resume-template-classic{% endif %} resume-font-{{ resume_font_size|default:'standard' }} {% if is_pdf_mode %}is-pdf-mode{% endif %}">
-    <article class="public-resume-hero-v4 {% if resume_photo_source == 'hidden' %}public-resume-hero-no-photo{% else %}public-resume-hero-has-photo{% endif %}">
-      {% if resume_photo_source != 'hidden' %}
-        {% if resume_photo_url %}
-          <img class="public-resume-photo-v4" src="{{ resume_photo_url }}" alt="Фото {{ student.full_name|default:'студента' }}">
-        {% else %}
-          <div class="public-resume-avatar-v4" aria-label="Фото не задано">
-            {{ student.full_name|default:"Р"|slice:":1" }}
+  <section class="public-resume-page-v6 {% if resume_template == 'modern' %}resume-template-modern{% elif resume_template == 'academic' %}resume-template-academic{% else %}resume-template-classic{% endif %} resume-font-{{ resume_font_size|default:'standard' }} {% if is_pdf_mode %}is-pdf-mode{% endif %}">
+
+    {% if is_owner_view and not is_pdf_mode %}
+      <div class="public-resume-owner-preview-v6">
+        <div class="public-resume-owner-preview-main-v6">
+          <span class="public-resume-owner-preview-icon-v6">
+            <i class="bi bi-pencil-square"></i>
+          </span>
+          <strong>Предпросмотр</strong>
+          <span>Так страницу увидит работодатель по публичной ссылке.</span>
+        </div>
+
+        <a class="btn btn-link public-resume-back-v6" href="{% url 'resumes:builder' %}">
+          Вернуться в конструктор
+        </a>
+      </div>
+    {% endif %}
+
+    <article class="public-resume-classic-card-v6 {% if resume_photo_source == 'hidden' %}public-resume-no-photo-v6{% else %}public-resume-has-photo-v6{% endif %}">
+      <header class="public-resume-hero-v6">
+        {% if resume_photo_source != 'hidden' %}
+          <div class="public-resume-photo-wrap-v6">
+            {% if resume_photo_url %}
+              <img class="public-resume-photo-v6" src="{{ resume_photo_url }}" alt="Фото {{ student.full_name|default:'студента' }}">
+            {% else %}
+              <div class="public-resume-avatar-v6" aria-label="Фото не задано">
+                {{ student.full_name|default:"Р"|slice:":1" }}
+              </div>
+            {% endif %}
           </div>
         {% endif %}
-      {% endif %}
 
-      <div class="public-resume-person-v4">
-        <h1>{{ student.full_name|default:"ФИО не указано" }}</h1>
+        <div class="public-resume-person-v6">
+          <h1>{{ student.full_name|default:"ФИО не указано" }}</h1>
 
-        <p class="public-resume-position-v4">
-          {{ resume.title|default:"Студент / Начинающий специалист" }}
-        </p>
+          <p class="public-resume-position-v6">
+            {{ resume.title|default:"Студент / Начинающий специалист" }}
+          </p>
 
-        <p class="public-resume-about-v4">
-          {{ about_text|default:"Краткая информация о студенте пока не добавлена." }}
-        </p>
+          <p class="public-resume-about-v6">
+            {{ about_text|default:"Краткая информация о студенте пока не добавлена." }}
+          </p>
 
-        <ul class="public-resume-contacts-v4">
-          {% if student.email %}
-            <li>
-              <i class="bi bi-envelope"></i>
-              <span>{{ student.email }}</span>
-            </li>
-          {% endif %}
+          <ul class="public-resume-contacts-v6">
+            {% if student.email %}
+              <li>
+                <i class="bi bi-envelope"></i>
+                <span>{{ student.email }}</span>
+              </li>
+            {% endif %}
 
-          {% if profile.phone %}
-            <li>
-              <i class="bi bi-telephone"></i>
-              <span>{{ profile.phone }}</span>
-            </li>
-          {% endif %}
+            {% if profile.phone %}
+              <li>
+                <i class="bi bi-telephone"></i>
+                <span>{{ profile.phone }}</span>
+              </li>
+            {% endif %}
 
-          {% if profile.city %}
-            <li>
-              <i class="bi bi-geo-alt"></i>
-              <span>{{ profile.city }}</span>
-            </li>
-          {% endif %}
+            {% if profile.city %}
+              <li>
+                <i class="bi bi-geo-alt"></i>
+                <span>{{ profile.city }}</span>
+              </li>
+            {% endif %}
 
-          {% if profile.contact_link %}
-            <li>
-              <i class="bi bi-send"></i>
-              <span>{{ profile.contact_link }}</span>
-            </li>
-          {% endif %}
-        </ul>
-      </div>
-    </article>
+            {% if profile.contact_link %}
+              <li>
+                <i class="bi bi-send"></i>
+                <span>{{ profile.contact_link }}</span>
+              </li>
+            {% endif %}
+          </ul>
+        </div>
+      </header>
 
-    {% with portfolio_count=grouped_entries.projects|length|add:grouped_entries.academic|length|add:grouped_entries.certificates|length|add:grouped_entries.skills|length|add:grouped_entries.recommendations|length|add:grouped_entries.creative|length|add:grouped_entries.sport|length|add:grouped_entries.social|length %}
-      <main class="public-resume-sheet-v4">
-        <section class="public-resume-block-v4 public-resume-section-education-v4">
+      <main class="public-resume-content-v6">
+        <section class="public-resume-block-v6 public-resume-education-v6">
           <h2>
             <i class="bi bi-mortarboard"></i>
             Образование
           </h2>
 
-          <div class="public-resume-entry-v4">
-            <h3>ИРКПО</h3>
+          <article class="public-resume-entry-v6">
+            <h3>Иркутский региональный колледж педагогического образования</h3>
             <p>{{ student.group|default:"Группа не указана" }} · {{ student.specialty|default:"Специальность не указана" }}</p>
-          </div>
+          </article>
         </section>
 
         {% for section in selected_sections %}
           {% if section == 'projects' and grouped_entries.projects %}
-            <section class="public-resume-block-v4">
-              <h2>Проекты и работы</h2>
+            <section class="public-resume-block-v6">
+              <h2>
+                <i class="bi bi-folder2-open"></i>
+                Проекты и работы
+              </h2>
 
               {% for e in grouped_entries.projects %}
-                <article class="public-resume-entry-v4">
+                <article class="public-resume-entry-v6">
                   <h3>{{ e.title }}</h3>
+                  {% if e.date %}<span>{{ e.date|date:"Y" }}</span>{% endif %}
                   {% if e.description %}<p>{{ e.description }}</p>{% endif %}
                   {% include 'portfolio/_attachments.html' with attachments=e.attachments.all legacy_file=e.file %}
                 </article>
@@ -111,12 +134,16 @@
           {% endif %}
 
           {% if section == 'academic' and grouped_entries.academic %}
-            <section class="public-resume-block-v4">
-              <h2>Учебные достижения</h2>
+            <section class="public-resume-block-v6">
+              <h2>
+                <i class="bi bi-trophy"></i>
+                Достижения
+              </h2>
 
               {% for e in grouped_entries.academic %}
-                <article class="public-resume-entry-v4">
+                <article class="public-resume-entry-v6">
                   <h3>{{ e.title }}</h3>
+                  {% if e.date %}<span>{{ e.date|date:"Y" }}</span>{% endif %}
                   {% if e.description %}<p>{{ e.description }}</p>{% endif %}
                   {% include 'portfolio/_attachments.html' with attachments=e.attachments.all legacy_file=e.file %}
                 </article>
@@ -125,12 +152,16 @@
           {% endif %}
 
           {% if section == 'certificates' and grouped_entries.certificates %}
-            <section class="public-resume-block-v4">
-              <h2>Сертификаты и курсы</h2>
+            <section class="public-resume-block-v6">
+              <h2>
+                <i class="bi bi-journal-check"></i>
+                Сертификаты и курсы
+              </h2>
 
               {% for e in grouped_entries.certificates %}
-                <article class="public-resume-entry-v4">
+                <article class="public-resume-entry-v6">
                   <h3>{{ e.title }}</h3>
+                  {% if e.date %}<span>{{ e.date|date:"Y" }}</span>{% endif %}
                   {% if e.description %}<p>{{ e.description }}</p>{% endif %}
                   {% include 'portfolio/_attachments.html' with attachments=e.attachments.all legacy_file=e.file %}
                 </article>
@@ -139,10 +170,13 @@
           {% endif %}
 
           {% if section == 'skills' and grouped_entries.skills %}
-            <section class="public-resume-block-v4">
-              <h2>Навыки</h2>
+            <section class="public-resume-block-v6 public-resume-skills-block-v6">
+              <h2>
+                <i class="bi bi-star"></i>
+                Навыки
+              </h2>
 
-              <div class="public-resume-skills-v4">
+              <div class="public-resume-skills-v6">
                 {% for e in grouped_entries.skills %}
                   <span>{{ e.title }}</span>
                 {% endfor %}
@@ -151,12 +185,16 @@
           {% endif %}
 
           {% if section == 'recommendations' and grouped_entries.recommendations %}
-            <section class="public-resume-block-v4">
-              <h2>Отзывы и рекомендации</h2>
+            <section class="public-resume-block-v6">
+              <h2>
+                <i class="bi bi-chat"></i>
+                Отзывы и рекомендации
+              </h2>
 
               {% for e in grouped_entries.recommendations %}
-                <article class="public-resume-entry-v4">
+                <article class="public-resume-entry-v6">
                   <h3>{{ e.title }}</h3>
+                  {% if e.date %}<span>{{ e.date|date:"Y" }}</span>{% endif %}
                   {% if e.description %}<p>{{ e.description }}</p>{% endif %}
                   {% include 'portfolio/_attachments.html' with attachments=e.attachments.all legacy_file=e.file %}
                 </article>
@@ -165,12 +203,16 @@
           {% endif %}
 
           {% if section == 'creative' and grouped_entries.creative %}
-            <section class="public-resume-block-v4">
-              <h2>Творческая деятельность</h2>
+            <section class="public-resume-block-v6">
+              <h2>
+                <i class="bi bi-palette"></i>
+                Творческая деятельность
+              </h2>
 
               {% for e in grouped_entries.creative %}
-                <article class="public-resume-entry-v4">
+                <article class="public-resume-entry-v6">
                   <h3>{{ e.title }}</h3>
+                  {% if e.date %}<span>{{ e.date|date:"Y" }}</span>{% endif %}
                   {% if e.description %}<p>{{ e.description }}</p>{% endif %}
                   {% include 'portfolio/_attachments.html' with attachments=e.attachments.all legacy_file=e.file %}
                 </article>
@@ -179,12 +221,16 @@
           {% endif %}
 
           {% if section == 'sport' and grouped_entries.sport %}
-            <section class="public-resume-block-v4">
-              <h2>Спортивная деятельность</h2>
+            <section class="public-resume-block-v6">
+              <h2>
+                <i class="bi bi-activity"></i>
+                Спортивная деятельность
+              </h2>
 
               {% for e in grouped_entries.sport %}
-                <article class="public-resume-entry-v4">
+                <article class="public-resume-entry-v6">
                   <h3>{{ e.title }}</h3>
+                  {% if e.date %}<span>{{ e.date|date:"Y" }}</span>{% endif %}
                   {% if e.description %}<p>{{ e.description }}</p>{% endif %}
                   {% include 'portfolio/_attachments.html' with attachments=e.attachments.all legacy_file=e.file %}
                 </article>
@@ -193,12 +239,16 @@
           {% endif %}
 
           {% if section == 'social' and grouped_entries.social %}
-            <section class="public-resume-block-v4">
-              <h2>Общественная деятельность</h2>
+            <section class="public-resume-block-v6">
+              <h2>
+                <i class="bi bi-people"></i>
+                Общественная деятельность
+              </h2>
 
               {% for e in grouped_entries.social %}
-                <article class="public-resume-entry-v4">
+                <article class="public-resume-entry-v6">
                   <h3>{{ e.title }}</h3>
+                  {% if e.date %}<span>{{ e.date|date:"Y" }}</span>{% endif %}
                   {% if e.description %}<p>{{ e.description }}</p>{% endif %}
                   {% include 'portfolio/_attachments.html' with attachments=e.attachments.all legacy_file=e.file %}
                 </article>
@@ -206,16 +256,8 @@
             </section>
           {% endif %}
         {% endfor %}
-
-        {% if portfolio_count == 0 %}
-          <section class="public-resume-block-v4 public-resume-section-empty-v4">
-            <p class="public-resume-muted-v4">
-              Подтверждённые материалы портфолио пока не добавлены.
-            </p>
-          </section>
-        {% endif %}
       </main>
-    {% endwith %}
+    </article>
   </section>
 {% endif %}
 {% endblock %}

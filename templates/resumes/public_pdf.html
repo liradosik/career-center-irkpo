@@ -1,48 +1,21 @@
-{% load ui_extras %}
+{% load static ui_extras %}
 <!doctype html>
 <html lang="ru">
 <head>
   <meta charset="utf-8">
   <title>Резюме {{ student.full_name|default:'студента' }}</title>
 
-  <style>
-    .pdf-online-link {
-  margin-top: 10px;
-  padding: 8px 10px;
-  border: 1px solid #cfe0f5;
-  border-radius: 8px;
-  background: #f6f9ff;
-  color: #173a6a;
-  font-size: 11px;
-  line-height: 1.45;
-}
-
-.pdf-online-link a {
-  color: #1764cf;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-    .pdf-attachments-note {
-      margin-top: 6px;
-      padding: 6px 8px;
-      border-left: 3px solid #2f7fe8;
-      background: #f6f9ff;
-      color: #37526f;
-      font-size: 11px;
-      line-height: 1.4;
-    }
-  </style>
+  <link rel="stylesheet" href="{% static 'css/resume_pdf.css' %}">
 </head>
 
 <body>
-  <div class="pdf-page {% if resume_template == 'modern' %}pdf-template-modern{% elif resume_template == 'academic' %}pdf-template-academic{% else %}pdf-template-classic{% endif %} resume-font-{{ resume_font_size|default:'standard' }}">
+  <div class="pdf-page pdf-template-{{ resume_template|default:'classic' }} resume-font-{{ resume_font_size|default:'standard' }} {% if resume_photo_source == 'hidden' %}pdf-no-photo{% endif %}">
     <div class="pdf-sheet">
       <section class="pdf-hero">
         {% if resume_photo_source != 'hidden' %}
           <div class="pdf-photo-cell">
             {% if resume_photo_url %}
-              <img class="pdf-photo" src="{{ resume_photo_url }}" alt="Фото">
+              <img class="pdf-photo" src="{{ resume_photo_url }}" alt="Фото {{ student.full_name|default:'студента' }}">
             {% else %}
               <div class="pdf-avatar">{{ student.full_name|default:'Р'|slice:':1' }}</div>
             {% endif %}
@@ -55,44 +28,41 @@
           <p class="pdf-about">{{ about_text|default:'Краткая информация о студенте пока не добавлена.' }}</p>
 
           <ul class="pdf-contacts">
-            {% if student.email %}<li>Email: {{ student.email }}</li>{% endif %}
-            {% if profile.phone %}<li>Телефон: {{ profile.phone }}</li>{% endif %}
-            {% if profile.city %}<li>Город: {{ profile.city }}</li>{% endif %}
-            {% if profile.contact_link %}<li>Контакт: {{ profile.contact_link }}</li>{% endif %}
+            {% if student.email %}<li>{{ student.email }}</li>{% endif %}
+            {% if profile.phone %}<li>{{ profile.phone }}</li>{% endif %}
+            {% if profile.city %}<li>{{ profile.city }}</li>{% endif %}
+            {% if profile.contact_link %}<li>{{ profile.contact_link }}</li>{% endif %}
           </ul>
 
           {% if public_resume_url %}
-  <p class="pdf-online-link">
-    Материалы портфолио доступны в онлайн-версии:
-    <a href="{{ public_resume_url }}">открыть резюме</a>
-  </p>
-{% endif %}
+            <p class="pdf-online-link">
+              Материалы портфолио доступны в онлайн-версии:
+              <a href="{{ public_resume_url }}">открыть резюме</a>
+            </p>
+          {% endif %}
         </div>
       </section>
 
-      <section class="pdf-block">
-        <h2>Образование</h2>
+      <main class="pdf-content">
+        <section class="pdf-block pdf-education-block">
+          <h2>Образование</h2>
+          <article class="pdf-entry">
+            <h3>Иркутский региональный колледж педагогического образования</h3>
+            <p>{{ student.group|default:'Группа не указана' }} · {{ student.specialty|default:'Специальность не указана' }}</p>
+          </article>
+        </section>
 
-        <article class="pdf-entry">
-          <h3>ИРКПО</h3>
-          <p>{{ student.group|default:'Группа не указана' }} · {{ student.specialty|default:'Специальность не указана' }}</p>
-        </article>
-      </section>
-
-      {% with portfolio_count=grouped_entries.projects|length|add:grouped_entries.academic|length|add:grouped_entries.certificates|length|add:grouped_entries.skills|length|add:grouped_entries.recommendations|length|add:grouped_entries.creative|length|add:grouped_entries.sport|length|add:grouped_entries.social|length %}
         {% for section in selected_sections %}
           {% if section == 'projects' and grouped_entries.projects %}
             <section class="pdf-block">
               <h2>Проекты и работы</h2>
-
               {% for e in grouped_entries.projects %}
                 <article class="pdf-entry">
                   <h3>{{ e.title }}</h3>
+                  {% if e.date %}<span class="pdf-entry-date">{{ e.date|date:'Y' }}</span>{% endif %}
                   {% if e.description %}<p>{{ e.description }}</p>{% endif %}
                   {% if e.attachments.all or e.file %}
-                    <p class="pdf-attachments-note">
-                      Есть прикреплённые материалы. Доступны в онлайн-версии резюме.
-                    </p>
+                    <p class="pdf-attachments-note">Есть прикреплённые материалы. Доступны в онлайн-версии резюме.</p>
                   {% endif %}
                 </article>
               {% endfor %}
@@ -101,16 +71,14 @@
 
           {% if section == 'academic' and grouped_entries.academic %}
             <section class="pdf-block">
-              <h2>Учебные достижения</h2>
-
+              <h2>Достижения</h2>
               {% for e in grouped_entries.academic %}
                 <article class="pdf-entry">
                   <h3>{{ e.title }}</h3>
+                  {% if e.date %}<span class="pdf-entry-date">{{ e.date|date:'Y' }}</span>{% endif %}
                   {% if e.description %}<p>{{ e.description }}</p>{% endif %}
                   {% if e.attachments.all or e.file %}
-                    <p class="pdf-attachments-note">
-                      Есть прикреплённые материалы. Доступны в онлайн-версии резюме.
-                    </p>
+                    <p class="pdf-attachments-note">Есть прикреплённые материалы. Доступны в онлайн-версии резюме.</p>
                   {% endif %}
                 </article>
               {% endfor %}
@@ -120,15 +88,13 @@
           {% if section == 'certificates' and grouped_entries.certificates %}
             <section class="pdf-block">
               <h2>Сертификаты и курсы</h2>
-
               {% for e in grouped_entries.certificates %}
                 <article class="pdf-entry">
                   <h3>{{ e.title }}</h3>
+                  {% if e.date %}<span class="pdf-entry-date">{{ e.date|date:'Y' }}</span>{% endif %}
                   {% if e.description %}<p>{{ e.description }}</p>{% endif %}
                   {% if e.attachments.all or e.file %}
-                    <p class="pdf-attachments-note">
-                      Есть прикреплённые материалы. Доступны в онлайн-версии резюме.
-                    </p>
+                    <p class="pdf-attachments-note">Есть прикреплённые материалы. Доступны в онлайн-версии резюме.</p>
                   {% endif %}
                 </article>
               {% endfor %}
@@ -138,25 +104,24 @@
           {% if section == 'skills' and grouped_entries.skills %}
             <section class="pdf-block">
               <h2>Навыки</h2>
-
-              {% for e in grouped_entries.skills %}
-                <span class="pdf-skill">{{ e.title }}</span>
-              {% endfor %}
+              <div class="pdf-skills">
+                {% for e in grouped_entries.skills %}
+                  <span class="pdf-skill">{{ e.title }}</span>
+                {% endfor %}
+              </div>
             </section>
           {% endif %}
 
           {% if section == 'recommendations' and grouped_entries.recommendations %}
             <section class="pdf-block">
               <h2>Отзывы и рекомендации</h2>
-
               {% for e in grouped_entries.recommendations %}
                 <article class="pdf-entry">
                   <h3>{{ e.title }}</h3>
+                  {% if e.date %}<span class="pdf-entry-date">{{ e.date|date:'Y' }}</span>{% endif %}
                   {% if e.description %}<p>{{ e.description }}</p>{% endif %}
                   {% if e.attachments.all or e.file %}
-                    <p class="pdf-attachments-note">
-                      Есть прикреплённые материалы. Доступны в онлайн-версии резюме.
-                    </p>
+                    <p class="pdf-attachments-note">Есть прикреплённые материалы. Доступны в онлайн-версии резюме.</p>
                   {% endif %}
                 </article>
               {% endfor %}
@@ -166,15 +131,13 @@
           {% if section == 'creative' and grouped_entries.creative %}
             <section class="pdf-block">
               <h2>Творческая деятельность</h2>
-
               {% for e in grouped_entries.creative %}
                 <article class="pdf-entry">
                   <h3>{{ e.title }}</h3>
+                  {% if e.date %}<span class="pdf-entry-date">{{ e.date|date:'Y' }}</span>{% endif %}
                   {% if e.description %}<p>{{ e.description }}</p>{% endif %}
                   {% if e.attachments.all or e.file %}
-                    <p class="pdf-attachments-note">
-                      Есть прикреплённые материалы. Доступны в онлайн-версии резюме.
-                    </p>
+                    <p class="pdf-attachments-note">Есть прикреплённые материалы. Доступны в онлайн-версии резюме.</p>
                   {% endif %}
                 </article>
               {% endfor %}
@@ -184,15 +147,13 @@
           {% if section == 'sport' and grouped_entries.sport %}
             <section class="pdf-block">
               <h2>Спортивная деятельность</h2>
-
               {% for e in grouped_entries.sport %}
                 <article class="pdf-entry">
                   <h3>{{ e.title }}</h3>
+                  {% if e.date %}<span class="pdf-entry-date">{{ e.date|date:'Y' }}</span>{% endif %}
                   {% if e.description %}<p>{{ e.description }}</p>{% endif %}
                   {% if e.attachments.all or e.file %}
-                    <p class="pdf-attachments-note">
-                      Есть прикреплённые материалы. Доступны в онлайн-версии резюме.
-                    </p>
+                    <p class="pdf-attachments-note">Есть прикреплённые материалы. Доступны в онлайн-версии резюме.</p>
                   {% endif %}
                 </article>
               {% endfor %}
@@ -202,15 +163,13 @@
           {% if section == 'social' and grouped_entries.social %}
             <section class="pdf-block">
               <h2>Общественная деятельность</h2>
-
               {% for e in grouped_entries.social %}
                 <article class="pdf-entry">
                   <h3>{{ e.title }}</h3>
+                  {% if e.date %}<span class="pdf-entry-date">{{ e.date|date:'Y' }}</span>{% endif %}
                   {% if e.description %}<p>{{ e.description }}</p>{% endif %}
                   {% if e.attachments.all or e.file %}
-                    <p class="pdf-attachments-note">
-                      Есть прикреплённые материалы. Доступны в онлайн-версии резюме.
-                    </p>
+                    <p class="pdf-attachments-note">Есть прикреплённые материалы. Доступны в онлайн-версии резюме.</p>
                   {% endif %}
                 </article>
               {% endfor %}
@@ -219,11 +178,11 @@
         {% endfor %}
 
         {% if not entries %}
-  <section class="pdf-block">
-    <p class="pdf-muted">Подтверждённые материалы портфолио пока не добавлены.</p>
-  </section>
-{% endif %}
-      {% endwith %}
+          <section class="pdf-block">
+            <p class="pdf-muted">Пока нет подтверждённых материалов для выбранных разделов.</p>
+          </section>
+        {% endif %}
+      </main>
     </div>
   </div>
 </body>

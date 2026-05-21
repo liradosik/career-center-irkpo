@@ -1,0 +1,788 @@
+/* === Resume PDF: clean printable styles === */
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+  color: #18304d;
+  background: #ffffff;
+  line-height: 1.45;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+p,
+h1,
+h2,
+h3 {
+  margin: 0;
+}
+
+.pdf-page {
+  width: 100%;
+}
+
+.pdf-sheet {
+  width: 100%;
+  overflow: visible;
+  border: 1px solid #d6e2f1;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.pdf-hero {
+  display: table;
+  width: 100%;
+  padding: 20px 24px 18px;
+  border-bottom: 1px solid #e2ebf6;
+  background: #ffffff;
+}
+
+.pdf-photo-cell,
+.pdf-body-cell {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.pdf-photo-cell {
+  width: 116px;
+  padding-right: 22px;
+  text-align: center;
+}
+
+.pdf-body-cell {
+  width: auto;
+}
+
+.pdf-photo,
+.pdf-avatar {
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+}
+
+.pdf-photo {
+  display: block;
+  object-fit: cover;
+  border: 1px solid #dbe7f5;
+}
+
+.pdf-avatar {
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
+  color: #ffffff;
+  background: #1e66d0;
+  font-size: 34px;
+  font-weight: 600;
+}
+
+.pdf-name {
+  margin: 0 0 4px;
+  color: #1d3148;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 27px;
+  line-height: 1.08;
+  font-weight: 700;
+}
+
+.pdf-position {
+  margin: 0 0 8px;
+  color: #1e66d0;
+  font-size: 12.5px;
+  line-height: 1.25;
+  font-weight: 600;
+}
+
+.pdf-about {
+  max-width: 100%;
+  margin: 0 0 10px;
+  color: #667891;
+  font-size: 11.2px;
+  line-height: 1.5;
+}
+
+.pdf-contacts {
+  display: block;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: #425872;
+  font-size: 10.8px;
+  line-height: 1.45;
+}
+
+.pdf-contacts li {
+  display: inline;
+  margin-right: 12px;
+  white-space: nowrap;
+}
+
+.pdf-contacts li::after {
+  content: "";
+}
+
+.pdf-online-link {
+  margin-top: 9px;
+  padding: 7px 9px;
+  border: 1px solid #cfe0f5;
+  border-radius: 8px;
+  background: #f6f9ff;
+  color: #37526f;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.pdf-online-link a {
+  color: #1764cf;
+  font-weight: 600;
+}
+
+.pdf-content {
+  display: block;
+  padding: 18px 24px 24px;
+  font-size: 0;
+  background: #ffffff;
+}
+
+.pdf-block {
+  display: inline-block;
+  width: 47.8%;
+  margin: 0 3.6% 13px 0;
+  padding: 0 0 11px;
+  vertical-align: top;
+  border-bottom: 1px solid #e2ebf6;
+  font-size: 11.2px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.pdf-block:nth-child(2n) {
+  margin-right: 0;
+}
+
+.pdf-block h2 {
+  margin: 0 0 8px;
+  color: #1e66d0;
+  font-size: 13.5px;
+  line-height: 1.25;
+  font-weight: 650;
+}
+
+.pdf-entry {
+  display: block;
+  margin-top: 7px;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.pdf-entry + .pdf-entry {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #edf2f8;
+}
+
+.pdf-entry h3 {
+  margin: 0 0 3px;
+  color: #1d3148;
+  font-size: 11.2px;
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+.pdf-entry span,
+.pdf-entry p {
+  margin: 0 0 3px;
+  color: #61738c;
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+.pdf-skill {
+  display: inline-block;
+  margin: 0 5px 6px 0;
+  padding: 4px 8px;
+  border: 1px solid #dbe8f7;
+  border-radius: 999px;
+  color: #1e66d0;
+  background: #f4f8ff;
+  font-size: 10px;
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+.pdf-muted {
+  color: #667891;
+  font-size: 10.5px;
+}
+
+.pdf-attachments-note {
+  margin-top: 6px;
+  padding: 6px 8px;
+  border-left: 3px solid #2f7fe8;
+  border-radius: 0 6px 6px 0;
+  background: #f6f9ff;
+  color: #53677f;
+  font-size: 9.8px;
+  line-height: 1.35;
+}
+
+/* === Font size modes === */
+
+.resume-font-small .pdf-name {
+  font-size: 24px;
+}
+
+.resume-font-standard .pdf-name {
+  font-size: 27px;
+}
+
+.resume-font-large .pdf-name {
+  font-size: 30px;
+}
+
+.resume-font-small .pdf-position {
+  font-size: 11.5px;
+}
+
+.resume-font-standard .pdf-position {
+  font-size: 12.5px;
+}
+
+.resume-font-large .pdf-position {
+  font-size: 13.5px;
+}
+
+.resume-font-small .pdf-about,
+.resume-font-small .pdf-contacts,
+.resume-font-small .pdf-block,
+.resume-font-small .pdf-entry h3,
+.resume-font-small .pdf-entry p,
+.resume-font-small .pdf-entry span {
+  font-size: 9.8px;
+}
+
+.resume-font-large .pdf-about,
+.resume-font-large .pdf-contacts,
+.resume-font-large .pdf-block,
+.resume-font-large .pdf-entry p,
+.resume-font-large .pdf-entry span {
+  font-size: 11.5px;
+}
+
+.resume-font-large .pdf-entry h3 {
+  font-size: 12px;
+}
+
+.resume-font-small .pdf-block h2 {
+  font-size: 12.5px;
+}
+
+.resume-font-large .pdf-block h2 {
+  font-size: 14.5px;
+}
+
+/* === Classic PDF template === */
+
+.pdf-template-classic .pdf-sheet {
+  border-color: #d6e2f1;
+  border-radius: 14px;
+  box-shadow: none;
+}
+
+.pdf-template-classic .pdf-hero {
+  background: #ffffff;
+}
+
+.pdf-template-classic .pdf-name {
+  color: #1d3148;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.pdf-template-classic .pdf-position,
+.pdf-template-classic .pdf-block h2 {
+  color: #1e66d0;
+}
+
+/* === Modern PDF template === */
+
+.pdf-template-modern .pdf-sheet {
+  border-color: #d8e7fb;
+  border-radius: 18px;
+  background: #f8fbff;
+}
+
+.pdf-template-modern .pdf-hero {
+  padding: 20px 24px 18px;
+  border-bottom-color: #d8e7fb;
+  background: #eef6ff;
+}
+
+.pdf-template-modern .pdf-photo,
+.pdf-template-modern .pdf-avatar {
+  border: 4px solid #ffffff;
+}
+
+.pdf-template-modern .pdf-avatar {
+  background: #1e66d0;
+}
+
+.pdf-template-modern .pdf-name {
+  color: #18304d;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+  font-weight: 650;
+}
+
+.pdf-template-modern .pdf-position {
+  color: #1e66d0;
+  font-weight: 600;
+}
+
+.pdf-template-modern .pdf-content {
+  display: block;
+  padding: 18px 24px 24px;
+  font-size: 0;
+  background: #f8fbff;
+}
+
+.pdf-template-modern .pdf-block {
+  padding: 12px;
+  border: 1px solid #dfeaf8;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.pdf-template-modern .pdf-block h2 {
+  color: #18304d;
+  font-weight: 650;
+}
+
+.pdf-template-modern .pdf-entry h3 {
+  color: #203854;
+  font-weight: 600;
+}
+
+.pdf-template-modern .pdf-entry span {
+  color: #1e66d0;
+  font-weight: 500;
+}
+
+.pdf-template-modern .pdf-skill {
+  color: #1e66d0;
+  background: #eef6ff;
+  border-color: #d8e7ff;
+}
+
+.pdf-template-modern .pdf-attachments-note {
+  border-left-color: #1e66d0;
+  background: #eef6ff;
+}
+
+/* === Academic PDF template === */
+
+.pdf-template-academic .pdf-sheet {
+  border-color: #c9d6e6;
+  border-left: 8px solid #19345b;
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+.pdf-template-academic .pdf-hero {
+  padding-left: 20px;
+  border-bottom-color: #d9e2ee;
+  background: #ffffff;
+}
+
+.pdf-template-academic .pdf-photo,
+.pdf-template-academic .pdf-avatar {
+  border: 3px solid #ffffff;
+  outline: 1px solid #c9d6e6;
+}
+
+.pdf-template-academic .pdf-avatar {
+  background: #19345b;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.pdf-template-academic .pdf-name {
+  color: #19345b;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+}
+
+.pdf-template-academic .pdf-position {
+  color: #1e66d0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 600;
+}
+
+.pdf-template-academic .pdf-about,
+.pdf-template-academic .pdf-contacts,
+.pdf-template-academic .pdf-entry h3,
+.pdf-template-academic .pdf-entry p,
+.pdf-template-academic .pdf-entry span {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.pdf-template-academic .pdf-content {
+  display: block;
+  padding: 18px 22px 24px 20px;
+  font-size: 0;
+  background: #ffffff;
+}
+
+.pdf-template-academic .pdf-block {
+  border-bottom-color: #d9e2ee;
+}
+
+.pdf-template-academic .pdf-block h2 {
+  padding-bottom: 6px;
+  border-bottom: 1px solid #d9e2ee;
+  color: #19345b;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 12.8px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.pdf-template-academic .pdf-entry h3 {
+  color: #18304d;
+  font-weight: 700;
+}
+
+.pdf-template-academic .pdf-entry p,
+.pdf-template-academic .pdf-entry span {
+  color: #5f718a;
+}
+
+.pdf-template-academic .pdf-skill {
+  border-color: #c9d6e6;
+  border-radius: 6px;
+  color: #19345b;
+  background: #f8fbff;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.pdf-template-academic .pdf-attachments-note {
+  border-left-color: #19345b;
+  background: #f8fbff;
+  color: #5f718a;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+/* === No photo mode === */
+
+.pdf-page .pdf-hero:not(:has(.pdf-photo-cell)) .pdf-body-cell {
+  display: block;
+  width: 100%;
+}
+
+/* WeasyPrint-safe fallback if :has is ignored: body still remains readable. */
+
+/* === Resume PDF final polish: closer to public templates, safer for A4 === */
+
+@page {
+  size: A4;
+  margin: 10mm;
+}
+
+.pdf-sheet {
+  page-break-inside: auto;
+  break-inside: auto;
+}
+
+.pdf-hero {
+  padding: 16px 21px 14px;
+}
+
+.pdf-photo-cell {
+  width: 104px;
+  padding-right: 18px;
+}
+
+.pdf-photo,
+.pdf-avatar {
+  width: 92px;
+  height: 92px;
+}
+
+.pdf-name {
+  margin-bottom: 3px;
+  font-size: 25px;
+  line-height: 1.05;
+}
+
+.pdf-position {
+  margin-bottom: 6px;
+  font-size: 11.8px;
+}
+
+.pdf-about {
+  margin-bottom: 7px;
+  font-size: 10.4px;
+  line-height: 1.42;
+}
+
+.pdf-contacts {
+  font-size: 9.8px;
+  line-height: 1.32;
+}
+
+.pdf-contacts li {
+  margin-right: 10px;
+}
+
+.pdf-online-link {
+  width: auto;
+  margin-top: 6px;
+  padding: 5px 7px;
+  border-radius: 7px;
+  font-size: 9px;
+  line-height: 1.25;
+}
+
+.pdf-content {
+  padding: 14px 20px 18px;
+}
+
+.pdf-block {
+  width: 48.35%;
+  margin-right: 2.7%;
+  margin-bottom: 9px;
+  padding-bottom: 8px;
+  font-size: 10.4px;
+}
+
+.pdf-block h2 {
+  margin-bottom: 6px;
+  font-size: 12.4px;
+  line-height: 1.18;
+}
+
+.pdf-entry {
+  margin-top: 5px;
+}
+
+.pdf-entry + .pdf-entry {
+  margin-top: 7px;
+  padding-top: 7px;
+}
+
+.pdf-entry h3 {
+  margin-bottom: 2px;
+  font-size: 10.4px;
+  line-height: 1.25;
+}
+
+.pdf-entry span,
+.pdf-entry p {
+  margin-bottom: 2px;
+  font-size: 9.7px;
+  line-height: 1.32;
+}
+
+.pdf-skill {
+  padding: 3px 7px;
+  margin: 0 4px 5px 0;
+  font-size: 9.2px;
+}
+
+.pdf-attachments-note {
+  margin-top: 4px;
+  padding: 4px 6px;
+  border-left-width: 2px;
+  border-radius: 0 5px 5px 0;
+  font-size: 8.7px;
+  line-height: 1.22;
+}
+
+/* small font should look compact, not empty */
+.resume-font-small .pdf-name {
+  font-size: 23px;
+}
+
+.resume-font-small .pdf-position {
+  font-size: 10.8px;
+}
+
+.resume-font-small .pdf-about,
+.resume-font-small .pdf-contacts,
+.resume-font-small .pdf-block,
+.resume-font-small .pdf-entry h3,
+.resume-font-small .pdf-entry p,
+.resume-font-small .pdf-entry span {
+  font-size: 9.1px;
+}
+
+.resume-font-small .pdf-block h2 {
+  font-size: 11.4px;
+}
+
+.resume-font-large .pdf-name {
+  font-size: 28px;
+}
+
+.resume-font-large .pdf-position {
+  font-size: 12.4px;
+}
+
+.resume-font-large .pdf-block h2 {
+  font-size: 13.3px;
+}
+
+/* no-photo mode: make header feel intentional */
+.pdf-no-photo .pdf-hero {
+  padding: 18px 24px 16px;
+}
+
+.pdf-no-photo .pdf-name {
+  max-width: 100%;
+}
+
+/* Classic: closer to public classic, cleaner serif title */
+.pdf-template-classic .pdf-sheet {
+  border-color: #d6e2f1;
+  border-radius: 14px;
+}
+
+.pdf-template-classic .pdf-hero {
+  background: #ffffff;
+}
+
+.pdf-template-classic .pdf-name {
+  color: #1d3148;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.pdf-template-classic .pdf-block h2 {
+  color: #1e66d0;
+}
+
+/* Modern: softer cards, less heavy, better A4 fit */
+.pdf-template-modern .pdf-sheet {
+  border-radius: 18px;
+  border-color: #d8e7fb;
+  background: #f8fbff;
+}
+
+.pdf-template-modern .pdf-hero {
+  padding: 16px 21px 14px;
+  background: #eef6ff;
+}
+
+.pdf-template-modern .pdf-name {
+  font-size: 26px;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+}
+
+.pdf-template-modern.resume-font-small .pdf-name {
+  font-size: 24px;
+}
+
+.pdf-template-modern.resume-font-large .pdf-name {
+  font-size: 28px;
+}
+
+.pdf-template-modern .pdf-photo,
+.pdf-template-modern .pdf-avatar {
+  border: 3px solid #ffffff;
+}
+
+.pdf-template-modern .pdf-content {
+  padding: 14px 20px 18px;
+  background: #f8fbff;
+}
+
+.pdf-template-modern .pdf-block {
+  padding: 9px 10px;
+  margin-bottom: 10px;
+  border: 1px solid #dfeaf8;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.pdf-template-modern .pdf-block h2 {
+  margin-bottom: 7px;
+  color: #18304d;
+  font-weight: 600;
+}
+
+.pdf-template-modern .pdf-entry h3 {
+  color: #203854;
+  font-weight: 550;
+}
+
+.pdf-template-modern .pdf-entry span {
+  color: #1e66d0;
+  font-weight: 500;
+}
+
+.pdf-template-modern .pdf-attachments-note {
+  background: #eef6ff;
+}
+
+/* Academic: remove square outline around round photo, keep official stripe */
+.pdf-template-academic .pdf-sheet {
+  border-left-width: 7px;
+  border-color: #c9d6e6;
+  border-radius: 4px;
+}
+
+.pdf-template-academic .pdf-hero {
+  padding: 16px 21px 14px 19px;
+}
+
+.pdf-template-academic .pdf-photo,
+.pdf-template-academic .pdf-avatar {
+  border: 2px solid #c9d6e6;
+  outline: 0;
+}
+
+.pdf-template-academic .pdf-name {
+  color: #19345b;
+  font-size: 25px;
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+}
+
+.pdf-template-academic.resume-font-small .pdf-name {
+  font-size: 23px;
+}
+
+.pdf-template-academic.resume-font-large .pdf-name {
+  font-size: 28px;
+}
+
+.pdf-template-academic .pdf-content {
+  padding: 14px 19px 18px;
+}
+
+.pdf-template-academic .pdf-block h2 {
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  font-size: 11.8px;
+  letter-spacing: 0.025em;
+}
+
+.pdf-template-academic .pdf-entry h3 {
+  font-weight: 650;
+}
