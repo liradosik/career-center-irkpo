@@ -4,9 +4,21 @@
 {% block title %}{% if entry %}Редактирование записи{% else %}Новая запись{% endif %}{% endblock %}
 
 {% block content %}
-<div class="portfolio-entry-page-v2">
+<div class="portfolio-entry-page-v3">
 
-  <section class="hero portfolio-entry-hero-v2">
+  <nav class="student-breadcrumb-v3 portfolio-entry-breadcrumb-v3" aria-label="Навигация">
+    <a href="{% url 'portfolio:list' %}">Моё портфолио</a>
+    <span>•</span>
+    <span>
+      {% if entry %}
+        Редактирование записи
+      {% else %}
+        Добавление записи
+      {% endif %}
+    </span>
+  </nav>
+
+  <section class="hero portfolio-entry-hero-v3">
     <div class="portfolio-entry-hero-main">
       <div class="hero-kicker">Портфолио</div>
 
@@ -20,9 +32,9 @@
 
       <p>
         {% if entry %}
-          Обновите информацию, вложения и описание записи перед повторной отправкой на проверку.
+          Обновите описание, дату и вложения перед повторной отправкой записи на проверку.
         {% else %}
-          Добавьте проекты, достижения, сертификаты, отзывы и другие материалы.
+          Добавьте проект, достижение, сертификат, отзыв или другой материал в портфолио.
         {% endif %}
       </p>
     </div>
@@ -30,13 +42,16 @@
     <div class="portfolio-entry-hero-art" aria-hidden="true">
       <span class="portfolio-entry-orbit portfolio-entry-orbit-one"></span>
       <span class="portfolio-entry-orbit portfolio-entry-orbit-two"></span>
+      <span class="portfolio-entry-orbit portfolio-entry-orbit-three"></span>
+
       <span class="portfolio-entry-star portfolio-entry-star-one">✦</span>
       <span class="portfolio-entry-star portfolio-entry-star-two">✧</span>
+      <span class="portfolio-entry-star portfolio-entry-star-three">✦</span>
     </div>
   </section>
 
-  <section class="section card portfolio-entry-form-card-v2">
-    <form method="post" enctype="multipart/form-data" class="portfolio-entry-form-v2">
+  <section class="section card portfolio-entry-form-card-v3">
+    <form method="post" enctype="multipart/form-data" class="portfolio-entry-form-v3">
       {% csrf_token %}
 
       {% if form.non_field_errors %}
@@ -45,106 +60,118 @@
         </div>
       {% endif %}
 
-      <div class="portfolio-entry-field portfolio-entry-field-full">
-        <label for="{{ form.type.id_for_label }}">
-          <i class="bi bi-folder2-open"></i>
-          {{ form.type.label }}
-        </label>
-        {{ form.type }}
-        {% if form.type.errors %}
-          <div class="portfolio-entry-field-error">{{ form.type.errors }}</div>
-        {% endif %}
-      </div>
-
-      <div class="portfolio-entry-field portfolio-entry-field-full">
-        <label for="{{ form.title.id_for_label }}">
-          <i class="bi bi-pencil"></i>
-          {{ form.title.label }}
-        </label>
-        {{ form.title }}
-        {% if form.title.errors %}
-          <div class="portfolio-entry-field-error">{{ form.title.errors }}</div>
-        {% endif %}
-      </div>
-
-      <div class="portfolio-entry-field portfolio-entry-field-full">
-        <label for="{{ form.description.id_for_label }}">
-          <i class="bi bi-file-earmark-text"></i>
-          {{ form.description.label }}
-        </label>
-        {{ form.description }}
-        {% if form.description.errors %}
-          <div class="portfolio-entry-field-error">{{ form.description.errors }}</div>
-        {% endif %}
-      </div>
-
-      <div class="portfolio-entry-two-columns">
-        <div class="portfolio-entry-field">
-          <label for="{{ form.date.id_for_label }}">
-            <i class="bi bi-calendar3"></i>
-            {{ form.date.label }}
+      <div class="portfolio-entry-form-grid-v3">
+        <div class="portfolio-entry-field portfolio-entry-field-full">
+          <label for="{{ form.type.id_for_label }}">
+            <i class="bi bi-folder2-open"></i>
+            {{ form.type.label }}
           </label>
-          {{ form.date }}
-          {% if form.date.errors %}
-            <div class="portfolio-entry-field-error">{{ form.date.errors }}</div>
+
+          {{ form.type }}
+
+          {% if form.type.errors %}
+            <div class="portfolio-entry-field-error">{{ form.type.errors }}</div>
           {% endif %}
         </div>
 
-        <div class="portfolio-entry-field">
-          <label for="{{ form.link.id_for_label }}">
-            <i class="bi bi-link-45deg"></i>
-            Ссылка <span>(необязательно)</span>
+        <div class="portfolio-entry-field portfolio-entry-field-full">
+          <label for="{{ form.title.id_for_label }}">
+            <i class="bi bi-pencil"></i>
+            {{ form.title.label }}
           </label>
-          {{ form.link }}
-          {% if form.link.errors %}
-            <div class="portfolio-entry-field-error">{{ form.link.errors }}</div>
+
+          {{ form.title }}
+
+          {% if form.title.errors %}
+            <div class="portfolio-entry-field-error">{{ form.title.errors }}</div>
           {% endif %}
         </div>
-      </div>
 
-      <div class="portfolio-entry-field portfolio-entry-field-full portfolio-entry-upload-field">
-        <label for="{{ form.attachments.id_for_label }}">
-          <i class="bi bi-paperclip"></i>
-          {{ form.attachments.label }}
-        </label>
+        <div class="portfolio-entry-field portfolio-entry-field-full">
+          <label for="{{ form.description.id_for_label }}">
+            <i class="bi bi-file-earmark-text"></i>
+            {{ form.description.label }}
+          </label>
 
-        <div class="portfolio-entry-upload-box" data-portfolio-dropzone>
-  <input
-    type="file"
-    name="{{ form.attachments.html_name }}"
-    id="{{ form.attachments.id_for_label }}"
-    multiple
-    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.zip"
-    data-portfolio-file-input
-  >
+          {{ form.description }}
 
-  <div class="portfolio-entry-upload-content">
-    <span class="portfolio-entry-upload-icon">
-      <i class="bi bi-cloud-arrow-up"></i>
-    </span>
+          {% if form.description.errors %}
+            <div class="portfolio-entry-field-error">{{ form.description.errors }}</div>
+          {% endif %}
+        </div>
 
-    <div>
-      <p>
-        Перетащите файлы сюда или
-        <label for="{{ form.attachments.id_for_label }}" class="portfolio-entry-upload-button">
-          выбрать файлы
-        </label>
-      </p>
-      <span>Поддерживаются: PDF, JPG/JPEG, PNG, DOC/DOCX, ZIP</span>
-      <span>Можно прикрепить несколько файлов</span>
-    </div>
-  </div>
-</div>
+        <div class="portfolio-entry-two-columns">
+          <div class="portfolio-entry-field">
+            <label for="{{ form.date.id_for_label }}">
+              <i class="bi bi-calendar3"></i>
+              {{ form.date.label }}
+            </label>
 
-<div class="portfolio-entry-selected-list" data-portfolio-selected-list hidden></div>
+            {{ form.date }}
 
-        {% if form.attachments.errors %}
-          <div class="portfolio-entry-field-error">{{ form.attachments.errors }}</div>
-        {% endif %}
+            {% if form.date.errors %}
+              <div class="portfolio-entry-field-error">{{ form.date.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="portfolio-entry-field">
+            <label for="{{ form.link.id_for_label }}">
+              <i class="bi bi-link-45deg"></i>
+              Ссылка <span>(необязательно)</span>
+            </label>
+
+            {{ form.link }}
+
+            {% if form.link.errors %}
+              <div class="portfolio-entry-field-error">{{ form.link.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="portfolio-entry-field portfolio-entry-field-full portfolio-entry-upload-field">
+          <label for="{{ form.attachments.id_for_label }}">
+            <i class="bi bi-paperclip"></i>
+            {{ form.attachments.label }}
+          </label>
+
+          <div class="portfolio-entry-upload-box" data-portfolio-dropzone>
+            <input
+              type="file"
+              name="{{ form.attachments.html_name }}"
+              id="{{ form.attachments.id_for_label }}"
+              multiple
+              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.zip"
+              data-portfolio-file-input
+            >
+
+            <div class="portfolio-entry-upload-content">
+              <span class="portfolio-entry-upload-icon">
+                <i class="bi bi-cloud-arrow-up"></i>
+              </span>
+
+              <div>
+                <p>
+                  Перетащите файлы сюда или
+                  <label for="{{ form.attachments.id_for_label }}" class="portfolio-entry-upload-button">
+                    выбрать файлы
+                  </label>
+                </p>
+                <span>PDF, JPG/JPEG, PNG, DOC/DOCX, ZIP</span>
+                <span>Можно прикрепить несколько файлов</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="portfolio-entry-selected-list" data-portfolio-selected-list hidden></div>
+
+          {% if form.attachments.errors %}
+            <div class="portfolio-entry-field-error">{{ form.attachments.errors }}</div>
+          {% endif %}
+        </div>
       </div>
 
       {% if entry %}
-        <div class="portfolio-entry-existing-files-v2">
+        <div class="portfolio-entry-existing-files-v3">
           <div class="portfolio-entry-existing-head">
             <div>
               <h3>
@@ -198,33 +225,41 @@
         </div>
       {% endif %}
 
-      <div class="portfolio-entry-bottom-bar">
+      <div class="portfolio-entry-bottom-bar portfolio-entry-bottom-bar-v3">
         <div class="portfolio-entry-note">
           <i class="bi bi-info-circle"></i>
+
           <div>
             {% if entry %}
               <strong>После сохранения запись будет отправлена на повторную проверку.</strong>
               <p>Куратор увидит обновлённые данные и вложения.</p>
             {% else %}
               <strong>Новая запись будет автоматически отправлена на проверку куратору.</strong>
-              <p>После одобрения она станет видимой в вашем портфолио.</p>
+              <p>После одобрения она появится в вашем портфолио.</p>
             {% endif %}
           </div>
         </div>
 
-        <button class="btn btn-primary portfolio-entry-save-btn" type="submit">
-          <i class="bi bi-floppy"></i>
-          {% if entry %}
-            Сохранить изменения
-          {% else %}
-            Сохранить запись
-          {% endif %}
-        </button>
+        <div class="portfolio-entry-actions-v3">
+          <a class="btn portfolio-entry-secondary-btn-v3" href="{% url 'portfolio:list' %}">
+            Отмена
+          </a>
+
+          <button class="btn btn-primary portfolio-entry-save-btn" type="submit">
+            <i class="bi bi-floppy"></i>
+            {% if entry %}
+              Сохранить изменения
+            {% else %}
+              Сохранить запись
+            {% endif %}
+          </button>
+        </div>
       </div>
     </form>
   </section>
 
 </div>
+
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const dropzone = document.querySelector('[data-portfolio-dropzone]');

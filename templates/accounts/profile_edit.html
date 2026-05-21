@@ -5,51 +5,47 @@
 {% block title %}Настройки{% endblock %}
 
 {% block content %}
-<div class="student-settings-layout student-settings-v2">
+<div class="student-settings-layout student-settings-v3">
 
-  <section class="hero student-settings-hero-clean student-settings-hero-decorated">
-  <div class="student-settings-hero-content">
-    <h1>Настройки профиля</h1>
-    <p>Обновите личные данные, фото и контактную информацию.</p>
-  </div>
+  <section class="hero student-settings-hero-v3">
+    <div class="student-settings-hero-content-v3">
+      <h1>Настройки профиля</h1>
+      <p>Обновите личные данные, фото и контактную информацию.</p>
+    </div>
 
-  <div class="settings-hero-decor" aria-hidden="true">
-    <span class="settings-decor-circle settings-decor-circle-one"></span>
-    <span class="settings-decor-circle settings-decor-circle-two"></span>
-    <span class="settings-decor-circle settings-decor-circle-three"></span>
+    <div class="settings-hero-decor-v3" aria-hidden="true">
+      <span class="settings-decor-circle-v3 settings-decor-circle-one-v3"></span>
 
-    <span class="settings-decor-star settings-decor-star-one">✦</span>
-    <span class="settings-decor-star settings-decor-star-two">✧</span>
-    <span class="settings-decor-star settings-decor-star-three">✦</span>
+      <span class="settings-decor-circle-v3 settings-decor-circle-three-v3"></span>
 
-    <span class="settings-decor-dot settings-decor-dot-one"></span>
-    <span class="settings-decor-dot settings-decor-dot-two"></span>
-    <span class="settings-decor-dot settings-decor-dot-three"></span>
-  </div>
-</section>
+      <span class="settings-decor-star-v3 settings-decor-star-one-v3">✦</span>
+      <span class="settings-decor-star-v3 settings-decor-star-two-v3">✧</span>
+      <span class="settings-decor-star-v3 settings-decor-star-three-v3">✦</span>
 
-  <section class="card student-settings-card student-settings-personal-card">
-    <div class="student-settings-card-head">
-      <span class="student-settings-section-icon">
+      <span class="settings-decor-dot-v3 settings-decor-dot-one-v3"></span>
+      <span class="settings-decor-dot-v3 settings-decor-dot-two-v3"></span>
+      <span class="settings-decor-dot-v3 settings-decor-dot-three-v3"></span>
+    </div>
+  </section>
+
+  <section class="card student-settings-card-v3 student-settings-personal-card-v3">
+    <div class="student-settings-card-head-v3">
+      <span class="student-settings-section-icon-v3">
         <i class="bi bi-person-fill"></i>
       </span>
+
       <div>
         <h2>Личные данные</h2>
-        <p>Эти данные используются в личном кабинете и портфолио.</p>
+        <p>Эти данные используются в личном кабинете, портфолио и резюме.</p>
       </div>
     </div>
 
-    <form method="post" enctype="multipart/form-data" class="student-photo-upload student-settings-form" data-avatar-form>
+    <form method="post" enctype="multipart/form-data" class="student-settings-form-v3 student-photo-upload" data-avatar-form>
       {% csrf_token %}
 
-      <div class="student-settings-field student-settings-field-full">
-        {{ user_form.full_name.label_tag }}
-        {{ user_form.full_name }}
-      </div>
-
-      <div class="student-settings-main-grid">
-        <div class="student-settings-photo-area">
-          <div class="student-avatar-preview student-settings-avatar-preview">
+      <div class="student-settings-form-layout-v3">
+        <aside class="student-settings-photo-panel-v3">
+          <div class="student-avatar-preview student-settings-avatar-preview-v3">
             {% if request.user.photo %}
               <img class="student-avatar-img" src="{{ request.user.photo.url }}" alt="Фото профиля">
             {% else %}
@@ -57,56 +53,68 @@
             {% endif %}
           </div>
 
-          <div class="student-settings-photo-actions">
-            <span class="student-settings-photo-label">Фото профиля</span>
+          <div class="student-settings-photo-actions-v3">
+            <span class="student-settings-photo-label-v3">Фото профиля</span>
 
-            <label class="btn btn-link student-settings-photo-btn" for="{{ user_form.photo.id_for_label }}">
-  <i class="bi bi-upload"></i>
-  Изменить фото
-</label>
+            <label class="btn btn-link student-settings-photo-btn-v3" for="{{ user_form.photo.id_for_label }}">
+              <i class="bi bi-upload"></i>
+              Изменить фото
+            </label>
 
-<input
-  type="file"
-  name="{{ user_form.photo.html_name }}"
-  id="{{ user_form.photo.id_for_label }}"
-  accept="image/png,image/jpeg,image/jpg"
->
+            <input
+              type="file"
+              name="{{ user_form.photo.html_name }}"
+              id="{{ user_form.photo.id_for_label }}"
+              accept="image/png,image/jpeg,image/jpg"
+            >
 
-{% if request.user.photo %}
-  <button class="student-settings-remove-photo" type="submit" name="action" value="remove_photo" onclick="return confirm('Удалить текущее фото?')">
-    <i class="bi bi-trash"></i>
-    Удалить фото
-  </button>
-{% endif %}
+            {% if request.user.photo %}
+              <button class="student-settings-remove-photo-v3" type="submit" name="action" value="remove_photo" onclick="return confirm('Удалить текущее фото?')">
+                <i class="bi bi-trash"></i>
+                Удалить фото
+              </button>
+            {% endif %}
           </div>
-        </div>
+        </aside>
 
-        <div class="student-settings-contact-grid">
-          <div class="student-settings-field">
+        <div class="student-settings-fields-v3">
+          <div class="student-settings-field-v3">
+            {{ user_form.full_name.label_tag }}
+            {{ user_form.full_name }}
+          </div>
+
+          <div class="student-settings-field-v3">
             {{ profile_form.phone.label_tag }}
             {{ profile_form.phone }}
           </div>
 
-          <div class="student-settings-field">
+          <div class="student-settings-field-v3">
             {{ profile_form.city.label_tag }}
             {{ profile_form.city }}
           </div>
 
-           <div class="student-settings-field">
+          <div class="student-settings-field-v3">
             {{ profile_form.contact_link.label_tag }}
             {{ profile_form.contact_link }}
-           </div>
+          </div>
+
+          <div class="student-settings-field-v3 student-settings-field-wide-v3">
+            {{ profile_form.about.label_tag }}
+            {{ profile_form.about }}
+          </div>
         </div>
       </div>
 
-      <div class="student-settings-field student-settings-field-full">
-        {{ profile_form.about.label_tag }}
-        {{ profile_form.about }}
-      </div>
+      {% if user_form.errors or profile_form.errors %}
+        <div class="student-settings-errors-v3">
+          {{ user_form.errors }}
+          {{ profile_form.errors }}
+        </div>
+      {% endif %}
 
       <input type="hidden" name="cropped_photo_data" data-cropped-photo>
 
-      <div class="student-settings-actions">
+      <div class="student-settings-actions-v3">
         <button class="btn btn-primary" type="submit">
           <i class="bi bi-check2"></i>
           Сохранить
@@ -115,29 +123,30 @@
     </form>
   </section>
 
-  <section class="card student-settings-card student-academic-readonly-card">
-    <div class="student-settings-card-head">
-      <span class="student-settings-section-icon">
+  <section class="card student-settings-card-v3 student-academic-readonly-card-v3">
+    <div class="student-settings-card-head-v3">
+      <span class="student-settings-section-icon-v3">
         <i class="bi bi-mortarboard-fill"></i>
       </span>
+
       <div>
         <h2>Учебная информация</h2>
         <p>Эти данные заполняются администрацией и недоступны для редактирования студентом.</p>
       </div>
     </div>
 
-    <div class="student-academic-readonly-grid">
-      <div class="student-academic-readonly-item">
+    <div class="student-academic-readonly-grid-v3">
+      <div class="student-academic-readonly-item-v3">
         <span>Группа</span>
         <strong>{{ request.user.group|default:'—' }}</strong>
       </div>
 
-      <div class="student-academic-readonly-item student-academic-readonly-wide">
+      <div class="student-academic-readonly-item-v3 student-academic-readonly-wide-v3">
         <span>Специальность</span>
         <strong>{{ request.user.specialty|default:'—' }}</strong>
       </div>
 
-      <div class="student-academic-readonly-item">
+      <div class="student-academic-readonly-item-v3">
         <span>Год поступления</span>
         <strong>
           {% if request.user.admission_year %}
@@ -148,7 +157,7 @@
         </strong>
       </div>
 
-      <div class="student-academic-readonly-item">
+      <div class="student-academic-readonly-item-v3">
         <span>Учебный статус</span>
         <strong>
           {% if request.user.get_academic_status_display %}
@@ -159,23 +168,30 @@
         </strong>
       </div>
 
-      <div class="student-academic-readonly-item">
+      <div class="student-academic-readonly-item-v3">
         <span>Курс</span>
         <strong>{{ current_course|default:'—' }}</strong>
       </div>
     </div>
   </section>
 
-  <section class="card student-settings-card">
-    <div class="student-settings-card-head">
-      <span class="student-settings-section-icon"><i class="bi bi-shield-lock-fill"></i></span>
+  <section class="card student-settings-card-v3 student-security-card-v3">
+    <div class="student-settings-card-head-v3">
+      <span class="student-settings-section-icon-v3">
+        <i class="bi bi-shield-lock-fill"></i>
+      </span>
+
       <div>
         <h2>Безопасность аккаунта</h2>
-        <p>Здесь можно изменить пароль для входа в личный кабинет. Если вам выдали временный пароль, замените его на постоянный.</p>
+        <p>Здесь можно изменить пароль для входа в личный кабинет.</p>
       </div>
     </div>
-    <div class="student-settings-actions">
-      <a class="btn btn-primary" href="{% url 'accounts:change_password' %}">Сменить пароль</a>
+
+    <div class="student-settings-actions-v3">
+      <a class="btn btn-primary" href="{% url 'accounts:change_password' %}">
+        <i class="bi bi-lock"></i>
+        Сменить пароль
+      </a>
     </div>
   </section>
 
@@ -183,12 +199,15 @@
 
 <div class="avatar-modal" data-avatar-modal hidden>
   <div class="avatar-modal-backdrop" data-avatar-cancel></div>
+
   <div class="avatar-modal-card" role="dialog" aria-modal="true" aria-label="Настройте аватар">
     <h3>Настройте аватар</h3>
     <p class="muted">Перемещайте и масштабируйте фото.</p>
+
     <div class="avatar-modal-cropper">
       <img src="" alt="Предпросмотр обрезки" data-cropper-image>
     </div>
+
     <div class="avatar-modal-actions">
       <button type="button" class="btn btn-primary" data-avatar-apply>Применить</button>
       <button type="button" class="btn" data-avatar-cancel>Отмена</button>

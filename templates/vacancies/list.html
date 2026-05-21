@@ -25,9 +25,10 @@
   </section>
 
   <section class="student-vacancies-filter-card-v2">
-    <form method="get" class="student-vacancies-filter-grid-v2">
+    <form method="get" action="{% url 'vacancies:list' %}#vacancies-list" class="student-vacancies-filter-grid-v2">
       <label class="student-vacancies-field-v2 is-search">
         <span>Поиск</span>
+
         <span class="student-vacancies-search-wrap-v2">
           <input
             type="search"
@@ -41,6 +42,7 @@
 
       <label class="student-vacancies-field-v2">
         <span>Тип занятости</span>
+
         <select name="employment">
           <option value="">Все</option>
           {% for option in employment_options %}
@@ -53,6 +55,7 @@
 
       <label class="student-vacancies-field-v2">
         <span>Формат</span>
+
         <select name="format">
           <option value="">Все</option>
           {% for option in format_options %}
@@ -65,33 +68,32 @@
 
       <label class="student-vacancies-field-v2">
         <span>Направление</span>
+
         <div class="searchable-select" data-searchable-select data-search-placeholder="Найти направление">
-  <select name="direction">
-    <option value="">Все</option>
-    {% for option in direction_options %}
-      <option value="{{ option }}" {% if direction_filter == option %}selected{% endif %}>
-        {{ option }}
-      </option>
-    {% endfor %}
-  </select>
-</div>
+          <select name="direction">
+            <option value="">Все</option>
+            {% for option in direction_options %}
+              <option value="{{ option }}" {% if direction_filter == option %}selected{% endif %}>
+                {{ option }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
       </label>
 
       <div class="student-vacancies-filter-actions-v2">
         <button class="btn btn-primary" type="submit">
-          <i class="bi bi-funnel"></i>
-          Применить
+          Найти
         </button>
 
-        <a class="btn" href="{% url 'vacancies:list' %}">
-          <i class="bi bi-arrow-clockwise"></i>
+        <a class="btn" href="{% url 'vacancies:list' %}#vacancies-list">
           Сбросить
         </a>
       </div>
     </form>
   </section>
 
-  <section class="student-vacancies-list-v2">
+  <section id="vacancies-list" class="student-vacancies-list-v2">
     {% for v in vacancies %}
       <article class="student-vacancy-card-v2">
         <div class="student-vacancy-icon-v2 {% cycle 'is-blue' 'is-green' 'is-orange' 'is-purple' %}">
@@ -124,19 +126,19 @@
 
           <div class="student-vacancy-actions-v2">
             {% if request.user.academic_status == 'academic_leave' or request.user.academic_status == 'expelled' %}
-  <button
-    class="btn student-vacancy-detail-btn student-vacancy-disabled-detail-btn"
-    type="button"
-    disabled
-    title="Просмотр подробностей недоступен для вашего учебного статуса"
-  >
-    Подробнее
-  </button>
-{% else %}
-  <a class="btn student-vacancy-detail-btn" href="{% url 'vacancies:detail' v.pk %}">
-    Подробнее
-  </a>
-{% endif %}
+              <button
+                class="btn student-vacancy-detail-btn student-vacancy-disabled-detail-btn"
+                type="button"
+                disabled
+                title="Просмотр подробностей недоступен для вашего учебного статуса"
+              >
+                Подробнее
+              </button>
+            {% else %}
+              <a class="btn student-vacancy-detail-btn" href="{% url 'vacancies:detail' v.pk %}">
+                Подробнее
+              </a>
+            {% endif %}
 
             {% if v.id in responded_vacancy_ids %}
               <span class="student-vacancy-responded-badge">
@@ -145,57 +147,70 @@
               </span>
             {% else %}
               {% if can_apply_vacancies %}
-  <form method="post" action="{% url 'vacancies:respond' v.pk %}">
-    {% csrf_token %}
-    <input type="hidden" name="next" value="{{ request.get_full_path }}">
-    <button class="btn btn-primary student-vacancy-action-btn" type="submit">
-      Откликнуться
-    </button>
-  </form>
-{% else %}
-  <span
-    class="student-vacancy-responded-badge"
-    title="Отклик на вакансии недоступен для вашего учебного статуса"
-  >
-    Отклик недоступен
-  </span>
-{% endif %}
+                <form method="post" action="{% url 'vacancies:respond' v.pk %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{{ request.get_full_path }}#vacancies-list">
+
+                  <button class="btn btn-primary student-vacancy-action-btn" type="submit">
+                    Откликнуться
+                  </button>
+                </form>
+              {% else %}
+                <span
+                  class="student-vacancy-responded-badge"
+                  title="Отклик на вакансии недоступен для вашего учебного статуса"
+                >
+                  Отклик недоступен
+                </span>
+              {% endif %}
             {% endif %}
 
             {% if can_favorite_vacancies %}
-  <form method="post" action="{% url 'vacancies:toggle_favorite' v.pk %}">
-    {% csrf_token %}
-    <input type="hidden" name="next" value="{{ request.get_full_path }}">
-    <button
-      class="student-vacancy-save-btn student-vacancy-save-inline {% if v.id in favorite_vacancy_ids %}is-active{% endif %}"
-      type="submit"
-      title="Избранное"
-    >
-      {% if v.id in favorite_vacancy_ids %}
-        <i class="bi bi-bookmark-check-fill"></i>
-      {% else %}
-        <i class="bi bi-bookmark"></i>
-      {% endif %}
-    </button>
-  </form>
-{% else %}
-  <span
-    class="student-vacancy-save-btn student-vacancy-save-inline student-vacancy-save-disabled"
-    title="Добавление в избранное недоступно для вашего учебного статуса"
-  >
-    <i class="bi bi-bookmark"></i>
-  </span>
-{% endif %}
+              <form method="post" action="{% url 'vacancies:toggle_favorite' v.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}#vacancies-list">
+
+                <button
+                  class="student-vacancy-save-btn student-vacancy-save-inline {% if v.id in favorite_vacancy_ids %}is-active{% endif %}"
+                  type="submit"
+                  title="Избранное"
+                >
+                  {% if v.id in favorite_vacancy_ids %}
+                    <i class="bi bi-bookmark-check"></i>
+                  {% else %}
+                    <i class="bi bi-bookmark"></i>
+                  {% endif %}
+                </button>
+              </form>
+            {% else %}
+              <span
+                class="student-vacancy-save-btn student-vacancy-save-inline student-vacancy-save-disabled"
+                title="Добавление в избранное недоступно для вашего учебного статуса"
+              >
+                <i class="bi bi-bookmark"></i>
+              </span>
+            {% endif %}
           </div>
         </div>
 
         <aside class="student-vacancy-side-v2">
           <div class="student-vacancy-side-meta">
             <p>
-              {% if v.map_url %}<a href="{{ v.map_url }}" target="_blank" rel="noopener" title="Открыть на карте">{% endif %}
-                <i class="bi bi-geo-alt"></i>
-                {% if v.address %}<span style="display:inline-block;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;">{{ v.address }}</span>{% endif %}
-              {% if v.map_url %}</a>{% endif %}
+              {% if v.map_url %}
+                <a href="{{ v.map_url }}" target="_blank" rel="noopener" title="Открыть на карте">
+              {% endif %}
+
+              <i class="bi bi-geo-alt"></i>
+
+              {% if v.address %}
+                <span class="student-vacancy-address-text">
+                  {{ v.address }}
+                </span>
+              {% endif %}
+
+              {% if v.map_url %}
+                </a>
+              {% endif %}
             </p>
 
             <p>
@@ -214,7 +229,7 @@
         <h2>Вакансий не найдено</h2>
         <p>Попробуйте изменить поиск, формат, тип занятости или направление.</p>
 
-        <a class="btn btn-primary" href="{% url 'vacancies:list' %}">
+        <a class="btn btn-primary" href="{% url 'vacancies:list' %}#vacancies-list">
           Сбросить фильтры
         </a>
       </section>
@@ -223,11 +238,10 @@
 
   {% if page_obj.paginator.count %}
     <section class="student-vacancies-pagination-wrap">
-     
       {% if page_obj.paginator.num_pages > 1 %}
         <nav class="student-vacancies-pagination" aria-label="Пагинация вакансий">
           {% if page_obj.has_previous %}
-            <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}">
+            <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}#vacancies-list">
               <i class="bi bi-chevron-left"></i>
             </a>
           {% else %}
@@ -240,14 +254,16 @@
             {% if num == page_obj.number %}
               <span class="is-current">{{ num }}</span>
             {% elif num <= 5 or num == page_obj.paginator.num_pages %}
-              <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}">{{ num }}</a>
+              <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}#vacancies-list">
+                {{ num }}
+              </a>
             {% elif num == 6 %}
               <span class="is-gap">…</span>
             {% endif %}
           {% endfor %}
 
           {% if page_obj.has_next %}
-            <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}">
+            <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}#vacancies-list">
               <i class="bi bi-chevron-right"></i>
             </a>
           {% else %}

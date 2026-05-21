@@ -24,7 +24,7 @@
   </section>
 
   <section class="card student-courses-filter-card-v2">
-    <form method="get" class="student-courses-filters-v2">
+    <form method="get" action="{% url 'courses:list' %}#courses-list" class="student-courses-filters-v2">
       <div class="student-courses-filter-field student-courses-filter-search">
         <label for="q">Поиск</label>
 
@@ -80,23 +80,21 @@
 
       <div class="student-courses-filter-actions">
         <button class="btn btn-primary" type="submit">
-          <i class="bi bi-funnel"></i>
-          Применить
+          Найти
         </button>
 
-        <a class="btn student-courses-reset-btn" href="{% url 'courses:list' %}">
-          <i class="bi bi-arrow-clockwise"></i>
+        <a class="btn student-courses-reset-btn" href="{% url 'courses:list' %}#courses-list">
           Сбросить
         </a>
       </div>
     </form>
   </section>
 
-  <section class="student-courses-list-v2">
+  <section id="courses-list" class="student-courses-list-v2">
     {% for c in courses %}
       {% with reg=registration_map|dict_get:c.id %}
-        <article class="card student-course-card-v2">
-          <div class="student-course-icon {% cycle 'is-blue' 'is-purple' 'is-green' 'is-orange' %}">
+        <article class="card student-course-card-v3">
+          <div class="student-course-icon-v3 {% cycle 'is-blue' 'is-purple' 'is-green' 'is-orange' %}">
             {% if c.kind == 'course' %}
               <i class="bi bi-journal-bookmark"></i>
             {% elif c.kind == 'seminar' %}
@@ -106,170 +104,156 @@
             {% endif %}
           </div>
 
-          <div class="student-course-main-v2">
-            <div class="student-course-title-row-v2">
-              <div>
-                <h2>{{ c.title }}</h2>
+          <div class="student-course-info-v3">
+            <h2>{{ c.title }}</h2>
 
-                {% if c.organization %}
-                  <p class="student-course-organization">{{ c.organization }}</p>
-                {% endif %}
-              </div>
+            {% if c.organization %}
+              <p>{{ c.organization }}</p>
+            {% endif %}
 
-            </div>
+            <div class="student-course-tags-v3">
+              <span>{{ c.get_kind_display }}</span>
+              <span>{{ c.get_format_type_display }}</span>
 
-            <div class="student-course-tags-v2">
-  <span>{{ c.get_kind_display }}</span>
-  <span>{{ c.get_format_type_display }}</span>
-
-  {% if c.date %}
-    <span>{{ c.date|date:"d.m.Y" }}</span>
-  {% endif %}
-</div>
-
-            <div class="student-course-actions-v2">
-              {% if request.user.academic_status == 'academic_leave' or request.user.academic_status == 'expelled' %}
-  <button
-    class="btn student-course-detail-btn student-vacancy-disabled-detail-btn"
-    type="button"
-    disabled
-    title="Просмотр подробностей недоступен для вашего учебного статуса"
-  >
-    Подробнее
-  </button>
-{% else %}
-  <a class="btn student-course-detail-btn" href="{% url 'courses:detail' c.pk %}">
-    Подробнее
-  </a>
-{% endif %}
-
-              {% if reg and reg.status == 'registered' %}
-                <form method="post" action="{% url 'courses:cancel_registration' reg.id %}">
-                  {% csrf_token %}
-                  <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                  <button class="btn student-course-cancel-btn" type="submit">
-                    Отменить запись
-                  </button>
-                </form>
-              {% elif reg and reg.status == 'cancelled' %}
-                <form method="post" action="{% url 'courses:register' c.id %}">
-                  {% csrf_token %}
-                  <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                  <button class="btn btn-primary student-course-action-btn" type="submit">
-                    Записаться снова
-                  </button>
-                </form>
-              {% elif not can_register_courses %}
-    <span
-      class="student-course-status-badge student-course-status-side is-cancelled"
-      title="Запись на курсы недоступна для вашего учебного статуса"
-    >
-      Запись недоступна
-    </span>
-  {% elif c.available_places_count == 0 %}
-                <button class="btn student-course-disabled-btn" type="button" disabled>
-                  Нет мест
-                </button>
-              {% else %}
-                <form method="post" action="{% url 'courses:register' c.id %}">
-                  {% csrf_token %}
-                  <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                  <button class="btn btn-primary student-course-action-btn" type="submit">
-                    Записаться
-                  </button>
-                </form>
+              {% if c.date %}
+                <span>{{ c.date|date:"d.m.Y" }}</span>
               {% endif %}
-
-              {% if can_favorite_courses %}
-  <form method="post" action="{% url 'courses:toggle_favorite' c.pk %}">
-    {% csrf_token %}
-    <input type="hidden" name="next" value="{{ request.get_full_path }}">
-
-    <button
-      class="student-course-favorite-btn {% if c.id in favorite_course_ids %}is-active{% endif %}"
-      type="submit"
-      title="Избранное"
-    >
-      {% if c.id in favorite_course_ids %}
-        <i class="bi bi-bookmark-check-fill"></i>
-      {% else %}
-        <i class="bi bi-bookmark"></i>
-      {% endif %}
-    </button>
-  </form>
-{% else %}
-  <span
-    class="student-course-favorite-disabled"
-    title="Добавление курсов в избранное недоступно для вашего учебного статуса"
-  >
-    <i class="bi bi-bookmark"></i>
-  </span>
-{% endif %}
             </div>
           </div>
 
-          <aside class="student-course-side-v2">
-  {% if c.address or c.map_url or c.online_url %}
-  <div class="student-course-location-side">
-    {% if c.map_url %}
-      <a href="{{ c.map_url }}" target="_blank" rel="noopener" title="Открыть на карте">
-        <i class="bi bi-geo-alt"></i>
-        {% if c.address %}
-          <span>{{ c.address }}</span>
-        {% endif %}
-      </a>
-    {% elif c.address %}
-      <span>
-        <i class="bi bi-geo-alt"></i>
-        <span>{{ c.address }}</span>
-      </span>
-    {% elif c.online_url %}
-      <a href="{{ c.online_url }}" target="_blank" rel="noopener" title="Открыть онлайн-встречу">
-        <i class="bi bi-link-45deg"></i>
-        <span>Онлайн-встреча</span>
-      </a>
-    {% endif %}
-  </div>
-{% endif %}
+          <aside class="student-course-meta-v3">
+            {% if c.address or c.map_url or c.online_url %}
+              <div class="student-course-meta-line-v3">
+                {% if c.map_url %}
+                  <a href="{{ c.map_url }}" target="_blank" rel="noopener" title="Открыть на карте">
+                    <i class="bi bi-geo-alt"></i>
+                    {% if c.address %}
+                      <span>{{ c.address }}</span>
+                    {% endif %}
+                  </a>
+                {% elif c.address %}
+                  <span>
+                    <i class="bi bi-geo-alt"></i>
+                    <span>{{ c.address }}</span>
+                  </span>
+                {% elif c.online_url %}
+                  <a href="{{ c.online_url }}" target="_blank" rel="noopener" title="Открыть онлайн-встречу">
+                    <i class="bi bi-link-45deg"></i>
+                    <span>Онлайн-встреча</span>
+                  </a>
+                {% endif %}
+              </div>
+            {% endif %}
 
-  {% if c.places %}
-    <div class="student-course-places-side">
-      <i class="bi bi-people"></i>
-      <span>Занято {{ c.occupied_places_count }} из {{ c.places }}</span>
-    </div>
-  {% elif not c.places %}
-    <div class="student-course-places-side is-unlimited">
-      <i class="bi bi-people"></i>
-      <span>Места не ограничены</span>
-    </div>
-  {% endif %}
+            {% if c.places %}
+              <div class="student-course-pill-v3">
+                <i class="bi bi-people"></i>
+                <span>Занято {{ c.occupied_places_count }} из {{ c.places }}</span>
+              </div>
+            {% elif not c.places %}
+              <div class="student-course-pill-v3">
+                <i class="bi bi-people"></i>
+                <span>Места не ограничены</span>
+              </div>
+            {% endif %}
 
-  {% if reg and reg.status == 'registered' %}
-    <span class="student-course-status-badge student-course-status-side is-registered">
-      <i class="bi bi-check2"></i>
-      Вы записаны
-    </span>
-  {% elif reg and reg.status == 'cancelled' %}
-    <span class="student-course-status-badge student-course-status-side is-cancelled">
-      Запись отменена
-    </span>
-  {% elif not can_register_courses %}
-  <span
-    class="student-course-status-badge student-course-status-side is-cancelled"
-    title="Запись на курсы недоступна для вашего учебного статуса"
-  >
-    Запись недоступна
-  </span>
-  {% elif c.available_places_count == 0 %}
-    <span class="student-course-status-badge student-course-status-side is-full">
-      Мест нет
-    </span>
-  {% else %}
-    <span class="student-course-status-badge student-course-status-side is-open">
-      Идёт набор
-    </span>
-  {% endif %}
-</aside>
+            {% if reg and reg.status == 'registered' %}
+              <span class="student-course-status-v3 is-registered">
+                <i class="bi bi-check2"></i>
+                Вы записаны
+              </span>
+            {% elif reg and reg.status == 'cancelled' %}
+              <span class="student-course-status-v3 is-cancelled">
+                Запись отменена
+              </span>
+            {% elif not can_register_courses %}
+              <span class="student-course-status-v3 is-cancelled" title="Запись на курсы недоступна для вашего учебного статуса">
+                Запись недоступна
+              </span>
+            {% elif c.available_places_count == 0 %}
+              <span class="student-course-status-v3 is-full">
+                Мест нет
+              </span>
+            {% else %}
+              <span class="student-course-status-v3 is-open">
+                Идёт набор
+              </span>
+            {% endif %}
+          </aside>
+
+          <div class="student-course-actions-v3">
+            {% if request.user.academic_status == 'academic_leave' or request.user.academic_status == 'expelled' %}
+              <button
+                class="btn student-course-detail-btn-v3"
+                type="button"
+                disabled
+                title="Просмотр подробностей недоступен для вашего учебного статуса"
+              >
+                Подробнее
+              </button>
+            {% else %}
+              <a class="btn student-course-detail-btn-v3" href="{% url 'courses:detail' c.pk %}">
+                Подробнее
+              </a>
+            {% endif %}
+
+            {% if reg and reg.status == 'registered' %}
+              <form method="post" action="{% url 'courses:cancel_registration' reg.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}#courses-list">
+                <button class="btn student-course-cancel-btn-v3" type="submit">
+                  Отменить
+                </button>
+              </form>
+            {% elif reg and reg.status == 'cancelled' %}
+              <form method="post" action="{% url 'courses:register' c.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}#courses-list">
+                <button class="btn btn-primary student-course-action-btn-v3" type="submit">
+                  Записаться снова
+                </button>
+              </form>
+            {% elif not can_register_courses %}
+              <span class="student-course-status-v3 is-cancelled">
+                Недоступно
+              </span>
+            {% elif c.available_places_count == 0 %}
+              <button class="btn student-course-disabled-btn-v3" type="button" disabled>
+                Нет мест
+              </button>
+            {% else %}
+              <form method="post" action="{% url 'courses:register' c.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}#courses-list">
+                <button class="btn btn-primary student-course-action-btn-v3" type="submit">
+                  Записаться
+                </button>
+              </form>
+            {% endif %}
+
+            {% if can_favorite_courses %}
+              <form method="post" action="{% url 'courses:toggle_favorite' c.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}#courses-list">
+
+                <button
+                  class="student-course-favorite-btn-v3 {% if c.id in favorite_course_ids %}is-active{% endif %}"
+                  type="submit"
+                  title="Избранное"
+                >
+                  {% if c.id in favorite_course_ids %}
+                    <i class="bi bi-bookmark-check"></i>
+                  {% else %}
+                    <i class="bi bi-bookmark"></i>
+                  {% endif %}
+                </button>
+              </form>
+            {% else %}
+              <span class="student-course-favorite-btn-v3 is-disabled" title="Добавление курсов в избранное недоступно для вашего учебного статуса">
+                <i class="bi bi-bookmark"></i>
+              </span>
+            {% endif %}
+          </div>
         </article>
       {% endwith %}
     {% empty %}
@@ -297,7 +281,7 @@
       {% if page_obj.paginator.num_pages > 1 %}
         <nav class="student-courses-pagination" aria-label="Пагинация курсов">
           {% if page_obj.has_previous %}
-            <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}">
+            <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}#courses-list">
               <i class="bi bi-chevron-left"></i>
             </a>
           {% else %}
@@ -310,14 +294,14 @@
             {% if num == page_obj.number %}
               <span class="is-current">{{ num }}</span>
             {% elif num <= 5 or num == page_obj.paginator.num_pages %}
-              <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}">{{ num }}</a>
+              <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}#courses-list">{{ num }}</a>
             {% elif num == 6 %}
               <span class="is-gap">…</span>
             {% endif %}
           {% endfor %}
 
           {% if page_obj.has_next %}
-            <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}">
+            <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}#courses-list">
               <i class="bi bi-chevron-right"></i>
             </a>
           {% else %}
