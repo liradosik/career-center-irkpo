@@ -189,15 +189,15 @@
       {% for page_num in students_page_range %}
         {% if page_num == students_current_page %}
           <span class="admin-students-page-number-v3 is-active">{{ page_num }}</span>
-        {% elif page_num <= 5 or page_num == students_total_pages %}
+        {% elif page_num == students_page_obj.paginator.ELLIPSIS %}
+          <span class="admin-students-page-number-v3 is-gap">…</span>
+        {% else %}
           <a
             class="admin-students-page-number-v3"
             href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_num }}#students-list"
           >
             {{ page_num }}
           </a>
-        {% elif page_num == 6 %}
-          <span class="admin-students-page-number-v3 is-gap">…</span>
         {% endif %}
       {% endfor %}
 

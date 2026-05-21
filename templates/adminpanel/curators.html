@@ -154,6 +154,8 @@
           {% for page_number in curators_page_range %}
             {% if page_number == curators_current_page %}
               <span class="admin-curators-page-number-v6 is-active">{{ page_number }}</span>
+            {% elif page_number == page_obj.paginator.ELLIPSIS %}
+              <span class="admin-curators-page-number-v6 is-disabled">…</span>
             {% else %}
               <a class="admin-curators-page-number-v6" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_number }}#curators-list">
                 {{ page_number }}
