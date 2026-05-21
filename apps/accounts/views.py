@@ -1280,7 +1280,6 @@ def admin_student_import(request):
         form = StudentImportForm(request.POST, request.FILES)
         if form.is_valid():
             created = 0
-            updated = 0
             skipped = 0
             errors = []
             warnings = []
@@ -1288,6 +1287,8 @@ def admin_student_import(request):
             if parse_errors:
                 messages.error(request, parse_errors[0])
                 return redirect('accounts:admin_student_import')
+
+            seen_emails = set()
 
             for row_idx, row in enumerate(rows, start=2):
                 try:
@@ -1323,9 +1324,13 @@ def admin_student_import(request):
                         skipped += 1
                         errors.append(f'Строка {row_idx}: не указана группа.')
                         continue
+                    if email in seen_emails:
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: email {email} повторяется в файле импорта, строка пропущена.')
+                        continue
                     if User.objects.filter(email=email).exists():
                         skipped += 1
-                        errors.append(f'Строка {row_idx}: пользователь с email {email} уже существует.')
+                        errors.append(f'Строка {row_idx}: пользователь с email {email} уже существует, строка пропущена.')
                         continue
 
                     normalized_group_name = normalize_group_code(group_name)
@@ -1350,12 +1355,13 @@ def admin_student_import(request):
                         sync_student_with_group(student, study_group)
                         student.save()
                     created += 1
+                    seen_emails.add(email)
                 except Exception as exc:
                     skipped += 1
                     errors.append(f'Строка {row_idx}: ошибка обработки: {str(exc)}.')
 
-            report = {'created': created, 'updated': updated, 'skipped': skipped, 'errors': errors, 'warnings': warnings}
-            summary = f'Импорт студентов завершён: создано {created}, обновлено {updated}, пропущено {skipped}, ошибок {len(errors)}.'
+            report = {'created': created, 'skipped': skipped, 'errors': errors, 'warnings': warnings}
+            summary = f'Импорт студентов: создано {created}, пропущено {skipped}, ошибок {len(errors)}.'
             log_admin_action(request.user, AdminActivityLog.Action.CREATE, AdminActivityLog.ObjectType.STUDENT, description=summary)
             messages.success(request, summary)
             if errors:
@@ -1374,7 +1380,6 @@ def admin_curator_import(request):
         form = CuratorImportForm(request.POST, request.FILES)
         if form.is_valid():
             created = 0
-            updated = 0
             skipped = 0
             errors = []
             warnings = []
@@ -1382,6 +1387,8 @@ def admin_curator_import(request):
             if parse_errors:
                 messages.error(request, parse_errors[0])
                 return redirect('accounts:admin_curator_import')
+
+            seen_emails = set()
 
             for row_idx, row in enumerate(rows, start=2):
                 try:
@@ -1412,21 +1419,26 @@ def admin_curator_import(request):
                         skipped += 1
                         errors.append(f'Строка {row_idx}: не указан временный пароль.')
                         continue
+                    if email in seen_emails:
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: email {email} повторяется в файле импорта, строка пропущена.')
+                        continue
                     if User.objects.filter(email=email).exists():
                         skipped += 1
-                        errors.append(f'Строка {row_idx}: пользователь с email {email} уже существует.')
+                        errors.append(f'Строка {row_idx}: пользователь с email {email} уже существует, строка пропущена.')
                         continue
 
                     curator = User(full_name=full_name, email=email, role=User.Role.CURATOR, is_active=True, must_change_password=True)
                     curator.set_password(password)
                     curator.save()
                     created += 1
+                    seen_emails.add(email)
                 except Exception as exc:
                     skipped += 1
                     errors.append(f'Строка {row_idx}: ошибка обработки: {str(exc)}.')
 
-            report = {'created': created, 'updated': updated, 'skipped': skipped, 'errors': errors, 'warnings': warnings}
-            summary = f'Импорт кураторов завершён: создано {created}, обновлено {updated}, пропущено {skipped}, ошибок {len(errors)}.'
+            report = {'created': created, 'skipped': skipped, 'errors': errors, 'warnings': warnings}
+            summary = f'Импорт кураторов: создано {created}, пропущено {skipped}, ошибок {len(errors)}.'
             log_admin_action(request.user, AdminActivityLog.Action.CREATE, AdminActivityLog.ObjectType.CURATOR, description=summary)
             messages.success(request, summary)
             if errors:
@@ -1445,7 +1457,6 @@ def admin_group_import(request):
         form = GroupImportForm(request.POST, request.FILES)
         if form.is_valid():
             created = 0
-            updated = 0
             skipped = 0
             errors = []
             warnings = []
@@ -1505,22 +1516,17 @@ def admin_group_import(request):
                     specialty = Specialty.objects.filter(letter_code__iexact=specialty_letter).first()
                     if not specialty:
                         skipped += 1
-                        errors.append(f'Строка {row_idx}: специальность с буквенным кодом {specialty_letter} не найдена.')
+                        errors.append(f'Строка {row_idx}: специальность {specialty_letter} не найдена, группа не создана.')
                         continue
 
                     curator = None
-                    if not curator_email:
-                        warnings.append(f'Строка {row_idx}: куратор не указан, группа создана без куратора.')
-                    else:
+                    if curator_email:
                         curator_candidate = User.objects.filter(email=curator_email).first()
-                        if not curator_candidate:
-                            warnings.append(f'Строка {row_idx}: куратор {curator_email} не найден, группа создана без куратора.')
-                        elif curator_candidate.role != User.Role.CURATOR:
-                            warnings.append(
-                                f'Строка {row_idx}: пользователь {curator_email} не является куратором, группа создана без куратора.'
-                            )
-                        else:
-                            curator = curator_candidate
+                        if not curator_candidate or curator_candidate.role != User.Role.CURATOR:
+                            skipped += 1
+                            errors.append(f'Строка {row_idx}: куратор {curator_email} не найден, группа не создана.')
+                            continue
+                        curator = curator_candidate
 
                     group = StudyGroup(
                         specialty_ref=specialty,
@@ -1531,28 +1537,21 @@ def admin_group_import(request):
                         is_active=True,
                     )
                     group.refresh_name()
-                    existing_group = StudyGroup.objects.filter(name=group.name).first()
-                    if existing_group:
-                        existing_group.specialty_ref = specialty
-                        existing_group.admission_year = admission_year_int
-                        existing_group.course_number = course_number_int
-                        existing_group.subgroup_number = subgroup_number_int
-                        existing_group.curator = curator
-                        existing_group.is_active = True
-                        existing_group.refresh_name()
-                        existing_group.save()
-                        updated += 1
-                    else:
-                        group.save()
-                        created += 1
+                    if StudyGroup.objects.filter(name=group.name).exists():
+                        skipped += 1
+                        errors.append(f'Строка {row_idx}: группа {group.name} уже существует, строка пропущена.')
+                        continue
+
+                    group.save()
+                    created += 1
                 except Exception as exc:
                     skipped += 1
                     errors.append(f'Строка {row_idx}: ошибка обработки: {str(exc)}.')
 
-            report = {'created': created, 'updated': updated, 'skipped': skipped, 'errors': errors, 'warnings': warnings}
-            summary = f'Импорт групп завершён: создано {created}, обновлено {updated}, пропущено {skipped}, ошибок {len(errors)}.'
+            report = {'created': created, 'skipped': skipped, 'errors': errors, 'warnings': warnings}
+            summary = f'Импорт групп: создано {created}, пропущено {skipped}, ошибок {len(errors)}.'
             log_admin_action(request.user, AdminActivityLog.Action.UPDATE, AdminActivityLog.ObjectType.GROUP, description=summary)
-            messages.success(request, f'Импорт групп завершён: создано {created}, обновлено {updated}, пропущено {skipped}.')
+            messages.success(request, f'Импорт групп завершён: создано {created}, пропущено {skipped}.')
             if errors:
                 messages.error(request, f'При импорте групп обнаружены ошибки: {len(errors)}.')
             if warnings:

@@ -145,6 +145,14 @@ class AdminStudentCreateForm(forms.ModelForm):
         self.fields['study_group'].empty_label = 'Выберите группу студента'
         self.fields['study_group'].widget.attrs['data-placeholder'] = 'Выберите группу студента'
 
+
+
+    def clean_email(self):
+        email = (self.cleaned_data.get('email') or '').strip().lower()
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError('Пользователь с таким email уже существует.')
+        return email
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.role = User.Role.STUDENT
@@ -203,6 +211,14 @@ class AdminCuratorCreateForm(forms.ModelForm):
             'full_name': forms.TextInput(attrs={'placeholder': 'Например, Иванова Ольга Сергеевна'}),
             'email': forms.EmailInput(attrs={'placeholder': 'Например, curator@irkpo.ru'}),
         }
+
+
+
+    def clean_email(self):
+        email = (self.cleaned_data.get('email') or '').strip().lower()
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError('Пользователь с таким email уже существует.')
+        return email
 
     def save(self, commit=True):
         user = super().save(commit=False)
