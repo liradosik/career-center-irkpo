@@ -58,7 +58,7 @@
       <h2>Список студентов</h2>
     </div>
 
-    <form method="get" class="admin-student-filters-v3">
+    <form method="get" action="{% url 'accounts:admin_students' %}#students-list" class="admin-student-filters-v3">
       <input
         class="admin-student-search-v2"
         name="q"
@@ -107,7 +107,7 @@
         <option value="expelled" {% if academic_status_filter == 'expelled' %}selected{% endif %}>Отчислен</option>
       </select>
 
-      <button class="btn btn-primary admin-student-filter-submit-v3" type="submit">Применить</button>
+      <button class="btn btn-primary admin-student-filter-submit-v3" type="submit">Найти</button>
     </form>
     <div class="admin-student-table-v2">
       <div class="admin-student-table-head-v2">

@@ -388,9 +388,9 @@ class AdminStudyGroupForm(forms.ModelForm):
         }
         widgets = {
             'name': forms.TextInput(attrs={'readonly': 'readonly'}),
-            'admission_year': forms.NumberInput(attrs={'placeholder': 'Например, 2024'}),
+            'admission_year': forms.NumberInput(attrs={'placeholder': '2024'}),
             'course_number': forms.NumberInput(attrs={'placeholder': '1, 2, 3 или 4', 'min': 1, 'max': 4}),
-            'subgroup_number': forms.NumberInput(attrs={'placeholder': 'Например, 1', 'min': 1}),
+            'subgroup_number': forms.NumberInput(attrs={'placeholder': '1', 'min': 1}),
         }
 
     def __init__(self, *args, **kwargs):

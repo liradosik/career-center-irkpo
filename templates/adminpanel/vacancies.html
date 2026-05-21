@@ -9,15 +9,17 @@
   <p>Создание вакансий и управление карьерными публикациями для студентов.</p>
 </section>
 
-<section class="section card admin-create-card vacancy-create-card">
+<section class="section card admin-create-card vacancy-create-card opportunity-create-card">
   <h2>Создать вакансию</h2>
 
-  <form method="post" class="admin-form vacancy-create-form">
+  <form method="post" class="admin-form vacancy-create-form opportunity-form opportunity-form-vacancy">
     {% csrf_token %}
     <input type="hidden" name="action" value="create">
 
-    <div class="admin-create-split admin-create-split-vacancy">
-      <div class="admin-create-main-fields">
+    <div class="opportunity-two-columns opportunity-vacancy-columns">
+      <div class="opportunity-column">
+        <div class="opportunity-column-title">Общая информация</div>
+
         <div class="form-field">
           <label>{{ form.title.label }}</label>
           {{ form.title }}
@@ -30,28 +32,30 @@
           {{ form.company.errors }}
         </div>
 
-        <div class="form-field">
-          <label>{{ form.employment_type.label }}</label>
-          <select name="employment_type" id="id_employment_type">
-            <option value="">Выберите тип занятости</option>
-            <option value="Стажировка">Стажировка</option>
-            <option value="Частичная занятость">Частичная занятость</option>
-            <option value="Полная занятость">Полная занятость</option>
-            <option value="Проектная работа">Проектная работа</option>
-            <option value="Практика">Практика у работодателя</option>
-          </select>
-          {{ form.employment_type.errors }}
-        </div>
+        <div class="opportunity-row-2">
+          <div class="form-field">
+            <label>{{ form.employment_type.label }}</label>
+            <select name="employment_type" id="id_employment_type">
+              <option value="">Выберите тип занятости</option>
+              <option value="Стажировка" {% if form.employment_type.value == 'Стажировка' %}selected{% endif %}>Стажировка</option>
+              <option value="Частичная занятость" {% if form.employment_type.value == 'Частичная занятость' %}selected{% endif %}>Частичная занятость</option>
+              <option value="Полная занятость" {% if form.employment_type.value == 'Полная занятость' %}selected{% endif %}>Полная занятость</option>
+              <option value="Проектная работа" {% if form.employment_type.value == 'Проектная работа' %}selected{% endif %}>Проектная работа</option>
+              <option value="Практика" {% if form.employment_type.value == 'Практика' %}selected{% endif %}>Практика у работодателя</option>
+            </select>
+            {{ form.employment_type.errors }}
+          </div>
 
-        <div class="form-field">
-          <label>{{ form.format_type.label }}</label>
-          <select name="format_type" id="id_format_type">
-            <option value="">Выберите формат</option>
-            <option value="Очно">Очно</option>
-            <option value="Удалённо">Удалённо</option>
-            <option value="Гибрид">Гибрид</option>
-          </select>
-          {{ form.format_type.errors }}
+          <div class="form-field">
+            <label>{{ form.format_type.label }}</label>
+            <select name="format_type" id="id_format_type">
+              <option value="">Выберите формат</option>
+              <option value="Очно" {% if form.format_type.value == 'Очно' %}selected{% endif %}>Очно</option>
+              <option value="Удалённо" {% if form.format_type.value == 'Удалённо' %}selected{% endif %}>Удалённо</option>
+              <option value="Гибрид" {% if form.format_type.value == 'Гибрид' %}selected{% endif %}>Гибрид</option>
+            </select>
+            {{ form.format_type.errors }}
+          </div>
         </div>
 
         <div class="form-field">
@@ -66,8 +70,23 @@
           {{ form.contacts.errors }}
         </div>
 
-        <div class="form-field"><label>{{ form.address.label }}</label>{{ form.address }}</div>
-        <div class="form-field"><label>{{ form.map_url.label }}</label>{{ form.map_url }}</div>
+        <div class="opportunity-row-2">
+          {% if form.address %}
+            <div class="form-field">
+              <label>{{ form.address.label }}</label>
+              {{ form.address }}
+              {{ form.address.errors }}
+            </div>
+          {% endif %}
+
+          {% if form.map_url %}
+            <div class="form-field">
+              <label>{{ form.map_url.label }}</label>
+              {{ form.map_url }}
+              {{ form.map_url.errors }}
+            </div>
+          {% endif %}
+        </div>
 
         <div class="form-field">
           <label>{{ form.status.label }}</label>
@@ -76,7 +95,9 @@
         </div>
       </div>
 
-      <div class="admin-create-text-fields">
+      <div class="opportunity-column">
+        <div class="opportunity-column-title">Описание вакансии</div>
+
         <div class="form-field">
           <label>{{ form.description.label }}</label>
           {{ form.description }}
@@ -103,16 +124,16 @@
       </div>
     </div>
 
-    <div class="admin-form-actions">
-      <button class="btn btn-primary" type="submit">Создать вакансию</button>
+    <div class="admin-form-actions opportunity-form-actions">
+      <button class="btn btn-primary opportunity-submit" type="submit">Создать вакансию</button>
     </div>
   </form>
 </section>
 
-<section class="section card admin-list-card vacancy-list-card">
+<section class="section card admin-list-card opportunity-simple-list-card" id="vacancies-list">
   <h2>Список вакансий</h2>
 
-  <form method="get" class="admin-filters vacancy-filters">
+  <form method="get" action="{% url 'accounts:admin_vacancies' %}#vacancies-list" class="opportunity-simple-filters opportunity-vacancy-simple-filters">
     <input name="q" placeholder="Название или компания" value="{{ request.GET.q }}">
 
     <select name="status">
@@ -140,39 +161,40 @@
 
     <input name="direction" placeholder="Направление" value="{{ request.GET.direction }}">
 
-    <button class="btn btn-link" type="submit">Применить</button>
+    <button class="btn btn-primary opportunity-simple-submit" type="submit">Применить</button>
   </form>
 
-  <div class="admin-row-list vacancy-row-list">
+  <div class="opportunity-simple-list">
     {% for vacancy in vacancies %}
-      <article class="admin-row vacancy-row vacancy-row-no-avatar">
-        <div class="vacancy-main">
-          <strong>{{ vacancy.title }}</strong>
-          <span>{{ vacancy.company }}</span>
+      <article class="opportunity-simple-row">
+        <div class="opportunity-simple-main">
+          <h3>{{ vacancy.title }}</h3>
+          <p>{{ vacancy.company }}</p>
         </div>
 
-        <div class="vacancy-meta">
-          <span class="admin-row-label">Формат</span>
-          <strong>{{ vacancy.format_type|default:"—" }}</strong>
+        <div class="opportunity-simple-tags">
+          {% if vacancy.format_type %}
+            <span>{{ vacancy.format_type }}</span>
+          {% endif %}
+
+          {% if vacancy.employment_type %}
+            <span>{{ vacancy.employment_type }}</span>
+          {% endif %}
+
+          {% if vacancy.direction %}
+            <span>{{ vacancy.direction }}</span>
+          {% endif %}
         </div>
 
-        <div class="vacancy-meta">
-          <span class="admin-row-label">Занятость</span>
-          <strong>{{ vacancy.employment_type|default:"—" }}</strong>
-        </div>
+        <div class="opportunity-simple-side">
+          <span class="opportunity-simple-status opportunity-simple-status-{{ vacancy.status }}">
+            {{ STATUS_LABELS|dict_get:vacancy.status }}
+          </span>
 
-        <div class="vacancy-meta">
-          <span class="admin-row-label">Направление</span>
-          <strong>{{ vacancy.direction|default:"—" }}</strong>
+          <a class="btn btn-link opportunity-simple-open" href="{% url 'accounts:admin_vacancy_detail' vacancy.id %}">
+            Открыть
+          </a>
         </div>
-
-        <div class="vacancy-status vacancy-status-{{ vacancy.status }}">
-          {{ STATUS_LABELS|dict_get:vacancy.status }}
-        </div>
-
-        <a class="btn btn-link" href="{% url 'accounts:admin_vacancy_detail' vacancy.id %}">
-          Открыть
-        </a>
       </article>
     {% empty %}
       <div class="admin-empty-state">
@@ -180,7 +202,31 @@
         <p>Попробуйте изменить фильтры или создайте новую вакансию.</p>
       </div>
     {% endfor %}
-  </div>
+    </div>
+
+  {% if page_obj.has_other_pages %}
+    <nav class="students-final-pager opportunity-final-pager" aria-label="Пагинация вакансий">
+      {% if page_obj.has_previous %}
+        <a class="students-final-pager-arrow" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}#vacancies-list">‹</a>
+      {% else %}
+        <span class="students-final-pager-arrow is-disabled">‹</span>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+          <span class="students-final-pager-page is-active">{{ num }}</span>
+        {% else %}
+          <a class="students-final-pager-page" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}#vacancies-list">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+        <a class="students-final-pager-arrow" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}#vacancies-list">›</a>
+      {% else %}
+        <span class="students-final-pager-arrow is-disabled">›</span>
+      {% endif %}
+    </nav>
+  {% endif %}
 </section>
 
 <script>
@@ -190,8 +236,10 @@
       company: 'Например, ООО «Иркутск IT»',
       direction: 'Например, IT, дизайн, педагогика',
       contacts: 'Email, телефон или Telegram',
+      address: 'Адрес',
+      map_url: 'Ссылка на карту',
       description: 'Коротко опишите вакансию и кому она подойдёт',
-      responsibilities: 'Основные задачи студента',
+      responsibilities: 'Основные задачи сотрудника',
       requirements: 'Навыки, курс, опыт или личные качества',
       conditions: 'График, оплата, обучение, оформление'
     };

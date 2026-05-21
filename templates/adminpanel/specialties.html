@@ -2,87 +2,115 @@
 {% block title %}Специальности{% endblock %}
 
 {% block content %}
-<section class="hero">
-  <div class="hero-kicker">Администрирование</div>
-  <h1>Специальности</h1>
-  <p>Справочник специальностей и профилей для учебных групп.</p>
+<section class="hero admin-page-hero admin-specialties-hero-v2">
+  <div>
+    <div class="hero-kicker">Администрирование</div>
+    <h1>Специальности</h1>
+    <p>Справочник специальностей и профилей для учебных групп.</p>
+  </div>
 </section>
 
-<section class="section card specialty-form-card">
-  <h2>{% if edit_specialty %}Редактировать специальность{% else %}Создать специальность{% endif %}</h2>
+<section class="section admin-specialties-page-v2">
+  <div class="card specialty-form-card admin-specialty-create-card-v2">
+    <div class="admin-card-head">
+      <h2>{% if edit_specialty %}Редактировать специальность{% else %}Создать специальность{% endif %}</h2>
+    </div>
 
-  <form method="post" class="specialty-form">
-    {% csrf_token %}
-    <input type="hidden" name="action" value="{% if edit_specialty %}update{% else %}create{% endif %}">
+    <form method="post" class="specialty-form admin-specialty-form-v2">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="{% if edit_specialty %}update{% else %}create{% endif %}">
 
-    {% if edit_specialty %}
-      {% if edit_specialty.is_active %}
+      {% if edit_specialty %}
+        {% if edit_specialty.is_active %}
+          <input type="hidden" name="is_active" value="on">
+        {% endif %}
+      {% else %}
         <input type="hidden" name="is_active" value="on">
       {% endif %}
-    {% else %}
-      <input type="hidden" name="is_active" value="on">
-    {% endif %}
 
-    <div class="specialty-form-grid">
-      <div class="form-field">
-        <label for="{{ form.code.id_for_label }}">Код специальности</label>
-        {{ form.code }}
-        {{ form.code.errors }}
-      </div>
+      <div class="admin-specialty-form-grid-v2">
+        <div class="form-field admin-specialty-code-field-v2">
+          <label for="{{ form.code.id_for_label }}">Код специальности</label>
+          {{ form.code }}
+          {{ form.code.errors }}
+        </div>
 
-      <div class="form-field">
-        <label for="{{ form.letter_code.id_for_label }}">Буквенный код группы</label>
-        {{ form.letter_code }}
-        {{ form.letter_code.errors }}
-      </div>
+        <div class="form-field admin-specialty-letter-field-v2">
+          <label for="{{ form.letter_code.id_for_label }}">Буквенный код группы</label>
+          {{ form.letter_code }}
+          {{ form.letter_code.errors }}
+        </div>
 
-      <div class="form-field specialty-name-field">
-        <label for="{{ form.name.id_for_label }}">Название/профиль</label>
-        {{ form.name }}
-        {{ form.name.errors }}
+        <div class="form-field admin-specialty-name-field-v2">
+          <label for="{{ form.name.id_for_label }}">Название/профиль</label>
+          {{ form.name }}
+          {{ form.name.errors }}
+        </div>
+
+        <div class="admin-specialty-form-actions-v2">
+          <button class="btn btn-primary" type="submit">
+            {% if edit_specialty %}Сохранить{% else %}Создать{% endif %}
+          </button>
+
+          {% if edit_specialty %}
+            <a class="btn btn-link" href="{% url 'accounts:admin_specialties' %}">
+              Отменить
+            </a>
+          {% endif %}
+        </div>
       </div>
+    </form>
+  </div>
+
+  <div class="card admin-list-card admin-specialties-list-card-v2" id="specialties-list">
+    <div class="admin-card-head">
+      <h2>Список специальностей</h2>
     </div>
 
-    <div class="specialty-form-bottom specialty-form-bottom-simple">
-      <button class="btn btn-primary" type="submit">Сохранить</button>
-    </div>
-  </form>
-</section>
+    <form method="get" action="{% url 'accounts:admin_specialties' %}#specialties-list" class="admin-specialties-filters-v2">
+      <input
+        type="text"
+        name="q"
+        value="{{ request.GET.q }}"
+        placeholder="Код, название или буква"
+      >
 
-<section class="section card specialty-list-card">
-  <h2>Список специальностей</h2>
+      <button class="btn btn-primary admin-specialties-filter-submit-v2" type="submit">
+        Найти
+      </button>
+    </form>
 
-  <form method="get" class="specialty-filter">
-    <input
-      name="q"
-      placeholder="Поиск по коду, названию или буквенному коду"
-      value="{{ request.GET.q }}"
-    >
-    <button class="btn btn-link" type="submit">Найти</button>
-  </form>
+    <div class="admin-specialties-table-v2">
+      <div class="admin-specialties-table-head-v2">
+        <span>Специальность</span>
+        <span>Буква</span>
+        <span></span>
+      </div>
 
-  <div class="specialty-list">
-    {% for specialty in specialties %}
-      <article class="specialty-row specialty-row-simple specialty-row-no-avatar">
-        <div class="specialty-row-main">
-          <div>
-            <strong>{{ specialty.code }}</strong>
-            <span>{{ specialty.name }}</span>
+      <div class="admin-specialties-table-body-v2">
+        {% for specialty in specialties %}
+          <article class="admin-specialties-table-row-v2">
+            <div class="admin-specialty-main-v2">
+              <span>{{ specialty.code }}</span>
+              <small>{{ specialty.name }}</small>
+            </div>
+
+            <div class="admin-specialty-letter-v2">
+              {{ specialty.letter_code|default:"—" }}
+            </div>
+
+            <a class="btn btn-link admin-specialty-open-v2" href="{% url 'accounts:admin_specialty_detail' specialty.id %}">
+              Открыть
+            </a>
+          </article>
+        {% empty %}
+          <div class="admin-empty-state">
+            <strong>Специальности не найдены</strong>
+            <p>Попробуйте изменить поиск или создать новую специальность.</p>
           </div>
-        </div>
-
-        <div class="specialty-row-actions">
-          <a class="btn btn-link" href="{% url 'accounts:admin_specialty_detail' specialty.id %}">
-            Открыть
-          </a>
-        </div>
-      </article>
-    {% empty %}
-      <div class="admin-empty-state">
-        <strong>Специальности не найдены</strong>
-        <p>Попробуйте изменить поиск или добавить новую специальность.</p>
+        {% endfor %}
       </div>
-    {% endfor %}
+    </div>
   </div>
 </section>
 {% endblock %}

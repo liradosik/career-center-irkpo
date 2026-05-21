@@ -3,7 +3,7 @@
 {% block title %}Группы{% endblock %}
 
 {% block content %}
-<section class="hero admin-page-hero">
+<section class="hero admin-page-hero admin-groups-hero-v8">
   <div>
     <div class="hero-kicker">Администрирование</div>
     <h1>Группы</h1>
@@ -11,126 +11,253 @@
   </div>
 </section>
 
-<section class="section card admin-create-group-card">
-  <h2>Создать группу</h2>
+<section class="section admin-groups-page-v8">
+  <div class="card admin-create-card admin-group-create-card-v8">
+    <div class="admin-card-head">
+      <h2>Создать группу</h2>
+    </div>
 
-  <form method="post" class="admin-create-group-form">
-    {% csrf_token %}
-    <input type="hidden" name="action" value="create">
+    <form method="post" class="admin-create-group-form-v8">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="create">
+      <input type="hidden" name="name" id="id_name" value="{{ form.name.value|default:'' }}">
 
-    <div class="group-create-fields">
-      <div class="form-field">
-        <label for="{{ form.name.id_for_label }}">Код группы (авто)</label>
-        {{ form.name }}
-        <small class="form-hint">Код формируется автоматически из специальности, курса, года и подгруппы.</small>
-        {{ form.name.errors }}
-      </div>
-
-      <div class="form-field">
-        <label for="{{ form.specialty_ref.id_for_label }}">Специальность</label>
+      <div class="form-field admin-group-specialty-field-v8">
+        <label for="id_specialty_ref">Специальность</label>
         <div class="searchable-select" data-searchable-select data-search-placeholder="Найти специальность">
-  {{ form.specialty_ref }}
-</div>
+          <select name="specialty_ref" id="id_specialty_ref" required>
+            <option value="">Найти специальность</option>
+            {% for specialty in specialties %}
+              <option
+                value="{{ specialty.id }}"
+                data-letter="{{ specialty.letter_code }}"
+                {% if form.specialty_ref.value|stringformat:"s" == specialty.id|stringformat:"s" %}selected{% endif %}
+              >
+                {{ specialty.code }} • {{ specialty.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
         {{ form.specialty_ref.errors }}
       </div>
 
-      <div class="form-field">
+      <div class="form-field admin-group-curator-field-v8">
+        <label for="id_curator">Куратор</label>
+        <div class="searchable-select" data-searchable-select data-search-placeholder="Найти куратора">
+          <select name="curator" id="id_curator">
+            <option value="">Найти куратора</option>
+            {% for curator in curators %}
+              <option
+                value="{{ curator.id }}"
+                {% if form.curator.value|stringformat:"s" == curator.id|stringformat:"s" %}selected{% endif %}
+              >
+                {{ curator.full_name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        {{ form.curator.errors }}
+      </div>
+
+      <div class="form-field admin-group-year-field-v8">
         <label for="{{ form.admission_year.id_for_label }}">Год поступления</label>
         {{ form.admission_year }}
         {{ form.admission_year.errors }}
       </div>
 
-      <div class="form-field">
+      <div class="form-field admin-group-course-field-v8">
         <label for="{{ form.course_number.id_for_label }}">Курс</label>
         {{ form.course_number }}
         {{ form.course_number.errors }}
       </div>
 
-      <div class="form-field">
+      <div class="form-field admin-group-subgroup-field-v8">
         <label for="{{ form.subgroup_number.id_for_label }}">Подгруппа</label>
         {{ form.subgroup_number }}
-        <small class="form-hint">{{ form.subgroup_number.help_text }}</small>
         {{ form.subgroup_number.errors }}
       </div>
 
-      <div class="form-field">
-        <label for="{{ form.curator.id_for_label }}">Куратор</label>
-        <div class="searchable-select" data-searchable-select data-search-placeholder="Найти куратора по ФИО">
-  {{ form.curator }}
-</div>
-        {{ form.curator.errors }}
+      <div class="admin-group-code-preview-v8" aria-live="polite">
+        <strong id="group-code-preview">Код группы</strong>
       </div>
+
+      <div class="admin-group-create-actions-v8">
+        <button class="btn btn-primary" type="submit">Создать группу</button>
+        <a class="btn btn-link" href="{% url 'accounts:admin_group_import' %}">
+          Импорт CSV / Excel
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <div class="card admin-list-card admin-groups-list-card-v8" id="groups-list">
+    <div class="admin-card-head">
+      <h2>Список групп</h2>
     </div>
 
-    <div class="admin-form-actions">
-      <button class="btn btn-primary" type="submit">Создать группу</button>
-      <a class="btn btn-link" href="{% url 'accounts:admin_group_import' %}">Импорт CSV / Excel</a>
-    </div>
-  </form>
-</section>
+    <form method="get" action="{% url 'accounts:admin_groups' %}#groups-list" class="admin-groups-filters-v8">
+      <input name="q" placeholder="Название группы" value="{{ request.GET.q }}">
 
-<section class="section card admin-groups-list-card">
-  <h2>Список групп</h2>
+      <div class="searchable-select" data-searchable-select data-search-placeholder="Найти специальность">
+        <select name="specialty">
+          <option value="">Найти специальность</option>
+          {% for specialty in specialties %}
+            <option value="{{ specialty.id }}" {% if specialty_filter == specialty.id|stringformat:"s" %}selected{% endif %}>
+              {{ specialty.code }} • {{ specialty.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
 
-  <form method="get" class="admin-groups-filters">
-    <input name="q" placeholder="Название группы" value="{{ request.GET.q }}">
+      <div class="searchable-select" data-searchable-select data-search-placeholder="Найти куратора">
+        <select name="curator">
+          <option value="">Найти куратора</option>
+          {% for curator in curators %}
+            <option value="{{ curator.id }}" {% if curator_filter == curator.id|stringformat:"s" %}selected{% endif %}>
+              {{ curator.full_name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
 
-    <div class="searchable-select" data-searchable-select data-search-placeholder="Найти специальность">
-  <select name="specialty">
-    <option value="">Специальность</option>
-    {% for specialty in specialties %}
-      <option value="{{ specialty.id }}" {% if request.GET.specialty == specialty.id|stringformat:'s' %}selected{% endif %}>
-        {{ specialty.code }} • {{ specialty.name }}
-      </option>
-    {% endfor %}
-  </select>
-</div>
+      <input name="course_number" type="number" min="1" max="4" placeholder="Курс" value="{{ course_number_filter }}">
+      <input name="admission_year" type="number" min="2000" placeholder="Год" value="{{ admission_year_filter }}">
 
-    <div class="searchable-select" data-searchable-select data-search-placeholder="Найти куратора">
-  <select name="curator">
-    <option value="">Куратор</option>
-    {% for curator in curators %}
-      <option value="{{ curator.id }}" {% if request.GET.curator == curator.id|stringformat:'s' %}selected{% endif %}>
-        {{ curator.full_name }}
-      </option>
-    {% endfor %}
-  </select>
-</div>
+      <button class="btn btn-primary admin-groups-filter-submit-v8" type="submit">
+        Найти
+      </button>
+    </form>
 
-    <input name="course_number" type="number" min="1" placeholder="Курс" value="{{ request.GET.course_number }}">
-    <input name="admission_year" type="number" min="2000" placeholder="Год поступления" value="{{ request.GET.admission_year }}">
+    <div class="admin-groups-table-v8">
+      <div class="admin-groups-table-head-v8">
+        <span>Группа</span>
+        <span>Куратор</span>
+        <span>Студенты</span>
+        <span></span>
+      </div>
 
-    <button class="btn btn-link" type="submit">Применить</button>
-  </form>
+      <div class="admin-groups-table-body-v8">
+        {% for group in groups %}
+          <article class="admin-groups-table-row-v8">
+            <div class="admin-group-code-cell-v8">
+              <span>{{ group.name }}</span>
+            </div>
 
-  <div class="admin-groups-list">
-    {% for group in groups %}
-      <article class="admin-group-row admin-group-row-simple admin-group-row-no-avatar">
-        <div class="admin-group-main">
-          <div>
-            <strong>{{ group.name }}</strong>
-            <span>{{ group.specialty_ref.name|default:group.specialty|default:'Специальность не указана' }}</span>
+            <div class="admin-group-curator-cell-v8">
+              {% if group.curator %}
+                {% if group.curator.photo %}
+                  <img class="avatar-img admin-group-curator-avatar-v8" src="{{ group.curator.photo.url }}" alt="{{ group.curator.full_name }}">
+                {% else %}
+                  <span class="avatar-fallback admin-group-curator-avatar-v8">{{ group.curator.full_name|initials }}</span>
+                {% endif %}
+                <span>{{ group.curator.full_name }}</span>
+              {% else %}
+                <span class="admin-group-muted-v8">Без куратора</span>
+              {% endif %}
+            </div>
+
+            <div class="admin-group-count-v8">
+              <span>{{ group.students_count|default:0 }}</span>
+              <small>студентов</small>
+            </div>
+
+            <a class="btn btn-link admin-group-open-v8" href="{% url 'accounts:admin_group_detail' group.id %}">
+              Открыть
+            </a>
+          </article>
+        {% empty %}
+          <div class="admin-empty-state">
+            <strong>Группы не найдены</strong>
+            <p>Попробуйте изменить фильтры или создать новую группу.</p>
           </div>
-        </div>
-
-        <div class="admin-group-cell">
-          <span>Куратор</span>
-          <strong>{% if group.curator %}{% if group.curator.photo %}<img class="avatar-img avatar-sm" src="{{ group.curator.photo.url }}" alt="{{ group.curator.full_name }}">{% else %}<span class="avatar-fallback avatar-sm">{{ group.curator.full_name|initials }}</span>{% endif %} {{ group.curator.full_name }}{% else %}Без куратора{% endif %}</strong>
-        </div>
-
-        <div class="admin-group-cell">
-          <span>Студентов</span>
-          <strong>{{ group.students_count|default:0 }}</strong>
-        </div>
-
-        <a class="btn btn-link" href="{% url 'accounts:admin_group_detail' group.id %}">Открыть</a>
-      </article>
-    {% empty %}
-      <div class="admin-empty-state">
-        <strong>Группы не найдены</strong>
-        <p>Попробуйте изменить фильтры или создать новую группу.</p>
+        {% endfor %}
       </div>
-    {% endfor %}
+    </div>
+
+    {% if groups_has_pages %}
+      <section class="admin-groups-pagination-wrap-v8">
+        <nav class="admin-groups-pagination-v8" aria-label="Пагинация групп">
+          {% if groups_has_previous %}
+            <a class="admin-groups-page-arrow-v8" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ groups_previous_page }}#groups-list">‹</a>
+          {% else %}
+            <span class="admin-groups-page-arrow-v8 is-disabled">‹</span>
+          {% endif %}
+
+          {% for page_number in groups_page_range %}
+            {% if page_number == groups_current_page %}
+              <span class="admin-groups-page-number-v8 is-active">{{ page_number }}</span>
+            {% else %}
+              <a class="admin-groups-page-number-v8" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_number }}#groups-list">
+                {{ page_number }}
+              </a>
+            {% endif %}
+          {% endfor %}
+
+          {% if groups_has_next %}
+            <a class="admin-groups-page-arrow-v8" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ groups_next_page }}#groups-list">›</a>
+          {% else %}
+            <span class="admin-groups-page-arrow-v8 is-disabled">›</span>
+          {% endif %}
+        </nav>
+      </section>
+    {% endif %}
   </div>
 </section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const specialtySelect = document.getElementById('id_specialty_ref');
+    const admissionInput = document.getElementById('id_admission_year');
+    const courseInput = document.getElementById('id_course_number');
+    const subgroupInput = document.getElementById('id_subgroup_number');
+    const hiddenNameInput = document.getElementById('id_name');
+    const preview = document.getElementById('group-code-preview');
+
+    function buildGroupCode() {
+      if (!specialtySelect || !admissionInput || !courseInput || !preview) {
+        return;
+      }
+
+      const selectedOption = specialtySelect.options[specialtySelect.selectedIndex];
+      const letter = selectedOption ? (selectedOption.dataset.letter || '').trim() : '';
+      const year = (admissionInput.value || '').trim();
+      const course = (courseInput.value || '').trim();
+      const subgroup = subgroupInput ? (subgroupInput.value || '').trim() : '';
+
+      if (!letter || !year || !course) {
+        preview.textContent = 'Код группы';
+        preview.classList.add('is-empty');
+
+        if (hiddenNameInput) {
+          hiddenNameInput.value = '';
+        }
+
+        return;
+      }
+
+      const yearShort = year.length >= 2 ? year.slice(-2) : year;
+      let code = `${letter}-${course}${yearShort}`;
+
+      if (subgroup) {
+        code += `/${subgroup}`;
+      }
+
+      preview.textContent = code;
+      preview.classList.remove('is-empty');
+
+      if (hiddenNameInput) {
+        hiddenNameInput.value = code;
+      }
+    }
+
+    [specialtySelect, admissionInput, courseInput, subgroupInput].forEach(function (element) {
+      if (element) {
+        element.addEventListener('change', buildGroupCode);
+        element.addEventListener('input', buildGroupCode);
+      }
+    });
+
+    buildGroupCode();
+  });
+</script>
 {% endblock %}

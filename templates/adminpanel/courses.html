@@ -10,78 +10,107 @@
   <p>Создание и управление обучающими событиями для студентов.</p>
 </section>
 
-<section class="section card admin-wide-card admin-create-card admin-course-create-card">
+<section class="section card admin-wide-card admin-create-card admin-course-create-card opportunity-create-card">
   <h2>Создать курс</h2>
 
-  <form method="post" class="admin-course-form admin-create-split-form">
+  <form method="post" class="admin-course-form opportunity-form opportunity-form-course">
     {% csrf_token %}
 
-    <div class="admin-create-split admin-create-split-course">
-      <div class="admin-create-main-fields">
-        <p>
+    <div class="opportunity-two-columns opportunity-course-columns">
+      <div class="opportunity-column">
+        <div class="opportunity-column-title">Общая информация</div>
+
+        <div class="form-field">
           <label>{{ form.title.label }}</label>
           {{ form.title }}
-        </p>
+        </div>
 
-        <p>
-          <label>{{ form.kind.label }}</label>
-          {{ form.kind }}
-        </p>
-
-        <p>
-          <label>{{ form.format_type.label }}</label>
-          {{ form.format_type }}
-        </p>
-
-        <p>
+        <div class="form-field">
           <label>{{ form.organization.label }}</label>
           {{ form.organization }}
-        </p>
+        </div>
 
-        <p>
+        <div class="form-field">
           <label>{{ form.contacts.label }}</label>
           {{ form.contacts }}
-        </p>
+        </div>
 
-        <p>
-          <label>{{ form.date.label }}</label>
-          {{ form.date }}
-        </p>
-
-        <p>
-          <label>{{ form.places.label }}</label>
-          {{ form.places }}{% if form.places.help_text %}<small>{{ form.places.help_text }}</small>{% endif %}
-        </p>
-
-        <p><label>{{ form.online_url.label }}</label>{{ form.online_url }}</p>
-        <p><label>{{ form.address.label }}</label>{{ form.address }}</p>
-        <p><label>{{ form.map_url.label }}</label>{{ form.map_url }}</p>
-        <p>
-          <label>{{ form.status.label }}</label>
-          {{ form.status }}
-        </p>
-      </div>
-
-      <div class="admin-create-text-fields">
-        <p>
+        <div class="form-field opportunity-description-field">
           <label>{{ form.description.label }}</label>
           {{ form.description }}
-        </p>
+        </div>
+      </div>
+
+      <div class="opportunity-column">
+        <div class="opportunity-column-title">Параметры курса</div>
+
+        <div class="opportunity-row-2">
+          <div class="form-field">
+            <label>{{ form.kind.label }}</label>
+            {{ form.kind }}
+          </div>
+
+          <div class="form-field">
+            <label>{{ form.format_type.label }}</label>
+            {{ form.format_type }}
+          </div>
+        </div>
+
+        <div class="opportunity-row-2">
+          <div class="form-field">
+            <label>{{ form.date.label }}</label>
+            {{ form.date }}
+          </div>
+
+          <div class="form-field">
+            <label>{{ form.places.label }}</label>
+            {{ form.places }}
+            {% if form.places.help_text %}{% endif %}
+          </div>
+        </div>
+
+        <div class="opportunity-row-2">
+          {% if form.online_url %}
+            <div class="form-field">
+              <label>{{ form.online_url.label }}</label>
+              {{ form.online_url }}
+            </div>
+          {% endif %}
+
+          {% if form.address %}
+            <div class="form-field">
+              <label>{{ form.address.label }}</label>
+              {{ form.address }}
+            </div>
+          {% endif %}
+        </div>
+
+        {% if form.map_url %}
+          <div class="form-field">
+            <label>{{ form.map_url.label }}</label>
+            {{ form.map_url }}
+          </div>
+        {% endif %}
+
+        <div class="form-field">
+          <label>{{ form.status.label }}</label>
+          {{ form.status }}
+        </div>
       </div>
     </div>
 
-    <p class="admin-form-actions">
-      <button class="btn btn-primary" name="action" value="create" type="submit">
+    <div class="admin-form-actions opportunity-form-actions">
+      <button class="btn btn-primary opportunity-submit" name="action" value="create" type="submit">
         Создать курс
       </button>
-    </p>
+    </div>
   </form>
 </section>
 
-<section class="section card admin-wide-card">
+<section class="section card admin-list-card opportunity-simple-list-card" id="courses-list">
   <h2>Список курсов</h2>
 
-  <form method="get" class="filters admin-clean-filters">
+  <form method="get" action="{% url 'accounts:admin_courses' %}#courses-list" class="opportunity-simple-filters opportunity-course-simple-filters">
     <input
       name="q"
       placeholder="Название или организация"
@@ -108,24 +137,21 @@
       <option value="offline" {% if request.GET.format_type == 'offline' %}selected{% endif %}>Очно</option>
     </select>
 
-    <button class="btn btn-link" type="submit">Применить</button>
+    <button class="btn btn-primary opportunity-simple-submit" type="submit">Применить</button>
   </form>
 
-  <div class="admin-course-list">
+  <div class="opportunity-simple-list">
     {% for course in courses %}
-      <div class="admin-course-row">
-        <div class="admin-course-main">
-          <strong>{{ course.title }}</strong>
-          <span>{{ course.organization|default:'Организация не указана' }}</span>
+      <article class="opportunity-simple-row">
+        <div class="opportunity-simple-main">
+          <h3>{{ course.title }}</h3>
+          <p>{{ course.organization|default:'Организация не указана' }}</p>
         </div>
 
-        <div class="admin-course-meta">
-          <strong>{{ KIND_LABELS|dict_get:course.kind }}</strong>
+        <div class="opportunity-simple-tags">
+          <span>{{ KIND_LABELS|dict_get:course.kind }}</span>
           <span>{{ FORMAT_LABELS|dict_get:course.format_type }}</span>
-        </div>
 
-        <div class="admin-course-meta">
-          <span>{{ STATUS_LABELS|dict_get:course.status }}</span>
           {% if course.format_type == 'offline' %}
             <span>Мест: {{ course.places }} / {{ course.registrations_count }}</span>
           {% else %}
@@ -133,16 +159,47 @@
           {% endif %}
         </div>
 
-        <a class="btn btn-link admin-row-open" href="{% url 'accounts:admin_course_detail' course.id %}">
-          Открыть
-        </a>
-      </div>
+        <div class="opportunity-simple-side">
+          <span class="opportunity-simple-status opportunity-simple-status-{{ course.status }}">
+            {{ STATUS_LABELS|dict_get:course.status }}
+          </span>
+
+          <a class="btn btn-link opportunity-simple-open" href="{% url 'accounts:admin_course_detail' course.id %}">
+            Открыть
+          </a>
+        </div>
+      </article>
     {% empty %}
       <div class="admin-empty-state">
-        Курсы и семинары не найдены.
+        <strong>Курсы не найдены</strong>
+        <p>Попробуйте изменить фильтры или создайте новый курс.</p>
       </div>
     {% endfor %}
-  </div>
+    </div>
+
+  {% if page_obj.has_other_pages %}
+    <nav class="students-final-pager opportunity-final-pager" aria-label="Пагинация курсов">
+      {% if page_obj.has_previous %}
+        <a class="students-final-pager-arrow" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}#courses-list">‹</a>
+      {% else %}
+        <span class="students-final-pager-arrow is-disabled">‹</span>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+          <span class="students-final-pager-page is-active">{{ num }}</span>
+        {% else %}
+          <a class="students-final-pager-page" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}#courses-list">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+        <a class="students-final-pager-arrow" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}#courses-list">›</a>
+      {% else %}
+        <span class="students-final-pager-arrow is-disabled">›</span>
+      {% endif %}
+    </nav>
+  {% endif %}
 </section>
 
 <script>
@@ -151,13 +208,16 @@
       title: 'Например, Основы портфолио и резюме',
       organization: 'Например, Центр карьеры ИРКПО',
       contacts: 'Email, телефон, кабинет или Telegram',
-      places: 'Например, 25',
-      description: 'Кратко опишите тему, формат и кому подойдёт курс'
+      places: '25',
+      online_url: 'Ссылка для онлайн-формата',
+      address: 'Кабинет или адрес',
+      map_url: 'Ссылка на карту',
+      description: 'Кратко: тема, формат, кому подойдёт и что получит студент'
     };
 
     Object.entries(fields).forEach(function ([name, placeholder]) {
       const field = document.querySelector('.admin-course-create-card [name="' + name + '"]');
-      if (field) {
+      if (field && !field.getAttribute('placeholder')) {
         field.setAttribute('placeholder', placeholder);
       }
     });

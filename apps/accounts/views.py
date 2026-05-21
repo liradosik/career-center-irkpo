@@ -1649,8 +1649,10 @@ def admin_academic_structure(request):
 @role_required(User.Role.ADMIN)
 def admin_groups(request):
     form = AdminStudyGroupForm()
+
     if request.method == 'POST':
         action = request.POST.get('action', 'create')
+
         if action == 'toggle_active':
             group = get_object_or_404(StudyGroup, id=request.POST.get('group_id'))
             group.is_active = not group.is_active
@@ -1666,35 +1668,75 @@ def admin_groups(request):
             group.refresh_name()
             group.save()
             sync_group_students(group)
-            log_admin_action(request.user, AdminActivityLog.Action.CREATE, AdminActivityLog.ObjectType.GROUP, group, f'Создана группа {group.name}.')
+
+            log_admin_action(
+                request.user,
+                AdminActivityLog.Action.CREATE,
+                AdminActivityLog.ObjectType.GROUP,
+                group,
+                f'Создана группа {group.name}.'
+            )
+
             messages.success(request, 'Группа сохранена.')
             return redirect('accounts:admin_groups')
 
-    groups = StudyGroup.objects.select_related('specialty_ref', 'curator').annotate(students_count=Count('students')).order_by('name')
+    groups = (
+        StudyGroup.objects
+        .select_related('specialty_ref', 'curator')
+        .annotate(students_count=Count('students'))
+        .order_by('name')
+    )
+
     q = request.GET.get('q', '').strip()
     specialty = request.GET.get('specialty', '').strip()
     curator = request.GET.get('curator', '').strip()
     course_number = request.GET.get('course_number', '').strip()
     admission_year = request.GET.get('admission_year', '').strip()
+
     if q:
         groups = groups.filter(name__icontains=q)
+
     if specialty:
         groups = groups.filter(specialty_ref_id=specialty)
+
     if curator:
         groups = groups.filter(curator_id=curator)
+
     if course_number:
         groups = groups.filter(course_number=course_number)
+
     if admission_year:
         groups = groups.filter(admission_year=admission_year)
+
+    paginator = Paginator(groups, 12)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    query_params = request.GET.copy()
+    query_params.pop('page', None)
+    querystring = query_params.urlencode()
 
     return render(
         request,
         'adminpanel/groups.html',
         {
-            'groups': groups,
+            'groups': page_obj.object_list,
             'form': form,
             'specialties': Specialty.objects.order_by('code', 'name'),
             'curators': User.objects.filter(role=User.Role.CURATOR).order_by('full_name'),
+
+            'querystring': querystring,
+            'specialty_filter': specialty,
+            'curator_filter': curator,
+            'course_number_filter': course_number,
+            'admission_year_filter': admission_year,
+
+            'groups_page_range': list(page_obj.paginator.page_range),
+            'groups_current_page': page_obj.number,
+            'groups_has_pages': page_obj.paginator.num_pages > 1,
+            'groups_has_previous': page_obj.has_previous(),
+            'groups_has_next': page_obj.has_next(),
+            'groups_previous_page': page_obj.previous_page_number() if page_obj.has_previous() else None,
+            'groups_next_page': page_obj.next_page_number() if page_obj.has_next() else None,
         },
     )
 
@@ -1744,27 +1786,84 @@ def admin_group_detail(request, group_id):
 @role_required(User.Role.ADMIN)
 def admin_curators(request):
     form = AdminCuratorCreateForm()
+
     if request.method == 'POST':
         form = AdminCuratorCreateForm(request.POST)
         if form.is_valid():
             curator = form.save()
-            log_admin_action(request.user, AdminActivityLog.Action.CREATE, AdminActivityLog.ObjectType.CURATOR, curator, f'Создан куратор {curator.full_name}.')
+            log_admin_action(
+                request.user,
+                AdminActivityLog.Action.CREATE,
+                AdminActivityLog.ObjectType.CURATOR,
+                curator,
+                f'Создан куратор {curator.full_name}.'
+            )
             messages.success(request, 'Куратор создан.')
             return redirect('accounts:admin_curators')
+
+    q = request.GET.get('q', '').strip()
+    group = request.GET.get('group', '').strip()
+    student = request.GET.get('student', '').strip()
 
     curators = (
         User.objects.filter(role=User.Role.CURATOR)
         .annotate(
-            students_count=Count('managed_study_groups__students', distinct=True),
             groups_count=Count('managed_study_groups', distinct=True),
+            students_count=Count('managed_study_groups__students', distinct=True),
         )
         .order_by('full_name')
     )
-    q = request.GET.get('q', '').strip()
-    if q:
-        curators = curators.filter(Q(full_name__icontains=q) | Q(email__icontains=q))
 
-    return render(request, 'adminpanel/curators.html', {'curators': curators, 'form': form})
+    if q:
+        curators = curators.filter(
+            Q(full_name__icontains=q) |
+            Q(email__icontains=q)
+        )
+
+    if group.isdigit():
+        curators = curators.filter(managed_study_groups__id=int(group))
+
+    if student.isdigit():
+        curators = curators.filter(managed_study_groups__students__id=int(student))
+
+    curators = curators.distinct()
+
+    paginator = Paginator(curators, 12)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    query_params = request.GET.copy()
+    query_params.pop('page', None)
+    querystring = query_params.urlencode()
+
+    filter_groups = StudyGroup.objects.order_by('name')
+    filter_students = (
+        User.objects.filter(role=User.Role.STUDENT)
+        .select_related('study_group')
+        .order_by('full_name')
+    )
+
+    return render(
+        request,
+        'adminpanel/curators.html',
+        {
+            'curators': page_obj.object_list,
+            'form': form,
+            'querystring': querystring,
+
+            'filter_groups': filter_groups,
+            'filter_students': filter_students,
+            'group_filter': group,
+            'student_filter': student,
+
+            'curators_page_range': list(page_obj.paginator.page_range),
+            'curators_current_page': page_obj.number,
+            'curators_has_pages': page_obj.paginator.num_pages > 1,
+            'curators_has_previous': page_obj.has_previous(),
+            'curators_has_next': page_obj.has_next(),
+            'curators_previous_page': page_obj.previous_page_number() if page_obj.has_previous() else None,
+            'curators_next_page': page_obj.next_page_number() if page_obj.has_next() else None,
+        },
+    )
 
 
 @role_required(User.Role.ADMIN)
@@ -1832,28 +1931,65 @@ def admin_vacancies(request):
         form = AdminVacancyForm(request.POST)
         if form.is_valid():
             vacancy = form.save()
-            log_admin_action(request.user, AdminActivityLog.Action.CREATE, AdminActivityLog.ObjectType.VACANCY, vacancy, f'Создана вакансия {vacancy.title}.')
+            log_admin_action(
+                request.user,
+                AdminActivityLog.Action.CREATE,
+                AdminActivityLog.ObjectType.VACANCY,
+                vacancy,
+                f'Создана вакансия {vacancy.title}.'
+            )
             messages.success(request, 'Вакансия создана.')
             return redirect('accounts:admin_vacancies')
 
     vacancies = Vacancy.objects.order_by('-created_at')
+
+    filter_directions = (
+        Vacancy.objects
+        .exclude(direction='')
+        .exclude(direction__isnull=True)
+        .values_list('direction', flat=True)
+        .distinct()
+        .order_by('direction')
+    )
+
     if q:
-        vacancies = vacancies.filter(Q(title__icontains=q) | Q(company__icontains=q))
+        vacancies = vacancies.filter(
+            Q(title__icontains=q) |
+            Q(company__icontains=q)
+        )
+
     if status_filter in {Vacancy.Status.ACTIVE, Vacancy.Status.HIDDEN, Vacancy.Status.ARCHIVE}:
         vacancies = vacancies.filter(status=status_filter)
     else:
         status_filter = 'all'
+
     if format_filter:
         vacancies = vacancies.filter(format_type__icontains=format_filter)
+
     if employment_filter:
         vacancies = vacancies.filter(employment_type__icontains=employment_filter)
+
     if direction_filter:
         vacancies = vacancies.filter(direction__icontains=direction_filter)
+
+    paginator = Paginator(vacancies, 8)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    query_params = request.GET.copy()
+    query_params.pop('page', None)
+    querystring = query_params.urlencode()
 
     return render(
         request,
         'adminpanel/vacancies.html',
-        {'vacancies': vacancies, 'form': form, 'status_filter': status_filter},
+        {
+            'vacancies': page_obj.object_list,
+            'page_obj': page_obj,
+            'querystring': querystring,
+            'form': form,
+            'status_filter': status_filter,
+            'filter_directions': filter_directions,
+        },
     )
 
 
@@ -1903,7 +2039,13 @@ def admin_courses(request):
         form = AdminCourseForm(request.POST)
         if form.is_valid():
             course = form.save()
-            log_admin_action(request.user, AdminActivityLog.Action.CREATE, AdminActivityLog.ObjectType.COURSE, course, f'Создан курс {course.title}.')
+            log_admin_action(
+                request.user,
+                AdminActivityLog.Action.CREATE,
+                AdminActivityLog.ObjectType.COURSE,
+                course,
+                f'Создан курс {course.title}.'
+            )
             messages.success(request, 'Курс создан.')
             return redirect('accounts:admin_courses')
 
@@ -1913,21 +2055,41 @@ def admin_courses(request):
             filter=Q(registrations__status=CourseRegistration.Status.REGISTERED),
         )
     ).order_by('-created_at')
+
     if q:
-        courses = courses.filter(Q(title__icontains=q) | Q(organization__icontains=q))
+        courses = courses.filter(
+            Q(title__icontains=q) |
+            Q(organization__icontains=q)
+        )
+
     if status_filter in {Course.Status.ACTIVE, Course.Status.HIDDEN, Course.Status.ARCHIVE}:
         courses = courses.filter(status=status_filter)
     else:
         status_filter = 'all'
+
     if kind_filter in {Course.Kind.COURSE, Course.Kind.SEMINAR, Course.Kind.PRACTICE}:
         courses = courses.filter(kind=kind_filter)
+
     if format_filter in {Course.Format.ONLINE, Course.Format.OFFLINE}:
         courses = courses.filter(format_type=format_filter)
+
+    paginator = Paginator(courses, 8)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    query_params = request.GET.copy()
+    query_params.pop('page', None)
+    querystring = query_params.urlencode()
 
     return render(
         request,
         'adminpanel/courses.html',
-        {'courses': courses, 'form': form, 'status_filter': status_filter},
+        {
+            'courses': page_obj.object_list,
+            'page_obj': page_obj,
+            'querystring': querystring,
+            'form': form,
+            'status_filter': status_filter,
+        },
     )
 
 
