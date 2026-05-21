@@ -732,6 +732,7 @@ def curator_course_registrations(request):
 
     paginator = Paginator(registrations, 12)
     page_obj = paginator.get_page(request.GET.get('page'))
+    page_range = paginator.get_elided_page_range(number=page_obj.number, on_each_side=1, on_ends=1)
 
     query_params = request.GET.copy()
     query_params.pop('page', None)
@@ -1194,7 +1195,7 @@ def admin_students(request):
         # Простые переменные для пагинации, чтобы шаблон не зависел
         # от вложенных обращений page_obj.paginator.*
         'students_page_obj': page_obj,
-        'students_page_range': list(page_obj.paginator.page_range),
+        'students_page_range': list(page_range),
         'students_current_page': page_obj.number,
         'students_total_pages': page_obj.paginator.num_pages,
         'students_has_pages': page_obj.paginator.num_pages > 1,
@@ -1274,6 +1275,7 @@ def admin_student_import(request):
         form = StudentImportForm(request.POST, request.FILES)
         if form.is_valid():
             created = 0
+            updated = 0
             skipped = 0
             errors = []
             warnings = []
@@ -1347,11 +1349,14 @@ def admin_student_import(request):
                     skipped += 1
                     errors.append(f'Строка {row_idx}: ошибка обработки: {str(exc)}.')
 
-            report = {'created': created, 'skipped': skipped, 'errors': errors, 'warnings': warnings}
-            if created:
-                messages.success(request, f'Импорт завершён. Создано: {created}.')
-            if skipped:
-                messages.warning(request, f'Импорт завершён с предупреждениями. Пропущено: {skipped}.')
+            report = {'created': created, 'updated': updated, 'skipped': skipped, 'errors': errors, 'warnings': warnings}
+            summary = f'Импорт студентов завершён: создано {created}, обновлено {updated}, пропущено {skipped}, ошибок {len(errors)}.'
+            log_admin_action(request.user, AdminActivityLog.Action.CREATE, AdminActivityLog.ObjectType.STUDENT, description=summary)
+            messages.success(request, summary)
+            if errors:
+                messages.error(request, f'При импорте студентов обнаружены ошибки: {len(errors)}.')
+            if warnings:
+                messages.warning(request, f'При импорте студентов предупреждений: {len(warnings)}.')
 
     return render(request, 'adminpanel/student_import.html', {'form': form, 'report': report})
 
@@ -1364,6 +1369,7 @@ def admin_curator_import(request):
         form = CuratorImportForm(request.POST, request.FILES)
         if form.is_valid():
             created = 0
+            updated = 0
             skipped = 0
             errors = []
             warnings = []
@@ -1414,11 +1420,14 @@ def admin_curator_import(request):
                     skipped += 1
                     errors.append(f'Строка {row_idx}: ошибка обработки: {str(exc)}.')
 
-            report = {'created': created, 'skipped': skipped, 'errors': errors, 'warnings': warnings}
-            if created:
-                messages.success(request, f'Импорт завершён. Создано: {created}.')
-            if skipped:
-                messages.warning(request, f'Импорт завершён с предупреждениями. Пропущено: {skipped}.')
+            report = {'created': created, 'updated': updated, 'skipped': skipped, 'errors': errors, 'warnings': warnings}
+            summary = f'Импорт кураторов завершён: создано {created}, обновлено {updated}, пропущено {skipped}, ошибок {len(errors)}.'
+            log_admin_action(request.user, AdminActivityLog.Action.CREATE, AdminActivityLog.ObjectType.CURATOR, description=summary)
+            messages.success(request, summary)
+            if errors:
+                messages.error(request, f'При импорте кураторов обнаружены ошибки: {len(errors)}.')
+            if warnings:
+                messages.warning(request, f'При импорте кураторов предупреждений: {len(warnings)}.')
 
     return render(request, 'adminpanel/curator_import.html', {'form': form, 'report': report})
 
@@ -1431,6 +1440,7 @@ def admin_group_import(request):
         form = GroupImportForm(request.POST, request.FILES)
         if form.is_valid():
             created = 0
+            updated = 0
             skipped = 0
             errors = []
             warnings = []
@@ -1514,24 +1524,34 @@ def admin_group_import(request):
                         subgroup_number=subgroup_number_int,
                         curator=curator,
                         is_active=True,
-                        last_promoted_year=None,
                     )
                     group.refresh_name()
-                    if StudyGroup.objects.filter(name=group.name).exists():
-                        skipped += 1
-                        errors.append(f'Строка {row_idx}: группа {group.name} уже существует.')
-                        continue
-                    group.save()
-                    created += 1
+                    existing_group = StudyGroup.objects.filter(name=group.name).first()
+                    if existing_group:
+                        existing_group.specialty_ref = specialty
+                        existing_group.admission_year = admission_year_int
+                        existing_group.course_number = course_number_int
+                        existing_group.subgroup_number = subgroup_number_int
+                        existing_group.curator = curator
+                        existing_group.is_active = True
+                        existing_group.refresh_name()
+                        existing_group.save()
+                        updated += 1
+                    else:
+                        group.save()
+                        created += 1
                 except Exception as exc:
                     skipped += 1
                     errors.append(f'Строка {row_idx}: ошибка обработки: {str(exc)}.')
 
-            report = {'created': created, 'skipped': skipped, 'errors': errors, 'warnings': warnings}
-            if created:
-                messages.success(request, f'Импорт завершён. Создано: {created}.')
-            if skipped:
-                messages.warning(request, f'Импорт завершён с предупреждениями. Пропущено: {skipped}.')
+            report = {'created': created, 'updated': updated, 'skipped': skipped, 'errors': errors, 'warnings': warnings}
+            summary = f'Импорт групп завершён: создано {created}, обновлено {updated}, пропущено {skipped}, ошибок {len(errors)}.'
+            log_admin_action(request.user, AdminActivityLog.Action.UPDATE, AdminActivityLog.ObjectType.GROUP, description=summary)
+            messages.success(request, f'Импорт групп завершён: создано {created}, обновлено {updated}, пропущено {skipped}.')
+            if errors:
+                messages.error(request, f'При импорте групп обнаружены ошибки: {len(errors)}.')
+            if warnings:
+                messages.warning(request, f'При импорте групп предупреждений: {len(warnings)}.')
 
     return render(request, 'adminpanel/group_import.html', {'form': form, 'report': report})
 
@@ -1710,6 +1730,7 @@ def admin_groups(request):
 
     paginator = Paginator(groups, 12)
     page_obj = paginator.get_page(request.GET.get('page'))
+    page_range = paginator.get_elided_page_range(number=page_obj.number, on_each_side=1, on_ends=1)
 
     query_params = request.GET.copy()
     query_params.pop('page', None)
@@ -1720,6 +1741,7 @@ def admin_groups(request):
         'adminpanel/groups.html',
         {
             'groups': page_obj.object_list,
+            'page_obj': page_obj,
             'form': form,
             'specialties': Specialty.objects.order_by('code', 'name'),
             'curators': User.objects.filter(role=User.Role.CURATOR).order_by('full_name'),
@@ -1730,7 +1752,7 @@ def admin_groups(request):
             'course_number_filter': course_number,
             'admission_year_filter': admission_year,
 
-            'groups_page_range': list(page_obj.paginator.page_range),
+            'groups_page_range': list(page_range),
             'groups_current_page': page_obj.number,
             'groups_has_pages': page_obj.paginator.num_pages > 1,
             'groups_has_previous': page_obj.has_previous(),
@@ -1830,6 +1852,7 @@ def admin_curators(request):
 
     paginator = Paginator(curators, 12)
     page_obj = paginator.get_page(request.GET.get('page'))
+    page_range = paginator.get_elided_page_range(number=page_obj.number, on_each_side=1, on_ends=1)
 
     query_params = request.GET.copy()
     query_params.pop('page', None)
@@ -1847,6 +1870,7 @@ def admin_curators(request):
         'adminpanel/curators.html',
         {
             'curators': page_obj.object_list,
+            'page_obj': page_obj,
             'form': form,
             'querystring': querystring,
 
@@ -1855,7 +1879,7 @@ def admin_curators(request):
             'group_filter': group,
             'student_filter': student,
 
-            'curators_page_range': list(page_obj.paginator.page_range),
+            'curators_page_range': list(page_range),
             'curators_current_page': page_obj.number,
             'curators_has_pages': page_obj.paginator.num_pages > 1,
             'curators_has_previous': page_obj.has_previous(),
@@ -1974,6 +1998,7 @@ def admin_vacancies(request):
 
     paginator = Paginator(vacancies, 8)
     page_obj = paginator.get_page(request.GET.get('page'))
+    page_range = paginator.get_elided_page_range(number=page_obj.number, on_each_side=1, on_ends=1)
 
     query_params = request.GET.copy()
     query_params.pop('page', None)
@@ -1985,6 +2010,7 @@ def admin_vacancies(request):
         {
             'vacancies': page_obj.object_list,
             'page_obj': page_obj,
+            'page_range': page_range,
             'querystring': querystring,
             'form': form,
             'status_filter': status_filter,
@@ -2075,6 +2101,7 @@ def admin_courses(request):
 
     paginator = Paginator(courses, 8)
     page_obj = paginator.get_page(request.GET.get('page'))
+    page_range = paginator.get_elided_page_range(number=page_obj.number, on_each_side=1, on_ends=1)
 
     query_params = request.GET.copy()
     query_params.pop('page', None)
@@ -2086,6 +2113,7 @@ def admin_courses(request):
         {
             'courses': page_obj.object_list,
             'page_obj': page_obj,
+            'page_range': page_range,
             'querystring': querystring,
             'form': form,
             'status_filter': status_filter,

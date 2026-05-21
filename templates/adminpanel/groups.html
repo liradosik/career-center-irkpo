@@ -186,6 +186,8 @@
           {% for page_number in groups_page_range %}
             {% if page_number == groups_current_page %}
               <span class="admin-groups-page-number-v8 is-active">{{ page_number }}</span>
+            {% elif page_number == page_obj.paginator.ELLIPSIS %}
+              <span class="admin-groups-page-number-v8 is-disabled">…</span>
             {% else %}
               <a class="admin-groups-page-number-v8" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_number }}#groups-list">
                 {{ page_number }}

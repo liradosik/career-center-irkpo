@@ -31207,6 +31207,13 @@ html {
   pointer-events: none !important;
   opacity: 0.75 !important;
 }
+
+.opportunity-final-pager .students-final-pager-page.is-disabled {
+  color: #b8c7da !important;
+  background: transparent !important;
+  pointer-events: none !important;
+  cursor: default !important;
+}
 /* === Admin student detail v2 === */
 
 .admin-student-detail-v2 {
