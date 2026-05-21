@@ -3,9 +3,9 @@
 {% block title %}Обращения{% endblock %}
 
 {% block content %}
-<section class="admin-support-page-v4">
+<section class="admin-support-page-v4 admin-support-page-v6">
 
-    <section class="dashboard-hero admin-dashboard-hero-clean admin-support-hero-v5">
+  <section class="dashboard-hero admin-dashboard-hero-clean admin-support-hero-v5">
     <div class="admin-dashboard-hero-text">
       <div class="hero-kicker">Администрирование</div>
       <h1>Обращения в поддержку</h1>
@@ -13,158 +13,157 @@
     </div>
   </section>
 
-  <form method="get" class="admin-support-filter-card-v4">
-    <div class="admin-support-filter-grid-v4">
-      <label>
-        <span>Статус</span>
-        <select name="status">
-          <option value="">Все</option>
-          {% for v,l in status_choices %}
-            <option value="{{ v }}" {% if status_filter == v %}selected{% endif %}>{{ l }}</option>
-          {% endfor %}
-        </select>
-      </label>
+  <form method="get" action="#support-list" class="admin-support-filter-card-v7">
+  <input
+    type="search"
+    name="q"
+    value="{{ q }}"
+    placeholder="ФИО, email или тема обращения"
+    class="admin-support-search-v7"
+  >
 
-      <label>
-        <span>Категория</span>
-        <select name="category">
-          <option value="">Все</option>
-          {% for v,l in category_choices %}
-            <option value="{{ v }}" {% if category_filter == v %}selected{% endif %}>{{ l }}</option>
-          {% endfor %}
-        </select>
-      </label>
+  <select name="category" data-searchable-select data-placeholder="Все категории">
+    <option value="">Все категории</option>
+    {% for v,l in category_choices %}
+      <option value="{{ v }}" {% if category_filter == v %}selected{% endif %}>{{ l }}</option>
+    {% endfor %}
+  </select>
 
-      <label>
-        <span>Источник</span>
-        <select name="source">
-          <option value="">Все</option>
-          {% for v,l in source_choices %}
-            <option value="{{ v }}" {% if source_filter == v %}selected{% endif %}>{{ l }}</option>
-          {% endfor %}
-        </select>
-      </label>
+  <select name="source" data-searchable-select data-placeholder="Все источники">
+    <option value="">Все источники</option>
+    {% for v,l in source_choices %}
+      <option value="{{ v }}" {% if source_filter == v %}selected{% endif %}>{{ l }}</option>
+    {% endfor %}
+  </select>
 
-      <label>
-        <span>Тип обращения</span>
-        <select name="requester_type">
-          <option value="">Все</option>
-          {% for v,l in requester_type_choices %}
-            <option value="{{ v }}" {% if requester_type_filter == v %}selected{% endif %}>{{ l }}</option>
-          {% endfor %}
-        </select>
-      </label>
-    </div>
+  <select name="requester_type" data-searchable-select data-placeholder="Все типы">
+    <option value="">Все типы</option>
+    {% for v,l in requester_type_choices %}
+      <option value="{{ v }}" {% if requester_type_filter == v %}selected{% endif %}>{{ l }}</option>
+    {% endfor %}
+  </select>
 
-    <div class="admin-support-filter-actions-v4">
-      <button type="submit" class="btn btn-primary">
-        <i class="bi bi-funnel"></i>
-        Применить
-      </button>
+  <button type="submit" class="admin-support-find-v7">
+    Найти
+  </button>
+</form>
 
-      <a class="btn" href="{% url 'accounts:admin_support_tickets' %}">
-        <i class="bi bi-arrow-clockwise"></i>
-        Сбросить
-      </a>
-    </div>
-  </form>
-
-  <nav class="admin-support-tabs-v4" aria-label="Фильтр по статусу">
+  <nav class="admin-support-tabs-v6" aria-label="Фильтр по статусу">
     {% for tab in status_tabs %}
       <a
-        class="admin-support-tab-v4 {{ tab.class }} {% if status_filter == tab.value %}is-active{% endif %}{% if not status_filter and not tab.value %}is-active{% endif %}"
-        href="{% url 'accounts:admin_support_tickets' %}?{% if status_querystring %}{{ status_querystring }}&{% endif %}status={{ tab.value }}"
+        class="admin-support-tab-v6 {{ tab.class }} {% if status_filter == tab.value %}is-active{% endif %}{% if not status_filter and not tab.value %}is-active{% endif %}"
+        href="{% url 'accounts:admin_support_tickets' %}?{% if status_querystring %}{{ status_querystring }}&{% endif %}status={{ tab.value }}#support-list"
       >
-        <i class="bi {{ tab.icon }}"></i>
-        <span>{{ tab.label }}</span>
+        <span class="admin-support-tab-label-v6">
+          <i class="bi {{ tab.icon }}"></i>
+          {{ tab.label }}
+        </span>
         <strong>{{ tab.count }}</strong>
       </a>
     {% endfor %}
   </nav>
 
-  <section class="admin-support-list-v4">
+  <section id="support-list" class="admin-support-list-v7">
     {% for row in ticket_rows %}
       {% with ticket=row.ticket %}
-        <article class="admin-support-ticket-v4">
-          <div class="admin-support-avatar-v4">
-            {% if row.avatar_url %}
-              <img src="{{ row.avatar_url }}" alt="{{ row.author_name }}">
-            {% else %}
-              <span>{{ row.initials }}</span>
-            {% endif %}
-          </div>
+        <article class="admin-support-ticket-v7">
+  <div class="admin-support-avatar-v7">
+    {% if row.avatar_url %}
+      <img src="{{ row.avatar_url }}" alt="{{ row.author_name }}">
+    {% else %}
+      <span>{{ row.initials }}</span>
+    {% endif %}
+  </div>
 
-          <div class="admin-support-author-v4">
-            <h3>{{ row.author_name }}</h3>
-            <p>
-              {{ row.author_role }}
-              {% if row.author_group %}
-                <span>·</span>
-                {{ row.author_group }}
-              {% endif %}
-            </p>
-          </div>
+  <div class="admin-support-author-v7">
+    <h3>{{ row.author_name }}</h3>
+    <p>
+      {{ row.author_role }}
+      {% if row.author_group %}
+        <span>·</span>
+        {{ row.author_group }}
+      {% endif %}
+    </p>
+  </div>
 
-          <div class="admin-support-ticket-main-v4">
-            <div class="admin-support-ticket-title-v4">
-              <h2>{{ ticket.subject }}</h2>
-              <p>{{ ticket.message|striptags|truncatechars:105 }}</p>
-            </div>
+  <div class="admin-support-ticket-main-v7">
+    <h2>{{ ticket.subject }}</h2>
 
-            <div class="admin-support-ticket-meta-v4">
-              <span>
-                <i class="bi bi-folder2-open"></i>
-                {{ ticket.get_category_display }}
-              </span>
+    <div class="admin-support-ticket-meta-v7">
+      <span>
+        <i class="bi bi-folder2-open"></i>
+        {{ ticket.get_category_display }}
+      </span>
 
-              <span>
-                <i class="bi bi-box-arrow-in-right"></i>
-                {{ ticket.get_source_display }}
-              </span>
-            </div>
-          </div>
+      <span>
+        <i class="bi bi-box-arrow-in-right"></i>
+        {{ ticket.get_source_display }}
+      </span>
+    </div>
+  </div>
 
-          <div class="admin-support-ticket-status-v4">
-            <span class="admin-support-status-badge-v4 status-{{ ticket.status }}">
-              {% if ticket.status == 'new' %}
-                <i class="bi bi-dot"></i>
-              {% elif ticket.status == 'in_progress' %}
-                <i class="bi bi-clock"></i>
-              {% elif ticket.status == 'resolved' %}
-                <i class="bi bi-check2"></i>
-              {% else %}
-                <i class="bi bi-archive"></i>
-              {% endif %}
-              {{ ticket.get_status_display }}
-            </span>
-          </div>
+  <div class="admin-support-ticket-status-v7">
+    <span class="admin-support-status-badge-v7 status-{{ ticket.status }}">
+      {% if ticket.status == 'new' %}
+        <i class="bi bi-dot"></i>
+      {% elif ticket.status == 'in_progress' %}
+        <i class="bi bi-clock"></i>
+      {% elif ticket.status == 'resolved' %}
+        <i class="bi bi-check2"></i>
+      {% else %}
+        <i class="bi bi-archive"></i>
+      {% endif %}
+      {{ ticket.get_status_display }}
+    </span>
+  </div>
 
-          <time class="admin-support-ticket-date-v4" datetime="{{ ticket.created_at|date:'c' }}">
-            <span>{{ ticket.created_at|date:'d.m.Y' }}</span>
-            <strong>{{ ticket.created_at|date:'H:i' }}</strong>
-          </time>
+  <time class="admin-support-ticket-date-v7" datetime="{{ ticket.created_at|date:'c' }}">
+    <span>{{ ticket.created_at|date:'d.m.Y' }}</span>
+    <strong>{{ ticket.created_at|date:'H:i' }}</strong>
+  </time>
 
-          <a class="admin-support-open-v4" href="{% url 'accounts:admin_support_ticket_detail' ticket.id %}">
-            Открыть
-            <i class="bi bi-chevron-right"></i>
-          </a>
-        </article>
+  <a class="admin-support-open-v7" href="{% url 'accounts:admin_support_ticket_detail' ticket.id %}">
+    Открыть
+  </a>
+</article>
       {% endwith %}
     {% empty %}
-      <div class="admin-support-empty-v4">
+      <div class="admin-support-empty-v6">
         <span>
           <i class="bi bi-chat-left-text"></i>
         </span>
 
         <h2>Обращений не найдено</h2>
-        <p>Попробуйте изменить фильтры или сбросить параметры поиска.</p>
-
-        <a class="btn" href="{% url 'accounts:admin_support_tickets' %}">
-          Сбросить фильтры
-        </a>
+        <p>Попробуйте изменить фильтры или выбрать другой статус.</p>
       </div>
     {% endfor %}
   </section>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+    <nav class="students-final-pager admin-support-pager-v6" aria-label="Пагинация">
+      {% if page_obj.has_previous %}
+        <a class="students-final-pager-arrow" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}#support-list">‹</a>
+      {% else %}
+        <span class="students-final-pager-arrow is-disabled">‹</span>
+      {% endif %}
+
+      {% for num in page_range %}
+        {% if num == page_obj.paginator.ELLIPSIS %}
+          <span class="students-final-pager-page is-disabled">…</span>
+        {% elif page_obj.number == num %}
+          <span class="students-final-pager-page is-active">{{ num }}</span>
+        {% else %}
+          <a class="students-final-pager-page" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}#support-list">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+        <a class="students-final-pager-arrow" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}#support-list">›</a>
+      {% else %}
+        <span class="students-final-pager-arrow is-disabled">›</span>
+      {% endif %}
+    </nav>
+  {% endif %}
 
 </section>
 {% endblock %}

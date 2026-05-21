@@ -4,79 +4,41 @@
 {% block title %}Записи на курсы{% endblock %}
 
 {% block content %}
-<div class="admin-list-page admin-course-registrations-page">
-  <section class="hero admin-list-hero">
+<div class="admin-list-page admin-course-registrations-page admin-activity-detail-list-v2">
+  <nav class="admin-breadcrumb-v3 admin-activity-breadcrumb-v2" aria-label="Навигация">
+    <a href="{% url 'accounts:admin_activity' %}">Активность</a>
+    <span>•</span>
+    <span>Записи на курсы</span>
+  </nav>
+
+  <section class="hero admin-list-hero admin-activity-hero-v2">
     <div class="hero-kicker">Администрирование</div>
     <h1>Записи на курсы</h1>
     <p>Список регистраций студентов на курсы, семинары и практики.</p>
-  </section>
-
-  <section class="admin-list-kpi-grid">
-    <article class="admin-list-kpi-card">
-      <span class="admin-list-icon"><i class="bi bi-calendar-check"></i></span>
-      <div>
-        <strong>{{ active_count }}</strong>
-        <p>Активных записей</p>
-      </div>
-    </article>
-
-    <article class="admin-list-kpi-card">
-      <span class="admin-list-icon"><i class="bi bi-arrow-counterclockwise"></i></span>
-      <div>
-        <strong>{{ cancelled_count }}</strong>
-        <p>Отменённых записей</p>
-      </div>
-    </article>
-
-    <article class="admin-list-kpi-card">
-      <span class="admin-list-icon"><i class="bi bi-mortarboard"></i></span>
-      <div>
-        <strong>{{ courses_count }}</strong>
-        <p>Курсов в записях</p>
-      </div>
-    </article>
-
-    <article class="admin-list-kpi-card">
-      <span class="admin-list-icon"><i class="bi bi-people"></i></span>
-      <div>
-        <strong>{{ students_count }}</strong>
-        <p>Студентов с записями</p>
-      </div>
-    </article>
   </section>
 
   <section class="admin-list-card">
     <div class="admin-list-card-head">
       <div>
         <h2>Список записей</h2>
-        <p>Отфильтруйте студента, курс, группу, формат или статус записи.</p>
       </div>
-
-      <a class="admin-list-back-link" href="{% url 'accounts:admin_activity' %}">
-        <i class="bi bi-arrow-left"></i>
-        К активности
-      </a>
     </div>
 
-    <form method="get" class="admin-list-filter-grid">
+    <form method="get" action="#course-registrations-list" class="admin-activity-filter-v3 admin-activity-filter-courses-v3">
       <div class="admin-filter-field">
-        <label>Студент</label>
         <input name="q" placeholder="ФИО или email" value="{{ q }}">
       </div>
 
       <div class="admin-filter-field">
-        <label>Название курса</label>
-        <input name="course" placeholder="Название курса"{{ course_q }}">
+        <input name="course" placeholder="Название курса" value="{{ course_q }}">
       </div>
 
       <div class="admin-filter-field">
-        <label>Группа</label>
-        <input name="group" placeholder="Например: И - 422" value="{{ group_q }}">
+        <input name="group" placeholder="Группа" value="{{ group_q }}">
       </div>
 
       <div class="admin-filter-field">
-        <label>Формат</label>
-        <select name="format_type">
+        <select name="format_type" data-searchable-select data-placeholder="Все форматы">
           <option value="">Все форматы</option>
           <option value="online" {% if format_type == 'online' %}selected{% endif %}>Онлайн</option>
           <option value="offline" {% if format_type == 'offline' %}selected{% endif %}>Очно</option>
@@ -84,8 +46,7 @@
       </div>
 
       <div class="admin-filter-field">
-        <label>Статус</label>
-        <select name="status">
+        <select name="status" data-searchable-select data-placeholder="Все статусы">
           <option value="all" {% if status_q == 'all' %}selected{% endif %}>Все статусы</option>
           <option value="registered" {% if status_q == 'registered' %}selected{% endif %}>Записан</option>
           <option value="cancelled" {% if status_q == 'cancelled' %}selected{% endif %}>Отменил</option>
@@ -93,28 +54,21 @@
       </div>
 
       <div class="admin-filter-field">
-        <label>Дата от</label>
         <input name="date_from" type="date" value="{{ date_from }}">
       </div>
 
       <div class="admin-filter-field">
-        <label>Дата до</label>
         <input name="date_to" type="date" value="{{ date_to }}">
       </div>
 
       <div class="admin-filter-actions">
         <button class="admin-list-btn" type="submit">
-          <i class="bi bi-search"></i>
-          Применить
+          Найти
         </button>
-
-        <a class="admin-list-btn is-secondary" href="{% url 'accounts:admin_course_registrations' %}">
-          Сбросить
-        </a>
       </div>
     </form>
 
-    <div class="admin-table-wrap">
+    <div id="course-registrations-list" class="admin-table-wrap admin-activity-table-wrap-v2">
       <table class="admin-table">
         <thead>
           <tr>
@@ -131,8 +85,15 @@
           {% for reg in registrations %}
             <tr>
               <td>
-                <div class="admin-table-user">
-                  <span>{{ reg.student.full_name|default:reg.student.email|slice:":1"|upper }}</span>
+                <div class="admin-table-user admin-activity-user-v2">
+                  {% if reg.student.photo %}
+                    <img class="admin-activity-avatar-v2" src="{{ reg.student.photo.url }}" alt="{{ reg.student.full_name }}">
+                  {% else %}
+                    <span class="admin-activity-avatar-fallback-v2">
+                      {{ reg.student.full_name|default:reg.student.email|slice:":1"|upper }}
+                    </span>
+                  {% endif %}
+
                   <div>
                     <strong>{{ reg.student.full_name|default:'Без имени' }}</strong>
                     <p>{{ reg.student.email }}</p>
@@ -181,22 +142,30 @@
     </div>
 
     {% if page_obj.paginator.num_pages > 1 %}
-      <div class="admin-pagination">
-        {% if page_obj.has_previous %}
-          <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}">Назад</a>
-        {% else %}
-          <span class="is-disabled">Назад</span>
-        {% endif %}
-
-        <strong>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</strong>
-
-        {% if page_obj.has_next %}
-          <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}">Вперёд</a>
-        {% else %}
-          <span class="is-disabled">Вперёд</span>
-        {% endif %}
-      </div>
+  <nav class="students-final-pager admin-activity-pager-v2" aria-label="Пагинация">
+    {% if page_obj.has_previous %}
+      <a class="students-final-pager-arrow" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}#course-registrations-list">‹</a>
+    {% else %}
+      <span class="students-final-pager-arrow is-disabled">‹</span>
     {% endif %}
+
+    {% for num in page_range %}
+      {% if num == page_obj.paginator.ELLIPSIS %}
+        <span class="students-final-pager-page is-disabled">…</span>
+      {% elif page_obj.number == num %}
+        <span class="students-final-pager-page is-active">{{ num }}</span>
+      {% else %}
+        <a class="students-final-pager-page" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}#course-registrations-list">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+      <a class="students-final-pager-arrow" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}#course-registrations-list">›</a>
+    {% else %}
+      <span class="students-final-pager-arrow is-disabled">›</span>
+    {% endif %}
+  </nav>
+{% endif %}
   </section>
 </div>
 {% endblock %}

@@ -2,16 +2,18 @@
 {% block title %}Импорт студентов{% endblock %}
 
 {% block content %}
-<section class="hero admin-page-hero">
+<nav class="admin-breadcrumb-v3 admin-import-breadcrumb-v2" aria-label="Навигация">
+  <a href="{% url 'accounts:admin_students' %}">Студенты</a>
+  <span>•</span>
+  <span>Массовый импорт</span>
+</nav>
+
+<section class="hero admin-page-hero admin-import-hero-v2">
   <div>
     <div class="hero-kicker">Студенты</div>
     <h1>Массовый импорт студентов</h1>
     <p>Поддерживаются файлы .csv и .xlsx. Первая строка должна содержать заголовки колонок.</p>
   </div>
-
-  <a class="btn btn-link admin-hero-action" href="{% url 'accounts:admin_students' %}">
-    Вернуться к студентам
-  </a>
 </section>
 
 <section class="section admin-import-layout">
@@ -71,24 +73,51 @@
 </section>
 
 {% if report %}
-<section class="section card admin-import-report">
-  <h2>Отчёт об импорте</h2>
+<section class="section card admin-import-report-v2">
+  <div class="admin-import-report-head-v2">
+    <div>
+      <span class="admin-import-report-kicker-v2">Результат загрузки</span>
+      <h2>Отчёт об импорте</h2>
+    </div>
 
-  <div class="import-report-grid">
-    <div class="import-report-item">
+    {% if report.errors %}
+      <span class="admin-import-report-status-v2 is-error">Есть ошибки</span>
+    {% elif report.warnings %}
+      <span class="admin-import-report-status-v2 is-warning">Есть предупреждения</span>
+    {% else %}
+      <span class="admin-import-report-status-v2 is-success">Импорт завершён</span>
+    {% endif %}
+  </div>
+
+  <div class="admin-import-report-grid-v2">
+    <div class="admin-import-report-metric-v2">
       <span>Создано</span>
       <strong>{{ report.created }}</strong>
     </div>
 
-    <div class="import-report-item">
+    <div class="admin-import-report-metric-v2">
       <span>Пропущено</span>
       <strong>{{ report.skipped }}</strong>
+    </div>
+
+    <div class="admin-import-report-metric-v2 {% if report.errors %}has-errors{% endif %}">
+      <span>Ошибок</span>
+      <strong>{{ report.errors|length }}</strong>
+    </div>
+
+    <div class="admin-import-report-metric-v2 {% if report.warnings %}has-warnings{% endif %}">
+      <span>Предупреждений</span>
+      <strong>{{ report.warnings|length }}</strong>
     </div>
   </div>
 
   {% if report.errors %}
-    <div class="import-errors">
-      <h3>Ошибки</h3>
+    <div class="admin-import-report-list-v2 is-error">
+      <div class="admin-import-report-list-head-v2">
+        <h3>Ошибки</h3>
+        <span>{{ report.errors|length }}</span>
+      </div>
+
       <ul>
         {% for err in report.errors %}
           <li>{{ err }}</li>
@@ -96,9 +125,14 @@
       </ul>
     </div>
   {% endif %}
+
   {% if report.warnings %}
-    <div class="import-errors">
-      <h3>Предупреждения</h3>
+    <div class="admin-import-report-list-v2 is-warning">
+      <div class="admin-import-report-list-head-v2">
+        <h3>Предупреждения</h3>
+        <span>{{ report.warnings|length }}</span>
+      </div>
+
       <ul>
         {% for warn in report.warnings %}
           <li>{{ warn }}</li>

@@ -21,12 +21,6 @@
   <section class="dashboard-section admin-log-card-v3">
     <div class="admin-log-card-head-v3">
       <h2>Список действий</h2>
-
-      {% if q or object_type_filter or action_filter or actor_filter %}
-        <a class="admin-log-reset-v3" href="{% url 'accounts:admin_activity_log' %}">
-          Сбросить
-        </a>
-      {% endif %}
     </div>
 
     <form method="get" class="admin-log-filters-v3">
@@ -67,7 +61,7 @@
       </select>
 
       <button type="submit" class="admin-log-apply-v3">
-        Применить
+        Найти
       </button>
     </form>
 

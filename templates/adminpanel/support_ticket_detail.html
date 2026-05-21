@@ -1,18 +1,178 @@
 {% extends 'base_dashboard.html' %}
+
 {% block title %}Обращение{% endblock %}
+
 {% block content %}
-<section class="admin-support-detail">
-  <div class="card">
+<section class="admin-support-detail-v4">
+
+  <nav class="admin-breadcrumb-v3 admin-support-detail-breadcrumb-v4" aria-label="Навигация">
+    <a href="{% url 'accounts:admin_support_tickets' %}">Обращения</a>
+    <span>•</span>
+    <span>{{ ticket.subject|truncatechars:46 }}</span>
+  </nav>
+
+  <section class="admin-support-detail-hero-v4">
+    <div class="hero-kicker">Обращение в поддержку</div>
+
     <h1>{{ ticket.subject }}</h1>
-    <p><strong>От кого:</strong> {{ ticket.author_label }}</p>
-    {% if ticket.requester %}<p><strong>Email пользователя:</strong> {{ ticket.requester.email }}</p><p><strong>Группа:</strong> {{ ticket.requester.group|default:"—" }}</p>{% else %}<p><strong>Email для связи:</strong> {{ ticket.public_email|default:"—" }}</p><p><strong>Контакт:</strong> {{ ticket.public_contact|default:"—" }}</p>{% endif %}
-    <p><strong>Источник:</strong> {{ ticket.get_source_display }}</p>
-    <p><strong>Категория:</strong> {{ ticket.get_category_display }}</p>
-    <p>{{ ticket.message|linebreaksbr }}</p>
-  </div>
-  <div class="card support-ticket-form">
-    <h2>Ответ администратора</h2>
-    <form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn-primary" type="submit">Сохранить ответ</button></form>
+
+    <div class="admin-support-detail-pills-v4">
+      <span class="admin-support-pill-v4 admin-support-pill-status status-{{ ticket.status }}">
+        {% if ticket.status == 'new' %}
+          <i class="dot"></i>
+          Новое
+        {% elif ticket.status == 'in_progress' %}
+          <i class="dot"></i>
+          В работе
+        {% elif ticket.status == 'resolved' %}
+          <i class="dot"></i>
+          Решено
+        {% else %}
+          <i class="dot"></i>
+          Закрыто
+        {% endif %}
+      </span>
+
+      <span class="admin-support-pill-v4">
+        <i class="bi bi-folder2-open"></i>
+        {{ ticket.get_category_display }}
+      </span>
+
+      <span class="admin-support-pill-v4">
+        <i class="bi bi-box-arrow-in-right"></i>
+        {{ ticket.get_source_display }}
+      </span>
+
+      <span class="admin-support-pill-v4 admin-support-pill-date-v4">
+        <i class="bi bi-clock"></i>
+        {{ ticket.created_at|date:"d.m.Y H:i" }}
+      </span>
+    </div>
+  </section>
+
+  <div class="admin-support-detail-grid-v4">
+
+    <section class="card admin-support-detail-card-v4">
+      <div class="admin-support-detail-card-head-v4">
+        <h2>Данные обращения</h2>
+        <p>Информация об авторе и текст обращения.</p>
+      </div>
+
+      <div class="admin-support-author-card-v4">
+        <div class="admin-support-author-avatar-v4">
+          {% if ticket.requester and ticket.requester.photo %}
+            <img src="{{ ticket.requester.photo.url }}" alt="{{ ticket.author_label }}">
+          {% else %}
+            <span>{{ ticket.author_label|default:ticket.public_email|default:"?"|slice:":2"|upper }}</span>
+          {% endif %}
+        </div>
+
+        <div class="admin-support-author-info-v4">
+          <strong>{{ ticket.author_label }}</strong>
+
+          {% if ticket.requester %}
+            <span>{{ ticket.requester.email }}</span>
+          {% else %}
+            <span>{{ ticket.public_email|default:"Email не указан" }}</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <dl class="admin-support-detail-info-v4">
+        {% if ticket.requester %}
+          <div>
+            <dt>Email пользователя</dt>
+            <dd>{{ ticket.requester.email }}</dd>
+          </div>
+
+          <div>
+            <dt>Группа</dt>
+            <dd>{{ ticket.requester.group|default:"—" }}</dd>
+          </div>
+        {% else %}
+          <div>
+            <dt>Email для связи</dt>
+            <dd>{{ ticket.public_email|default:"—" }}</dd>
+          </div>
+
+          <div>
+            <dt>Контакт</dt>
+            <dd>{{ ticket.public_contact|default:"—" }}</dd>
+          </div>
+        {% endif %}
+
+        <div>
+          <dt>Источник</dt>
+          <dd>{{ ticket.get_source_display }}</dd>
+        </div>
+
+        <div>
+          <dt>Категория</dt>
+          <dd>{{ ticket.get_category_display }}</dd>
+        </div>
+      </dl>
+
+      <div class="admin-support-message-v4">
+        <h3>Текст обращения</h3>
+
+        <div>
+          {{ ticket.message|linebreaksbr }}
+        </div>
+      </div>
+    </section>
+
+    <section class="card admin-support-answer-card-v4">
+      <div class="admin-support-detail-card-head-v4">
+        <h2>Ответ администратора</h2>
+        <p>Измените статус обращения и оставьте комментарий для пользователя.</p>
+      </div>
+
+      <form method="post" class="admin-support-answer-form-v4">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="form-errors">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        {% for field in form %}
+          <div class="admin-support-answer-field-v4">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+
+            {% if field.name == 'status' %}
+              <select
+                name="{{ field.name }}"
+                id="{{ field.id_for_label }}"
+                data-searchable-select
+                data-placeholder="{{ field.label }}"
+              >
+                {% for value, label in field.field.choices %}
+                  <option value="{{ value }}" {% if field.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>
+                    {{ label }}
+                  </option>
+                {% endfor %}
+              </select>
+            {% else %}
+              {{ field }}
+            {% endif %}
+
+            {% if field.help_text %}
+              <small>{{ field.help_text }}</small>
+            {% endif %}
+
+            {% for error in field.errors %}
+              <p class="form-error">{{ error }}</p>
+            {% endfor %}
+          </div>
+        {% endfor %}
+
+        <button class="admin-support-save-v4" type="submit">
+          Сохранить ответ
+        </button>
+      </form>
+    </section>
+
   </div>
 </section>
 {% endblock %}

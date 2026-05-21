@@ -1350,8 +1350,14 @@ def admin_student_import(request):
             warnings = []
             rows, parse_errors = parse_import_file(form.cleaned_data['import_file'], 'students')
             if parse_errors:
+                report = {
+                    'created': 0,
+                    'skipped': 0,
+                    'errors': parse_errors,
+                    'warnings': [],
+                }
                 messages.error(request, parse_errors[0])
-                return redirect('accounts:admin_student_import')
+                return render(request, 'adminpanel/student_import.html', {'form': form, 'report': report})
 
             seen_emails = set()
 
@@ -1441,17 +1447,31 @@ def admin_student_import(request):
 def admin_curator_import(request):
     report = None
     form = CuratorImportForm()
+
     if request.method == 'POST':
         form = CuratorImportForm(request.POST, request.FILES)
+
         if form.is_valid():
             created = 0
             skipped = 0
             errors = []
             warnings = []
+
             rows, parse_errors = parse_import_file(form.cleaned_data['import_file'], 'curators')
+
             if parse_errors:
+                report = {
+                    'created': 0,
+                    'skipped': 0,
+                    'errors': parse_errors,
+                    'warnings': [],
+                }
                 messages.error(request, parse_errors[0])
-                return redirect('accounts:admin_curator_import')
+                return render(
+                    request,
+                    'adminpanel/curator_import.html',
+                    {'form': form, 'report': report},
+                )
 
             seen_emails = set()
 
@@ -1470,44 +1490,71 @@ def admin_curator_import(request):
                         skipped += 1
                         errors.append(f'Строка {row_idx}: не указано ФИО.')
                         continue
+
                     if not email:
                         skipped += 1
                         errors.append(f'Строка {row_idx}: не указан email.')
                         continue
+
                     try:
                         validate_email(email)
                     except ValidationError:
                         skipped += 1
                         errors.append(f'Строка {row_idx}: неверный формат email.')
                         continue
+
                     if not password:
                         skipped += 1
                         errors.append(f'Строка {row_idx}: не указан временный пароль.')
                         continue
+
                     if email in seen_emails:
                         skipped += 1
                         errors.append(f'Строка {row_idx}: email {email} повторяется в файле импорта, строка пропущена.')
                         continue
+
                     if User.objects.filter(email=email).exists():
                         skipped += 1
                         errors.append(f'Строка {row_idx}: пользователь с email {email} уже существует, строка пропущена.')
                         continue
 
-                    curator = User(full_name=full_name, email=email, role=User.Role.CURATOR, is_active=True, must_change_password=True)
+                    curator = User(
+                        full_name=full_name,
+                        email=email,
+                        role=User.Role.CURATOR,
+                        is_active=True,
+                        must_change_password=True,
+                    )
                     curator.set_password(password)
                     curator.save()
+
                     created += 1
                     seen_emails.add(email)
+
                 except Exception as exc:
                     skipped += 1
                     errors.append(f'Строка {row_idx}: ошибка обработки: {str(exc)}.')
 
-            report = {'created': created, 'skipped': skipped, 'errors': errors, 'warnings': warnings}
+            report = {
+                'created': created,
+                'skipped': skipped,
+                'errors': errors,
+                'warnings': warnings,
+            }
+
             summary = f'Импорт кураторов: создано {created}, пропущено {skipped}, ошибок {len(errors)}.'
-            log_admin_action(request.user, AdminActivityLog.Action.CREATE, AdminActivityLog.ObjectType.CURATOR, description=summary)
+            log_admin_action(
+                request.user,
+                AdminActivityLog.Action.CREATE,
+                AdminActivityLog.ObjectType.CURATOR,
+                description=summary,
+            )
+
             messages.success(request, summary)
+
             if errors:
                 messages.error(request, f'При импорте кураторов обнаружены ошибки: {len(errors)}.')
+
             if warnings:
                 messages.warning(request, f'При импорте кураторов предупреждений: {len(warnings)}.')
 
@@ -1518,17 +1565,31 @@ def admin_curator_import(request):
 def admin_group_import(request):
     report = None
     form = GroupImportForm()
+
     if request.method == 'POST':
         form = GroupImportForm(request.POST, request.FILES)
+
         if form.is_valid():
             created = 0
             skipped = 0
             errors = []
             warnings = []
+
             rows, parse_errors = parse_import_file(form.cleaned_data['import_file'], 'groups')
+
             if parse_errors:
+                report = {
+                    'created': 0,
+                    'skipped': 0,
+                    'errors': parse_errors,
+                    'warnings': [],
+                }
                 messages.error(request, parse_errors[0])
-                return redirect('accounts:admin_group_import')
+                return render(
+                    request,
+                    'adminpanel/group_import.html',
+                    {'form': form, 'report': report},
+                )
 
             for row_idx, row in enumerate(rows, start=2):
                 try:
@@ -1547,10 +1608,12 @@ def admin_group_import(request):
                         skipped += 1
                         errors.append(f'Строка {row_idx}: не указан буквенный код специальности.')
                         continue
+
                     if not admission_year:
                         skipped += 1
                         errors.append(f'Строка {row_idx}: не указан год поступления.')
                         continue
+
                     if not course_number:
                         skipped += 1
                         errors.append(f'Строка {row_idx}: не указан курс.')
@@ -1562,12 +1625,14 @@ def admin_group_import(request):
                         skipped += 1
                         errors.append(f'Строка {row_idx}: неверный год поступления.')
                         continue
+
                     try:
                         course_number_int = int(course_number)
                     except ValueError:
                         skipped += 1
                         errors.append(f'Строка {row_idx}: неверный номер курса.')
                         continue
+
                     try:
                         subgroup_number_int = int(subgroup_number) if subgroup_number else None
                     except ValueError:
@@ -1576,18 +1641,22 @@ def admin_group_import(request):
                         continue
 
                     specialty = Specialty.objects.filter(letter_code__iexact=specialty_letter).first()
+
                     if not specialty:
                         skipped += 1
                         errors.append(f'Строка {row_idx}: специальность {specialty_letter} не найдена, группа не создана.')
                         continue
 
                     curator = None
+
                     if curator_email:
                         curator_candidate = User.objects.filter(email=curator_email).first()
+
                         if not curator_candidate or curator_candidate.role != User.Role.CURATOR:
                             skipped += 1
                             errors.append(f'Строка {row_idx}: куратор {curator_email} не найден, группа не создана.')
                             continue
+
                         curator = curator_candidate
 
                     group = StudyGroup(
@@ -1599,6 +1668,7 @@ def admin_group_import(request):
                         is_active=True,
                     )
                     group.refresh_name()
+
                     if StudyGroup.objects.filter(name=group.name).exists():
                         skipped += 1
                         errors.append(f'Строка {row_idx}: группа {group.name} уже существует, строка пропущена.')
@@ -1606,16 +1676,32 @@ def admin_group_import(request):
 
                     group.save()
                     created += 1
+
                 except Exception as exc:
                     skipped += 1
                     errors.append(f'Строка {row_idx}: ошибка обработки: {str(exc)}.')
 
-            report = {'created': created, 'skipped': skipped, 'errors': errors, 'warnings': warnings}
+            report = {
+                'created': created,
+                'skipped': skipped,
+                'errors': errors,
+                'warnings': warnings,
+            }
+
             summary = f'Импорт групп: создано {created}, пропущено {skipped}, ошибок {len(errors)}.'
-            log_admin_action(request.user, AdminActivityLog.Action.UPDATE, AdminActivityLog.ObjectType.GROUP, description=summary)
-            messages.success(request, f'Импорт групп завершён: создано {created}, пропущено {skipped}.')
+
+            log_admin_action(
+                request.user,
+                AdminActivityLog.Action.CREATE,
+                AdminActivityLog.ObjectType.GROUP,
+                description=summary,
+            )
+
+            messages.success(request, summary)
+
             if errors:
                 messages.error(request, f'При импорте групп обнаружены ошибки: {len(errors)}.')
+
             if warnings:
                 messages.warning(request, f'При импорте групп предупреждений: {len(warnings)}.')
 
@@ -2256,31 +2342,42 @@ def admin_responses(request):
             Q(student__full_name__icontains=q) |
             Q(student__email__icontains=q)
         )
+
     if vacancy:
         responses = responses.filter(vacancy__title__icontains=vacancy)
+
     if group:
         responses = responses.filter(
             Q(student__study_group__name=group) |
             Q(student__group__icontains=group)
         )
+
     if specialty:
         responses = responses.filter(
             Q(student__study_group__specialty_ref__name__icontains=specialty) |
             Q(student__specialty__icontains=specialty)
         )
+
     if date_from:
         responses = responses.filter(created_at__date__gte=date_from)
+
     if date_to:
         responses = responses.filter(created_at__date__lte=date_to)
 
     paginator = Paginator(responses, 12)
     page_obj = paginator.get_page(request.GET.get('page'))
+    page_range = paginator.get_elided_page_range(
+        number=page_obj.number,
+        on_each_side=1,
+        on_ends=1,
+    )
 
     query_params = request.GET.copy()
     query_params.pop('page', None)
     querystring = query_params.urlencode()
 
     rows = []
+
     for response in page_obj.object_list:
         resume_url = response.resume_link_snapshot or ''
         rows.append((response, resume_url))
@@ -2290,6 +2387,7 @@ def admin_responses(request):
     context = {
         'rows': rows,
         'page_obj': page_obj,
+        'page_range': page_range,
         'querystring': querystring,
 
         'q': q,
@@ -2310,6 +2408,7 @@ def admin_responses(request):
             .count()
         ),
     }
+
     return render(request, 'adminpanel/responses.html', context)
 
 
@@ -2334,28 +2433,39 @@ def admin_course_registrations(request):
             Q(student__full_name__icontains=q) |
             Q(student__email__icontains=q)
         )
+
     if course:
         registrations = registrations.filter(course__title__icontains=course)
+
     if group:
         registrations = registrations.filter(
             Q(student__study_group__name=group) |
             Q(student__group__icontains=group)
         )
+
     if format_type in {Course.Format.ONLINE, Course.Format.OFFLINE}:
         registrations = registrations.filter(course__format_type=format_type)
     else:
         format_type = ''
+
     if status in {CourseRegistration.Status.REGISTERED, CourseRegistration.Status.CANCELLED}:
         registrations = registrations.filter(status=status)
     else:
         status = 'all'
+
     if date_from:
         registrations = registrations.filter(created_at__date__gte=date_from)
+
     if date_to:
         registrations = registrations.filter(created_at__date__lte=date_to)
 
     paginator = Paginator(registrations, 12)
     page_obj = paginator.get_page(request.GET.get('page'))
+    page_range = paginator.get_elided_page_range(
+        number=page_obj.number,
+        on_each_side=1,
+        on_ends=1,
+    )
 
     query_params = request.GET.copy()
     query_params.pop('page', None)
@@ -2366,6 +2476,7 @@ def admin_course_registrations(request):
     context = {
         'registrations': page_obj.object_list,
         'page_obj': page_obj,
+        'page_range': page_range,
         'querystring': querystring,
 
         'q': q,
@@ -2381,6 +2492,7 @@ def admin_course_registrations(request):
         'courses_count': base_regs.values('course_id').distinct().count(),
         'students_count': base_regs.values('student_id').distinct().count(),
     }
+
     return render(request, 'adminpanel/course_registrations.html', context)
 
 

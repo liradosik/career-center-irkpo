@@ -3,99 +3,55 @@
 {% block title %}Отклики{% endblock %}
 
 {% block content %}
-<div class="admin-list-page admin-responses-page">
-  <section class="hero admin-list-hero">
+<div class="admin-list-page admin-responses-page admin-activity-detail-list-v2">
+  <nav class="admin-breadcrumb-v3 admin-activity-breadcrumb-v2" aria-label="Навигация">
+    <a href="{% url 'accounts:admin_activity' %}">Активность</a>
+    <span>•</span>
+    <span>Отклики</span>
+  </nav>
+
+  <section class="hero admin-list-hero admin-activity-hero-v2">
     <div class="hero-kicker">Администрирование</div>
     <h1>Отклики</h1>
     <p>Список откликов студентов на опубликованные вакансии.</p>
-  </section>
-
-  <section class="admin-list-kpi-grid">
-    <article class="admin-list-kpi-card">
-      <span class="admin-list-icon"><i class="bi bi-send"></i></span>
-      <div>
-        <strong>{{ responses_count }}</strong>
-        <p>Всего откликов</p>
-      </div>
-    </article>
-
-    <article class="admin-list-kpi-card">
-      <span class="admin-list-icon"><i class="bi bi-people"></i></span>
-      <div>
-        <strong>{{ students_count }}</strong>
-        <p>Студентов откликались</p>
-      </div>
-    </article>
-
-    <article class="admin-list-kpi-card">
-      <span class="admin-list-icon"><i class="bi bi-briefcase"></i></span>
-      <div>
-        <strong>{{ vacancies_count }}</strong>
-        <p>Вакансий с откликами</p>
-      </div>
-    </article>
-
-    <article class="admin-list-kpi-card">
-      <span class="admin-list-icon"><i class="bi bi-collection"></i></span>
-      <div>
-        <strong>{{ groups_count }}</strong>
-        <p>Групп с откликами</p>
-      </div>
-    </article>
   </section>
 
   <section class="admin-list-card">
     <div class="admin-list-card-head">
       <div>
         <h2>Список откликов</h2>
-        <p>Проверьте, какие студенты откликнулись на вакансии.</p>
       </div>
-
-      <a class="admin-list-back-link" href="{% url 'accounts:admin_activity' %}">
-        <i class="bi bi-arrow-left"></i>
-        К активности
-      </a>
     </div>
 
-    <form method="get" class="admin-list-filter-grid admin-list-filter-grid-responses">
+    <form method="get" action="#responses-list" class="admin-activity-filter-v3 admin-activity-filter-responses-v3">
       <div class="admin-filter-field">
-        <label>Студент</label>
         <input name="q" placeholder="ФИО или email" value="{{ q }}">
       </div>
 
       <div class="admin-filter-field">
-        <label>Вакансия</label>
         <input name="vacancy" placeholder="Название вакансии" value="{{ vacancy_q }}">
       </div>
 
       <div class="admin-filter-field">
-        <label>Группа</label>
-        <input name="group" placeholder="Например: И - 422" value="{{ group_q }}">
+        <input name="group" placeholder="Группа" value="{{ group_q }}">
       </div>
-      
+
       <div class="admin-filter-field">
-        <label>Дата от</label>
         <input name="date_from" type="date" value="{{ date_from }}">
       </div>
 
       <div class="admin-filter-field">
-        <label>Дата до</label>
         <input name="date_to" type="date" value="{{ date_to }}">
       </div>
 
       <div class="admin-filter-actions">
         <button class="admin-list-btn" type="submit">
-          <i class="bi bi-search"></i>
-          Применить
+          Найти
         </button>
-
-        <a class="admin-list-btn is-secondary" href="{% url 'accounts:admin_responses' %}">
-          Сбросить
-        </a>
       </div>
     </form>
 
-    <div class="admin-table-wrap">
+    <div id="responses-list" class="admin-table-wrap admin-activity-table-wrap-v2">
       <table class="admin-table">
         <thead>
           <tr>
@@ -112,8 +68,15 @@
           {% for response, resume_url in rows %}
             <tr>
               <td>
-                <div class="admin-table-user">
-                  <span>{{ response.student.full_name|default:response.student.email|slice:":1"|upper }}</span>
+                <div class="admin-table-user admin-activity-user-v2">
+                  {% if response.student.photo %}
+                    <img class="admin-activity-avatar-v2" src="{{ response.student.photo.url }}" alt="{{ response.student.full_name }}">
+                  {% else %}
+                    <span class="admin-activity-avatar-fallback-v2">
+                      {{ response.student.full_name|default:response.student.email|slice:":1"|upper }}
+                    </span>
+                  {% endif %}
+
                   <div>
                     <strong>{{ response.student.full_name|default:'Без имени' }}</strong>
                     <p>{{ response.student.email }}</p>
@@ -164,22 +127,30 @@
     </div>
 
     {% if page_obj.paginator.num_pages > 1 %}
-      <div class="admin-pagination">
-        {% if page_obj.has_previous %}
-          <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}">Назад</a>
-        {% else %}
-          <span class="is-disabled">Назад</span>
-        {% endif %}
-
-        <strong>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</strong>
-
-        {% if page_obj.has_next %}
-          <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}">Вперёд</a>
-        {% else %}
-          <span class="is-disabled">Вперёд</span>
-        {% endif %}
-      </div>
+  <nav class="students-final-pager admin-activity-pager-v2" aria-label="Пагинация">
+    {% if page_obj.has_previous %}
+      <a class="students-final-pager-arrow" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}#responses-list">‹</a>
+    {% else %}
+      <span class="students-final-pager-arrow is-disabled">‹</span>
     {% endif %}
+
+    {% for num in page_range %}
+      {% if num == page_obj.paginator.ELLIPSIS %}
+        <span class="students-final-pager-page is-disabled">…</span>
+      {% elif page_obj.number == num %}
+        <span class="students-final-pager-page is-active">{{ num }}</span>
+      {% else %}
+        <a class="students-final-pager-page" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}#responses-list">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+      <a class="students-final-pager-arrow" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}#responses-list">›</a>
+    {% else %}
+      <span class="students-final-pager-arrow is-disabled">›</span>
+    {% endif %}
+  </nav>
+{% endif %}
   </section>
 </div>
 {% endblock %}
