@@ -3,202 +3,271 @@
 {% block title %}Вакансия{% endblock %}
 
 {% block content %}
-<section class="hero admin-profile-hero vacancy-profile-hero">
-  <div class="admin-profile-main">
-    <div class="hero-kicker">Вакансия</div>
-    <h1>{{ vacancy.title }}</h1>
-    <p>{{ vacancy.company }}</p>
+<div class="admin-vacancy-detail-v2">
+  <nav class="admin-breadcrumb-v3 admin-detail-breadcrumb-v2" aria-label="Навигация">
+    <a href="{% url 'accounts:admin_vacancies' %}">Вакансии</a>
+    <span>•</span>
+    <span>{{ vacancy.title }}</span>
+  </nav>
 
-    <div class="admin-profile-badges">
-      {% if vacancy.format_type %}
-        <span class="profile-badge">{{ vacancy.format_type }}</span>
-      {% endif %}
-
-      {% if vacancy.employment_type %}
-        <span class="profile-badge">{{ vacancy.employment_type }}</span>
-      {% endif %}
-
-      {% if vacancy.direction %}
-        <span class="profile-badge">{{ vacancy.direction }}</span>
-      {% endif %}
-
-      {% if vacancy.status == 'active' %}
-        <span class="profile-badge profile-badge-success status-active">{{ STATUS_LABELS|dict_get:vacancy.status }}</span>
-      {% elif vacancy.status == 'hidden' %}
-        <span class="profile-badge profile-badge-danger status-hidden">{{ STATUS_LABELS|dict_get:vacancy.status }}</span>
-      {% else %}
-        <span class="profile-badge status-archive">{{ STATUS_LABELS|dict_get:vacancy.status }}</span>
-      {% endif %}
-    </div>
-  </div>
-</section>
-
-<section class="section vacancy-detail-layout vacancy-detail-layout-main">
-  <div class="card vacancy-edit-card">
-    <h2>Данные вакансии</h2>
-
-    <div class="admin-info-list">
-      <div>
-        <span>Название</span>
-        <strong>{{ vacancy.title }}</strong>
-      </div>
-
-      <div>
-        <span>Компания</span>
-        <strong>{{ vacancy.company }}</strong>
-      </div>
-
-      <div>
-        <span>Тип занятости</span>
-        <strong>{{ vacancy.employment_type|default:'—' }}</strong>
-      </div>
-
-      <div>
-        <span>Формат</span>
-        <strong>{{ vacancy.format_type|default:'—' }}</strong>
-      </div>
-
-      <div>
-        <span>Направление</span>
-        <strong>{{ vacancy.direction|default:'—' }}</strong>
-      </div>
-
-      <div>
-        <span>Статус</span>
-        <strong>{{ STATUS_LABELS|dict_get:vacancy.status }}</strong>
-      </div>
-
-      <div>
-        <span>Описание</span>
-        <strong>{{ vacancy.description|default:'—' }}</strong>
-      </div>
-
-      <div>
-        <span>Обязанности</span>
-        <strong>{{ vacancy.responsibilities|default:'—' }}</strong>
-      </div>
-
-      <div>
-        <span>Требования</span>
-        <strong>{{ vacancy.requirements|default:'—' }}</strong>
-      </div>
-
-      <div>
-        <span>Условия</span>
-        <strong>{{ vacancy.conditions|default:'—' }}</strong>
-      </div>
-
-      <div>
-        <span>Контакты</span><strong>{{ vacancy.contacts|default:'—' }}</strong></div><div><span>Адрес</span><strong>{{ vacancy.address|default:'—' }}</strong>{% if vacancy.map_url %}<div><a class='btn btn-link' href='{{ vacancy.map_url }}' target='_blank' rel='noopener'>Открыть на карте</a></div>{% endif %}</div>
+  <section class="admin-vacancy-hero-v2">
+    <div class="admin-vacancy-hero-icon-v2">
+      В
     </div>
 
-    <details class="admin-edit-details">
-      <summary class="btn btn-link">Редактировать</summary>
+    <div class="admin-vacancy-hero-main-v2">
+      <div class="hero-kicker">Вакансия</div>
+      <h1>{{ vacancy.title }}</h1>
+      <p>{{ vacancy.company }}</p>
 
-      <form method="post" class="admin-form admin-edit-form">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="update">
+      <div class="admin-vacancy-hero-tags-v2">
+        {% if vacancy.format_type %}
+          <span>{{ vacancy.format_type }}</span>
+        {% endif %}
 
-        <div class="admin-form-grid">
-          <div class="form-field">
-            <label>{{ form.title.label }}</label>
+        {% if vacancy.employment_type %}
+          <span>{{ vacancy.employment_type }}</span>
+        {% endif %}
+
+        {% if vacancy.direction %}
+          <span>{{ vacancy.direction }}</span>
+        {% endif %}
+
+        {% if vacancy.status == 'active' %}
+          <span class="is-success">{{ STATUS_LABELS|dict_get:vacancy.status }}</span>
+        {% elif vacancy.status == 'hidden' %}
+          <span class="is-danger">{{ STATUS_LABELS|dict_get:vacancy.status }}</span>
+        {% else %}
+          <span>{{ STATUS_LABELS|dict_get:vacancy.status }}</span>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <section class="admin-vacancy-detail-grid-v2">
+    <div class="admin-vacancy-detail-main-v2">
+      <article class="admin-detail-card-v2">
+        <div class="admin-detail-card-head-v2">
+          <div>
+            <h2>Основная информация</h2>
+            <p>Краткие данные о вакансии и условиях размещения.</p>
+          </div>
+        </div>
+
+        <div class="admin-detail-info-list-v2">
+          <div>
+            <span>Название</span>
+            <strong>{{ vacancy.title }}</strong>
+          </div>
+
+          <div>
+            <span>Компания</span>
+            <strong>{{ vacancy.company }}</strong>
+          </div>
+
+          <div>
+            <span>Тип занятости</span>
+            <strong>{{ vacancy.employment_type|default:'—' }}</strong>
+          </div>
+
+          <div>
+            <span>Формат</span>
+            <strong>{{ vacancy.format_type|default:'—' }}</strong>
+          </div>
+
+          <div>
+            <span>Направление</span>
+            <strong>{{ vacancy.direction|default:'—' }}</strong>
+          </div>
+
+          <div>
+            <span>Статус</span>
+            <strong>{{ STATUS_LABELS|dict_get:vacancy.status }}</strong>
+          </div>
+
+          <div>
+            <span>Контакты</span>
+            <strong>{{ vacancy.contacts|default:'—' }}</strong>
+          </div>
+
+          <div>
+            <span>Адрес</span>
+            <strong>
+              {{ vacancy.address|default:'—' }}
+
+              {% if vacancy.map_url %}
+                <a class="admin-vacancy-map-link-v2" href="{{ vacancy.map_url }}" target="_blank" rel="noopener">
+                  Открыть на карте
+                </a>
+              {% endif %}
+            </strong>
+          </div>
+        </div>
+      </article>
+
+      <article class="admin-detail-card-v2">
+        <div class="admin-detail-card-head-v2">
+          <div>
+            <h2>Описание для студентов</h2>
+            <p>Текст, который помогает студенту понять содержание вакансии.</p>
+          </div>
+        </div>
+
+        <div class="admin-vacancy-text-list-v2">
+          <section>
+            <span>Описание</span>
+            <p>{{ vacancy.description|default:'—'|linebreaksbr }}</p>
+          </section>
+
+          <section>
+            <span>Обязанности</span>
+            <p>{{ vacancy.responsibilities|default:'—'|linebreaksbr }}</p>
+          </section>
+
+          <section>
+            <span>Требования</span>
+            <p>{{ vacancy.requirements|default:'—'|linebreaksbr }}</p>
+          </section>
+
+          <section>
+            <span>Условия</span>
+            <p>{{ vacancy.conditions|default:'—'|linebreaksbr }}</p>
+          </section>
+        </div>
+      </article>
+    </div>
+
+    <aside class="admin-vacancy-detail-side-v2">
+      <article class="admin-detail-card-v2">
+        <div class="admin-detail-card-head-v2">
+          <div>
+            <h2>Редактирование</h2>
+            <p>Изменения сохраняются сразу в карточке вакансии.</p>
+          </div>
+        </div>
+
+        <form method="post" class="admin-vacancy-edit-form-v2">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="update">
+
+          <div class="admin-vacancy-edit-row-v2">
+            <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
             {{ form.title }}
             {{ form.title.errors }}
           </div>
 
-          <div class="form-field">
-            <label>{{ form.company.label }}</label>
+          <div class="admin-vacancy-edit-row-v2">
+            <label for="{{ form.company.id_for_label }}">{{ form.company.label }}</label>
             {{ form.company }}
             {{ form.company.errors }}
           </div>
 
-          <div class="form-field">
-            <label>{{ form.employment_type.label }}</label>
-            {{ form.employment_type }}
-            {{ form.employment_type.errors }}
+          <div class="admin-vacancy-edit-row-grid-v2">
+            <div class="admin-vacancy-edit-row-v2">
+              <label for="{{ form.employment_type.id_for_label }}">{{ form.employment_type.label }}</label>
+              {{ form.employment_type }}
+              {{ form.employment_type.errors }}
+            </div>
+
+            <div class="admin-vacancy-edit-row-v2">
+              <label for="{{ form.format_type.id_for_label }}">{{ form.format_type.label }}</label>
+              {{ form.format_type }}
+              {{ form.format_type.errors }}
+            </div>
           </div>
 
-          <div class="form-field">
-            <label>{{ form.format_type.label }}</label>
-            {{ form.format_type }}
-            {{ form.format_type.errors }}
-          </div>
-
-          <div class="form-field">
-            <label>{{ form.direction.label }}</label>
+          <div class="admin-vacancy-edit-row-v2">
+            <label for="{{ form.direction.id_for_label }}">{{ form.direction.label }}</label>
             {{ form.direction }}
             {{ form.direction.errors }}
           </div>
 
-          <div class="form-field">
-            <label>{{ form.status.label }}</label>
+          <div class="admin-vacancy-edit-row-v2">
+            <label for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
             {{ form.status }}
             {{ form.status.errors }}
           </div>
 
-          <div class="form-field form-field-full">
-            <label>{{ form.description.label }}</label>
+          <div class="admin-vacancy-edit-row-v2">
+            <label for="{{ form.contacts.id_for_label }}">{{ form.contacts.label }}</label>
+            {{ form.contacts }}
+            {{ form.contacts.errors }}
+          </div>
+
+          <div class="admin-vacancy-edit-row-grid-v2">
+            {% if form.address %}
+              <div class="admin-vacancy-edit-row-v2">
+                <label for="{{ form.address.id_for_label }}">{{ form.address.label }}</label>
+                {{ form.address }}
+                {{ form.address.errors }}
+              </div>
+            {% endif %}
+
+            {% if form.map_url %}
+              <div class="admin-vacancy-edit-row-v2">
+                <label for="{{ form.map_url.id_for_label }}">{{ form.map_url.label }}</label>
+                {{ form.map_url }}
+                {{ form.map_url.errors }}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="admin-vacancy-edit-row-v2">
+            <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
             {{ form.description }}
             {{ form.description.errors }}
           </div>
 
-          <div class="form-field form-field-full">
-            <label>{{ form.responsibilities.label }}</label>
+          <div class="admin-vacancy-edit-row-v2">
+            <label for="{{ form.responsibilities.id_for_label }}">{{ form.responsibilities.label }}</label>
             {{ form.responsibilities }}
             {{ form.responsibilities.errors }}
           </div>
 
-          <div class="form-field form-field-full">
-            <label>{{ form.requirements.label }}</label>
+          <div class="admin-vacancy-edit-row-v2">
+            <label for="{{ form.requirements.id_for_label }}">{{ form.requirements.label }}</label>
             {{ form.requirements }}
             {{ form.requirements.errors }}
           </div>
 
-          <div class="form-field form-field-full">
-            <label>{{ form.conditions.label }}</label>
+          <div class="admin-vacancy-edit-row-v2">
+            <label for="{{ form.conditions.id_for_label }}">{{ form.conditions.label }}</label>
             {{ form.conditions }}
             {{ form.conditions.errors }}
           </div>
 
-          <div class="form-field form-field-full">
-            <label>{{ form.contacts.label }}</label>
-            {{ form.contacts }}
-            {{ form.contacts.errors }}
+          <button class="btn btn-primary admin-vacancy-save-v2" type="submit">
+            Сохранить изменения
+          </button>
+        </form>
+      </article>
+
+      <article class="admin-detail-card-v2 admin-vacancy-danger-v2">
+        <div class="admin-detail-card-head-v2">
+          <div>
+            <h2>Удаление вакансии</h2>
+            <p>Используйте только если вакансия больше не нужна.</p>
           </div>
         </div>
 
-        <div class="admin-form-actions">
-          <button class="btn btn-primary" type="submit">Сохранить изменения</button>
-        </div>
-      </form>
-    </details>
-  </div>
-</section>
+        <form
+          method="post"
+          class="admin-vacancy-delete-form-v2"
+          data-confirm-delete
+          data-confirm-text="Удалить вакансию? Это действие нельзя отменить."
+        >
+          {% csrf_token %}
+          <input type="hidden" name="action" value="delete">
 
-<section class="section card curator-delete-card curator-delete-bottom-card">
-  <h2>Удаление вакансии</h2>
+          <label>Введите название вакансии</label>
+          <input name="confirm_title" type="text" placeholder="{{ vacancy.title }}" required>
 
-  <div class="danger-inner">
-    <p>
-      Удаление требует подтверждения по названию. Используйте только если вакансия действительно больше не нужна.</p>
-
-    <form
-  method="post"
-  class="curator-delete-form"
-  data-confirm-delete
-  data-confirm-text="Удалить вакансию? Это действие нельзя отменить."
->
-      {% csrf_token %}
-      <input type="hidden" name="action" value="delete">
-
-      <div class="form-field">
-<label>Введите название вакансии</label>
-      <input name="confirm_title" type="text" placeholder="{{ vacancy.title }}" required>
-      </div>
-      
-
-      <button class="btn btn-danger" type="submit">Подтвердить удаление</button>
-    </form>
-  </div>
-</section>
+          <button class="btn btn-danger" type="submit">
+            Подтвердить удаление
+          </button>
+        </form>
+      </article>
+    </aside>
+  </section>
+</div>
 {% endblock %}

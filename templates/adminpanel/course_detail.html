@@ -4,204 +4,319 @@
 {% block title %}Курс{% endblock %}
 
 {% block content %}
-<section class="hero admin-profile-hero course-profile-hero">
-  <div class="admin-profile-main">
-    <div class="hero-kicker">Курс/семинар</div>
-    <h1>{{ course.title }}</h1>
-    <p>{{ course.organization|default:'Организация не указана' }}</p>
+<div class="admin-course-detail-v2">
+  <nav class="admin-breadcrumb-v3 admin-detail-breadcrumb-v2" aria-label="Навигация">
+    <a href="{% url 'accounts:admin_courses' %}">Курсы</a>
+    <span>•</span>
+    <span>{{ course.title }}</span>
+  </nav>
 
-    <div class="admin-profile-badges">
-      <span class="profile-badge">{{ KIND_LABELS|dict_get:course.kind }}</span>
-      <span class="profile-badge">{{ FORMAT_LABELS|dict_get:course.format_type }}</span>
-      {% if course.status == 'active' %}
-        <span class="profile-badge profile-badge-success status-active">{{ STATUS_LABELS|dict_get:course.status }}</span>
-      {% elif course.status == 'hidden' %}
-        <span class="profile-badge profile-badge-danger status-hidden">{{ STATUS_LABELS|dict_get:course.status }}</span>
-      {% else %}
-        <span class="profile-badge status-archive">{{ STATUS_LABELS|dict_get:course.status }}</span>
-      {% endif %}
-      {% if course.format_type == 'offline' %}
-        <span class="profile-badge">Мест: {{ registrations_count }} / {{ course.places }}</span>
-      {% endif %}
-    </div>
-  </div>
-</section>
-
-<section class="section vacancy-detail-layout course-detail-layout course-detail-layout-main">
-  <div class="card admin-wide-card">
-    <h2>Данные курса</h2>
-
-    <div class="admin-info-list">
-      <div>
-        <span>Название</span>
-        <strong>{{ course.title }}</strong>
-      </div>
-
-      <div>
-        <span>Тип</span>
-        <strong>{{ KIND_LABELS|dict_get:course.kind }}</strong>
-      </div>
-
-      <div>
-        <span>Формат</span>
-        <strong>{{ FORMAT_LABELS|dict_get:course.format_type }}</strong>
-      </div>
-
-      <div>
-        <span>Организация</span>
-        <strong>{{ course.organization|default:'—' }}</strong>
-      </div>
-
-      <div>
-        <span>Контакты</span>
-        <strong>{{ course.contacts|default:'—' }}</strong>
-      </div>
-
-      <div>
-        <span>Дата</span>
-        <strong>{{ course.date|default:'—' }}</strong>
-      </div>
-
-      <div>
-        <span>Количество мест</span>
-        <strong>{{ course.places|default:'—' }}</strong>
-      </div>
-
-      <div>
-        <span>Статус</span>
-        <strong>{{ STATUS_LABELS|dict_get:course.status }}</strong>
-      </div>
-
-      <div>
-        <span>Описание</span>
-        <strong>{{ course.description|default:'—' }}</strong>
-      </div>
+  <section class="admin-course-hero-v2">
+    <div class="admin-course-hero-icon-v2">
+      К
     </div>
 
-    <details class="admin-edit-details">
-      <summary class="btn btn-link">Редактировать</summary>
+    <div class="admin-course-hero-main-v2">
+      <div class="hero-kicker">Курс</div>
+      <h1>{{ course.title }}</h1>
+      <p>{{ course.organization|default:'Организация не указана' }}</p>
 
-      <form method="post" class="form-grid admin-course-form admin-edit-form">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="update">
+      <div class="admin-course-hero-tags-v2">
+        <span>{{ KIND_LABELS|dict_get:course.kind }}</span>
+        <span>{{ FORMAT_LABELS|dict_get:course.format_type }}</span>
 
-        <p class="full">
-          <label>{{ form.title.label }}</label>
-          {{ form.title }}
-        </p>
+        {% if course.format_type == 'offline' %}
+          <span>Мест: {{ active_registrations_count }} / {{ course.places }}</span>
+        {% else %}
+          <span>Онлайн</span>
+        {% endif %}
 
-        <p>
-          <label>{{ form.kind.label }}</label>
-          {{ form.kind }}
-        </p>
-
-        <p>
-          <label>{{ form.format_type.label }}</label>
-          {{ form.format_type }}
-        </p>
-
-        <p class="full">
-          <label>{{ form.description.label }}</label>
-          {{ form.description }}
-        </p>
-
-        <p>
-          <label>{{ form.organization.label }}</label>
-          {{ form.organization }}
-        </p>
-
-        <p>
-          <label>{{ form.contacts.label }}</label>
-          {{ form.contacts }}
-        </p>
-
-        <p>
-          <label>{{ form.date.label }}</label>
-          {{ form.date }}
-        </p>
-
-        <p>
-          <label>{{ form.places.label }}</label>
-          {{ form.places }}{% if form.places.help_text %}<small>{{ form.places.help_text }}</small>{% endif %}
-        </p>
-
-        <p><label>{{ form.online_url.label }}</label>{{ form.online_url }}</p>
-        <p><label>{{ form.address.label }}</label>{{ form.address }}</p>
-        <p><label>{{ form.map_url.label }}</label>{{ form.map_url }}</p>
-        <p>
-          <label>{{ form.status.label }}</label>
-          {{ form.status }}
-        </p>
-
-        <p class="full admin-form-actions">
-          <button class="btn btn-primary" type="submit">Сохранить изменения</button>
-        </p>
-      </form>
-    </details>
-  </div>
-</section>
-
-
-<section class="section card">
-  <h2>Статистика записи</h2>
-  <div class="admin-info-list">
-    <div><span>Всего мест</span><strong>{{ course.places }}</strong></div>
-    <div><span>Активных записей</span><strong>{{ active_registrations_count }}</strong></div>
-    <div><span>Отменённых записей</span><strong>{{ cancelled_registrations_count }}</strong></div>
-    <div><span>Свободных мест</span><strong>{{ free_places_count }}</strong></div>
-  </div>
-</section>
-
-<section class="section card">
-  <h2>Записавшиеся студенты</h2>
-  {% if course_registrations %}
-    <div class="table-wrap">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>ФИО</th><th>Email</th><th>Группа</th><th>Специальность</th><th>Статус</th><th>Дата записи</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for reg in course_registrations %}
-            <tr>
-              <td>{{ reg.student.full_name }}</td>
-              <td>{{ reg.student.email }}</td>
-              <td>{{ reg.student.study_group.name|default:reg.student.group|default:'—' }}</td>
-              <td>{{ reg.student.study_group.specialty_name|default:reg.student.specialty|default:'—' }}</td>
-              <td>{% if reg.status == 'registered' %}записан{% else %}отменил{% endif %}</td>
-              <td>{{ reg.created_at|date:'d.m.Y H:i' }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+        {% if course.status == 'active' %}
+          <span class="is-success">{{ STATUS_LABELS|dict_get:course.status }}</span>
+        {% elif course.status == 'hidden' %}
+          <span class="is-danger">{{ STATUS_LABELS|dict_get:course.status }}</span>
+        {% else %}
+          <span>{{ STATUS_LABELS|dict_get:course.status }}</span>
+        {% endif %}
+      </div>
     </div>
-  {% else %}
-    <p>Пока нет записей на этот курс.</p>
-  {% endif %}
-</section>
-<section class="section card curator-delete-card curator-delete-bottom-card">
-  <h2>Удаление курса</h2>
+  </section>
 
-  <div class="admin-danger-inner">
-    <p>
-      Удаление требует подтверждения по названию. Используйте только если курс действительно больше не нужен.
-    </p>
+  <section class="admin-course-detail-grid-v2">
+    <div class="admin-course-detail-main-v2">
+      <article class="admin-detail-card-v2">
+        <div class="admin-detail-card-head-v2">
+          <div>
+            <h2>Основная информация</h2>
+            <p>Тип, формат, дата, места и контактные данные курса.</p>
+          </div>
+        </div>
 
-    <form
-  method="post"
-  class="detail-danger-form"
-  data-confirm-delete
-  data-confirm-text="Удалить курс или семинар? Это действие нельзя отменить."
->
-      {% csrf_token %}
-      <input type="hidden" name="action" value="delete">
+        <div class="admin-detail-info-list-v2">
+          <div>
+            <span>Название</span>
+            <strong>{{ course.title }}</strong>
+          </div>
 
-      <label>Введите название курса</label>
-      <input name="confirm_title" type="text" placeholder="{{ course.title }}" required>
+          <div>
+            <span>Тип</span>
+            <strong>{{ KIND_LABELS|dict_get:course.kind }}</strong>
+          </div>
 
-      <button class="btn btn-danger" type="submit">Подтвердить удаление</button>
-    </form>
+          <div>
+            <span>Формат</span>
+            <strong>{{ FORMAT_LABELS|dict_get:course.format_type }}</strong>
+          </div>
+
+          <div>
+            <span>Организация</span>
+            <strong>{{ course.organization|default:'—' }}</strong>
+          </div>
+
+          <div>
+            <span>Контакты</span>
+            <strong>{{ course.contacts|default:'—' }}</strong>
+          </div>
+
+          <div>
+            <span>Дата</span>
+            <strong>{{ course.date|default:'—' }}</strong>
+          </div>
+
+          <div>
+            <span>Количество мест</span>
+            <strong>
+              {% if course.places %}
+                {{ course.places }}
+              {% else %}
+                Не ограничено
+              {% endif %}
+            </strong>
+          </div>
+
+          <div>
+            <span>Статус</span>
+            <strong>{{ STATUS_LABELS|dict_get:course.status }}</strong>
+          </div>
+
+          {% if course.online_url %}
+            <div>
+              <span>Онлайн-встреча</span>
+              <strong>
+                <a class="admin-course-link-v2" href="{{ course.online_url }}" target="_blank" rel="noopener">
+                  Открыть ссылку
+                </a>
+              </strong>
+            </div>
+          {% endif %}
+
+          <div>
+            <span>Адрес</span>
+            <strong>
+              {{ course.address|default:'—' }}
+
+              {% if course.map_url %}
+                <a class="admin-course-link-v2" href="{{ course.map_url }}" target="_blank" rel="noopener">
+                  Открыть на карте
+                </a>
+              {% endif %}
+            </strong>
+          </div>
+        </div>
+      </article>
+
+      <article class="admin-detail-card-v2">
+        <div class="admin-detail-card-head-v2">
+          <div>
+            <h2>Описание для студентов</h2>
+            <p>Текст, который видят студенты в карточке курса.</p>
+          </div>
+        </div>
+
+        <div class="admin-course-description-v2">
+          <p>{{ course.description|default:'—'|linebreaksbr }}</p>
+        </div>
+      </article>
+
+      <article class="admin-detail-card-v2">
+  <div class="admin-detail-card-head-v2">
+    <div>
+      <h2>Записавшиеся студенты</h2>
+      <p>Список активных и отменённых записей на курс.</p>
+    </div>
+
+    <div class="admin-course-registration-summary-v2">
+      <span>{{ active_registrations_count }} активных</span>
+      <span>{{ cancelled_registrations_count }} отменённых</span>
+    </div>
   </div>
-</section>
+
+  <div class="admin-course-registrations-v2">
+    {% for reg in course_registrations %}
+      <article class="admin-course-registration-row-v3">
+        <div class="admin-course-registration-student-v3">
+          {% if reg.student.photo %}
+            <img src="{{ reg.student.photo.url }}" alt="{{ reg.student.full_name }}">
+          {% else %}
+            <div>{{ reg.student.full_name|initials }}</div>
+          {% endif %}
+
+          <div>
+            <strong>{{ reg.student.full_name }}</strong>
+            <span>{{ reg.student.email }}</span>
+          </div>
+        </div>
+
+        <div class="admin-course-registration-group-v3">
+          <span>Группа</span>
+          <strong>{{ reg.student.study_group.name|default:reg.student.group|default:'—' }}</strong>
+        </div>
+
+        <div class="admin-course-registration-state-v3">
+          {% if reg.status == 'registered' %}
+            <span class="is-success">Записан</span>
+          {% else %}
+            <span class="is-muted">Отменил</span>
+          {% endif %}
+          <small>{{ reg.created_at|date:'d.m.Y H:i' }}</small>
+        </div>
+      </article>
+    {% empty %}
+      <div class="admin-detail-empty-v2">
+        <strong>Пока нет записей</strong>
+        <p>Когда студенты начнут записываться на курс, они появятся в этом блоке.</p>
+      </div>
+    {% endfor %}
+  </div>
+</article>
+    </div>
+
+    <aside class="admin-course-detail-side-v2">
+      <article class="admin-detail-card-v2">
+        <div class="admin-detail-card-head-v2">
+          <div>
+            <h2>Редактирование</h2>
+            <p>Изменения сохраняются сразу в карточке курса.</p>
+          </div>
+        </div>
+
+        <form method="post" class="admin-course-edit-form-v2">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="update">
+
+          <div class="admin-course-edit-row-v2">
+            <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+            {{ form.title }}
+            {{ form.title.errors }}
+          </div>
+
+          <div class="admin-course-edit-row-grid-v2">
+            <div class="admin-course-edit-row-v2">
+              <label for="{{ form.kind.id_for_label }}">{{ form.kind.label }}</label>
+              {{ form.kind }}
+              {{ form.kind.errors }}
+            </div>
+
+            <div class="admin-course-edit-row-v2">
+              <label for="{{ form.format_type.id_for_label }}">{{ form.format_type.label }}</label>
+              {{ form.format_type }}
+              {{ form.format_type.errors }}
+            </div>
+          </div>
+
+          <div class="admin-course-edit-row-v2">
+            <label for="{{ form.organization.id_for_label }}">{{ form.organization.label }}</label>
+            {{ form.organization }}
+            {{ form.organization.errors }}
+          </div>
+
+          <div class="admin-course-edit-row-v2">
+            <label for="{{ form.contacts.id_for_label }}">{{ form.contacts.label }}</label>
+            {{ form.contacts }}
+            {{ form.contacts.errors }}
+          </div>
+
+          <div class="admin-course-edit-row-grid-v2">
+            <div class="admin-course-edit-row-v2">
+              <label for="{{ form.date.id_for_label }}">{{ form.date.label }}</label>
+              {{ form.date }}
+              {{ form.date.errors }}
+            </div>
+
+            <div class="admin-course-edit-row-v2">
+              <label for="{{ form.places.id_for_label }}">{{ form.places.label }}</label>
+              {{ form.places }}
+              {{ form.places.errors }}
+              {% if form.places.help_text %}
+                <small>{{ form.places.help_text }}</small>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="admin-course-edit-row-v2">
+            <label for="{{ form.online_url.id_for_label }}">{{ form.online_url.label }}</label>
+            {{ form.online_url }}
+            {{ form.online_url.errors }}
+          </div>
+
+          <div class="admin-course-edit-row-grid-v2">
+            <div class="admin-course-edit-row-v2">
+              <label for="{{ form.address.id_for_label }}">{{ form.address.label }}</label>
+              {{ form.address }}
+              {{ form.address.errors }}
+            </div>
+
+            <div class="admin-course-edit-row-v2">
+              <label for="{{ form.map_url.id_for_label }}">{{ form.map_url.label }}</label>
+              {{ form.map_url }}
+              {{ form.map_url.errors }}
+            </div>
+          </div>
+
+          <div class="admin-course-edit-row-v2">
+            <label for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
+            {{ form.status }}
+            {{ form.status.errors }}
+          </div>
+
+          <div class="admin-course-edit-row-v2">
+            <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+            {{ form.description }}
+            {{ form.description.errors }}
+          </div>
+
+          <button class="btn btn-primary admin-course-save-v2" type="submit">
+            Сохранить изменения
+          </button>
+        </form>
+      </article>
+
+      <article class="admin-detail-card-v2 admin-course-danger-v2">
+        <div class="admin-detail-card-head-v2">
+          <div>
+            <h2>Удаление курса</h2>
+            <p>Используйте только если курс действительно больше не нужен.</p>
+          </div>
+        </div>
+
+        <form
+          method="post"
+          class="admin-course-delete-form-v2"
+          data-confirm-delete
+          data-confirm-text="Удалить курс или семинар? Это действие нельзя отменить."
+        >
+          {% csrf_token %}
+          <input type="hidden" name="action" value="delete">
+
+          <label>Введите название курса</label>
+          <input name="confirm_title" type="text" placeholder="{{ course.title }}" required>
+
+          <button class="btn btn-danger" type="submit">
+            Подтвердить удаление
+          </button>
+        </form>
+      </article>
+    </aside>
+  </section>
+</div>
 {% endblock %}
