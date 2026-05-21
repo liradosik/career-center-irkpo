@@ -88,12 +88,66 @@ IMPORT_TEMPLATES = {
     },
 }
 
+IMPORT_VALIDATION_CONFIG = {
+    'students': {
+        'required_columns': ['full_name', 'email', 'password', 'group'],
+        'display_name': 'студентов',
+    },
+    'curators': {
+        'required_columns': ['full_name', 'email', 'password'],
+        'display_name': 'кураторов',
+    },
+    'groups': {
+        'required_columns': ['specialty_letter', 'admission_year', 'course_number', 'subgroup_number'],
+        'display_name': 'групп',
+    },
+    'specialties': {
+        'required_columns': ['specialty_code', 'specialty_letter', 'name'],
+        'display_name': 'специальностей',
+    },
+    'vacancies': {
+        'required_columns': ['title', 'company', 'employment_type', 'format', 'direction', 'contacts', 'status'],
+        'display_name': 'вакансий',
+    },
+    'courses': {
+        'required_columns': ['title', 'organization', 'type', 'format', 'date', 'seats', 'status'],
+        'display_name': 'курсов',
+    },
+}
 
-def parse_import_file(uploaded_file, required_columns):
+IMPORT_TYPE_HINTS = [
+    ({'email', 'full_name', 'password', 'group'}, 'студентов'),
+    ({'email', 'full_name', 'password'}, 'кураторов'),
+    ({'company', 'employment_type'}, 'вакансий'),
+    ({'organization', 'date', 'seats'}, 'курсов'),
+]
+
+
+def _normalize_header_name(value):
+    return ' '.join(str(value or '').strip().lower().split())
+
+
+def _build_import_file_type_hint(headers, expected_import_type):
+    for columns, import_name in IMPORT_TYPE_HINTS:
+        if columns.issubset(headers):
+            if expected_import_type == 'students' and import_name in {'студентов', 'кураторов'}:
+                continue
+            if expected_import_type == 'curators' and import_name in {'студентов', 'кураторов'}:
+                continue
+            return import_name
+    return None
+
+
+def parse_import_file(uploaded_file, import_type):
+    validation_config = IMPORT_VALIDATION_CONFIG[import_type]
+    required_columns = validation_config['required_columns']
+    import_display_name = validation_config['display_name']
+
     file_name = (uploaded_file.name or '').lower()
     if file_name.endswith('.csv'):
         content = uploaded_file.read().decode('utf-8-sig')
         reader = csv.DictReader(io.StringIO(content))
+        fieldnames = reader.fieldnames or []
         rows = list(reader)
     elif file_name.endswith('.xlsx'):
         workbook = load_workbook(uploaded_file, read_only=True, data_only=True)
@@ -114,15 +168,26 @@ def parse_import_file(uploaded_file, required_columns):
     else:
         return [], ['Поддерживаются только CSV и XLSX']
 
-    fieldnames = reader.fieldnames if file_name.endswith('.csv') else fieldnames
-    normalized_headers = {str(header).strip() for header in (fieldnames or []) if header}
+    normalized_headers = {_normalize_header_name(header) for header in fieldnames if _normalize_header_name(header)}
+    if not normalized_headers:
+        return [], ['Файл пустой или не содержит строку с заголовками.']
+
     missing = [col for col in required_columns if col not in normalized_headers]
     if missing:
-        return [], [f'В файле отсутствуют обязательные колонки: {", ".join(missing)}.']
+        expected_columns = ', '.join(required_columns)
+        hint_import_name = _build_import_file_type_hint(normalized_headers, import_type)
+        if hint_import_name:
+            return [], [
+                f'Похоже, загружен файл {hint_import_name}. Для импорта {import_display_name} нужен файл с колонками: {expected_columns}.'
+            ]
+        return [], [
+            f'Файл не соответствует шаблону импорта {import_display_name}. Отсутствуют колонки: {", ".join(missing)}.'
+        ]
 
+    header_map = {_normalize_header_name(header): header for header in fieldnames if _normalize_header_name(header)}
     normalized_rows = []
     for row in rows:
-        normalized_rows.append({col: (row.get(col) or '').strip() for col in normalized_headers})
+        normalized_rows.append({col: (row.get(header_map[col]) or '').strip() for col in normalized_headers})
     return normalized_rows, []
 
 
@@ -1283,7 +1348,7 @@ def admin_student_import(request):
             skipped = 0
             errors = []
             warnings = []
-            rows, parse_errors = parse_import_file(form.cleaned_data['import_file'], ['full_name', 'email', 'password', 'group'])
+            rows, parse_errors = parse_import_file(form.cleaned_data['import_file'], 'students')
             if parse_errors:
                 messages.error(request, parse_errors[0])
                 return redirect('accounts:admin_student_import')
@@ -1383,7 +1448,7 @@ def admin_curator_import(request):
             skipped = 0
             errors = []
             warnings = []
-            rows, parse_errors = parse_import_file(form.cleaned_data['import_file'], ['full_name', 'email', 'password'])
+            rows, parse_errors = parse_import_file(form.cleaned_data['import_file'], 'curators')
             if parse_errors:
                 messages.error(request, parse_errors[0])
                 return redirect('accounts:admin_curator_import')
@@ -1460,10 +1525,7 @@ def admin_group_import(request):
             skipped = 0
             errors = []
             warnings = []
-            rows, parse_errors = parse_import_file(
-                form.cleaned_data['import_file'],
-                ['specialty_letter', 'admission_year', 'course_number', 'curator_email'],
-            )
+            rows, parse_errors = parse_import_file(form.cleaned_data['import_file'], 'groups')
             if parse_errors:
                 messages.error(request, parse_errors[0])
                 return redirect('accounts:admin_group_import')
