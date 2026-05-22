@@ -1,112 +1,66 @@
 {% extends 'base_dashboard.html' %}
+{% load ui_extras %}
+
 {% block title %}Курсы студентов{% endblock %}
 
 {% block content %}
-<div class="curator-list-page curator-course-list-page">
-  <section class="hero curator-list-hero">
-    <div>
-      <div class="hero-kicker">Куратор</div>
-      <h1>Курсы студентов</h1>
-      <p>Записи и отмены по студентам ваших групп.</p>
-    </div>
+<div class="admin-list-page admin-course-registrations-page admin-activity-detail-list-v2 curator-course-registrations-page-v2">
+
+  <nav class="admin-breadcrumb-v3 admin-activity-breadcrumb-v2" aria-label="Навигация">
+    <a href="{% url 'accounts:curator_activity' %}">Активность</a>
+    <span>•</span>
+    <span>Курсы</span>
+  </nav>
+
+  <section class="hero admin-list-hero admin-activity-hero-v2">
+    <div class="hero-kicker">Кабинет куратора</div>
+    <h1>Курсы студентов</h1>
+    <p>Список записей и отмен закреплённых студентов на курсы, семинары и практики.</p>
   </section>
 
-  <section class="curator-list-kpi-grid">
-    <article class="curator-list-kpi-card">
-      <span class="curator-list-icon"><i class="bi bi-calendar-check"></i></span>
-      <div>
-        <strong>{{ active_count }}</strong>
-        <p>Активных записей</p>
-      </div>
-    </article>
-
-    <article class="curator-list-kpi-card">
-      <span class="curator-list-icon"><i class="bi bi-arrow-counterclockwise"></i></span>
-      <div>
-        <strong>{{ cancelled_count }}</strong>
-        <p>Отменённых записей</p>
-      </div>
-    </article>
-
-    <article class="curator-list-kpi-card">
-      <span class="curator-list-icon"><i class="bi bi-mortarboard"></i></span>
-      <div>
-        <strong>{{ courses_count }}</strong>
-        <p>Курсов в записях</p>
-      </div>
-    </article>
-
-    <article class="curator-list-kpi-card">
-      <span class="curator-list-icon"><i class="bi bi-people"></i></span>
-      <div>
-        <strong>{{ students_count }}</strong>
-        <p>Студентов с записями</p>
-      </div>
-    </article>
-  </section>
-
-  <section class="curator-list-card">
-    <div class="curator-list-card-head">
+  <section class="admin-list-card">
+    <div class="admin-list-card-head">
       <div>
         <h2>Список записей</h2>
-        <p>Отфильтруйте студентов, курс, группу или статус записи.</p>
       </div>
-
-      <a class="curator-list-back-link" href="{% url 'accounts:curator_activity' %}">
-        <i class="bi bi-arrow-left"></i>
-        К активности
-      </a>
     </div>
 
-    <form method="get" class="curator-list-filter-grid">
-      <div class="curator-filter-field">
-        <label>Студент</label>
-        <input type="text" name="q" value="{{ q }}" placeholder="ФИО или email">
+    <form method="get" action="#course-registrations-list" class="admin-activity-filter-v3 admin-activity-filter-courses-v3">
+      <div class="admin-filter-field">
+        <input name="q" placeholder="ФИО или email" value="{{ q }}">
       </div>
 
-      <div class="curator-filter-field">
-        <label>Курс</label>
-        <input type="text" name="course" value="{{ course_q }}" placeholder="Название курса">
+      <div class="admin-filter-field">
+        <input name="course" placeholder="Название курса" value="{{ course_q }}">
       </div>
 
-      <div class="curator-filter-field">
-        <label>Группа</label>
-        <select name="group">
-          <option value="">Все группы</option>
-          {% for g in groups %}
-            <option value="{{ g }}" {% if g == group_q %}selected{% endif %}>{{ g }}</option>
-          {% endfor %}
-        </select>
+      <div class="admin-filter-field">
+        <input name="group" placeholder="Группа" value="{{ group_q }}">
       </div>
 
-      <div class="curator-filter-field">
-        <label>Статус</label>
-        <select name="status">
+      <div class="admin-filter-field">
+        <select name="status" data-searchable-select data-placeholder="Все статусы">
           <option value="all" {% if status_q == 'all' %}selected{% endif %}>Все статусы</option>
           <option value="registered" {% if status_q == 'registered' %}selected{% endif %}>Записан</option>
           <option value="cancelled" {% if status_q == 'cancelled' %}selected{% endif %}>Отменил</option>
         </select>
       </div>
 
-      <div class="curator-filter-actions">
-        <button class="curator-list-btn" type="submit">
-          <i class="bi bi-search"></i>
-          Применить
+      <div class="admin-filter-actions">
+        <button class="admin-list-btn" type="submit">
+          Найти
         </button>
-
-        <a class="curator-list-btn is-secondary" href="{% url 'accounts:curator_course_registrations' %}">
-          Сбросить
-        </a>
       </div>
     </form>
 
-    <div class="curator-table-wrap">
-      <table class="curator-table">
+    <div id="course-registrations-list" class="admin-table-wrap admin-activity-table-wrap-v2">
+      <table class="admin-table">
         <thead>
           <tr>
             <th>Студент</th>
             <th>Группа</th>
             <th>Курс</th>
+            <th>Формат</th>
             <th>Статус</th>
             <th>Дата записи</th>
           </tr>
@@ -116,8 +70,19 @@
           {% for reg in registrations %}
             <tr>
               <td>
-                <div class="curator-table-user">
-                  <span>{{ reg.student.full_name|default:reg.student.email|slice:":1"|upper }}</span>
+                <div class="admin-table-user admin-activity-user-v2">
+                  {% if reg.student.photo %}
+                    <img
+                      class="admin-activity-avatar-v2"
+                      src="{{ reg.student.photo.url }}"
+                      alt="{{ reg.student.full_name }}"
+                    >
+                  {% else %}
+                    <span class="admin-activity-avatar-fallback-v2">
+                      {{ reg.student.full_name|default:reg.student.email|slice:":1"|upper }}
+                    </span>
+                  {% endif %}
+
                   <div>
                     <strong>{{ reg.student.full_name|default:'Без имени' }}</strong>
                     <p>{{ reg.student.email }}</p>
@@ -126,33 +91,41 @@
               </td>
 
               <td>
-                <span class="curator-soft-chip">
+                <span class="admin-soft-chip">
                   {{ reg.student.study_group.name|default:reg.student.group|default:'—' }}
                 </span>
               </td>
 
               <td>
-                <strong class="curator-table-title">{{ reg.course.title }}</strong>
+                <strong class="admin-table-title">{{ reg.course.title }}</strong>
+              </td>
+
+              <td class="admin-muted-cell">
+                {% if FORMAT_LABELS %}
+                  {{ FORMAT_LABELS|dict_get:reg.course.format_type }}
+                {% else %}
+                  {{ reg.course.get_format_type_display }}
+                {% endif %}
               </td>
 
               <td>
                 {% if reg.status == 'registered' %}
-                  <span class="curator-status-badge is-success">записан</span>
+                  <span class="admin-status-badge is-success">записан</span>
                 {% else %}
-                  <span class="curator-status-badge is-danger">отменил</span>
+                  <span class="admin-status-badge is-danger">отменил</span>
                 {% endif %}
               </td>
 
-              <td class="curator-date-cell">
+              <td class="admin-date-cell">
                 {{ reg.created_at|date:'d.m.Y H:i' }}
               </td>
             </tr>
           {% empty %}
             <tr>
-              <td colspan="5">
-                <div class="curator-empty-state">
+              <td colspan="6">
+                <div class="admin-empty-state">
                   <strong>Данных пока нет</strong>
-                  <p>Попробуйте изменить фильтры или проверить записи позже.</p>
+                  <p>У закреплённых студентов пока нет записей на курсы или фильтры не дали результатов.</p>
                 </div>
               </td>
             </tr>
@@ -162,22 +135,46 @@
     </div>
 
     {% if page_obj.paginator.num_pages > 1 %}
-      <div class="curator-pagination">
+      <nav class="students-final-pager admin-activity-pager-v2" aria-label="Пагинация">
         {% if page_obj.has_previous %}
-          <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}">Назад</a>
+          <a
+            class="students-final-pager-arrow"
+            href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}#course-registrations-list"
+          >
+            ‹
+          </a>
         {% else %}
-          <span class="is-disabled">Назад</span>
+          <span class="students-final-pager-arrow is-disabled">‹</span>
         {% endif %}
 
-        <strong>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</strong>
+        {% for num in page_obj.paginator.page_range %}
+          {% if page_obj.number == num %}
+            <span class="students-final-pager-page is-active">{{ num }}</span>
+          {% elif num <= 5 or num == page_obj.paginator.num_pages %}
+            <a
+              class="students-final-pager-page"
+              href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}#course-registrations-list"
+            >
+              {{ num }}
+            </a>
+          {% elif num == 6 %}
+            <span class="students-final-pager-page is-disabled">…</span>
+          {% endif %}
+        {% endfor %}
 
         {% if page_obj.has_next %}
-          <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}">Вперёд</a>
+          <a
+            class="students-final-pager-arrow"
+            href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}#course-registrations-list"
+          >
+            ›
+          </a>
         {% else %}
-          <span class="is-disabled">Вперёд</span>
+          <span class="students-final-pager-arrow is-disabled">›</span>
         {% endif %}
-      </div>
+      </nav>
     {% endif %}
   </section>
+
 </div>
 {% endblock %}

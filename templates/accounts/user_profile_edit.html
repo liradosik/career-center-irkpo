@@ -96,16 +96,25 @@
           <button class="btn btn-primary" type="submit">Сохранить изменения</button>
         </div>
 
-        <hr>
-        <div class="role-card-head">
-          <div>
-            <h2>Безопасность аккаунта</h2>
-            <p>Здесь можно изменить пароль для входа в личный кабинет. Если вам выдали временный пароль, замените его на постоянный.</p>
-          </div>
-        </div>
-        <div class="role-settings-actions">
-          <a class="btn btn-link" href="{% url 'accounts:change_password' %}">Сменить пароль</a>
-        </div>
+        <div class="curator-profile-security-v2">
+  <div class="curator-profile-security-head-v2">
+    <span class="curator-profile-security-icon-v2">
+      <i class="bi bi-shield-lock"></i>
+    </span>
+
+    <div>
+      <h2>Безопасность аккаунта</h2>
+      <p>
+        Здесь можно изменить пароль для входа в личный кабинет.
+        Если вам выдали временный пароль, замените его на постоянный.
+      </p>
+    </div>
+  </div>
+
+  <a class="btn btn-primary curator-profile-password-btn-v2" href="{% url 'accounts:change_password' %}">
+    Сменить пароль
+  </a>
+</div>
       </div>
     </form>
   </section>
