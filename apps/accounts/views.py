@@ -26,6 +26,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_GET
 
 from apps.courses.models import Course, CourseRegistration, StudentFavoriteCourse
+from apps.courses.services import archive_past_courses_if_needed
 from apps.portfolio.models import PortfolioEntry
 from apps.vacancies.models import StudentFavoriteVacancy, Vacancy, VacancyResponse
 
@@ -295,6 +296,7 @@ def change_password(request):
 
 @role_required(User.Role.STUDENT)
 def student_dashboard(request):
+    archive_past_courses_if_needed()
     entries_qs = PortfolioEntry.objects.filter(student=request.user)
     recent_entries = entries_qs.order_by('-created_at')[:5]
 
@@ -975,6 +977,7 @@ def curator_student_detail(request, student_id):
 
 @role_required(User.Role.ADMIN)
 def admin_dashboard(request):
+    archive_past_courses_if_needed()
     students_qs = User.objects.filter(role=User.Role.STUDENT)
     students_total = students_qs.count()
     curators_total = User.objects.filter(role=User.Role.CURATOR).count()
@@ -2228,6 +2231,7 @@ def admin_vacancy_detail(request, vacancy_id):
 
 @role_required(User.Role.ADMIN)
 def admin_courses(request):
+    archive_past_courses_if_needed()
     status_filter = request.GET.get('status', 'all')
     q = request.GET.get('q', '').strip()
     kind_filter = request.GET.get('kind', '').strip()
