@@ -53,6 +53,9 @@
   <section class="section card portfolio-entry-form-card-v3">
     <form method="post" enctype="multipart/form-data" class="portfolio-entry-form-v3">
       {% csrf_token %}
+      {% if next_url %}
+        <input type="hidden" name="next" value="{{ next_url }}">
+      {% endif %}
 
       {% if form.non_field_errors %}
         <div class="portfolio-entry-errors">
@@ -241,7 +244,7 @@
         </div>
 
         <div class="portfolio-entry-actions-v3">
-          <a class="btn portfolio-entry-secondary-btn-v3" href="{% url 'portfolio:list' %}">
+          <a class="btn portfolio-entry-secondary-btn-v3" href="{% if next_url %}{{ next_url }}{% else %}{% url 'portfolio:list' %}{% endif %}">
             Отмена
           </a>
 

@@ -33,6 +33,7 @@
           </span>
         {% elif can_apply_vacancies %}
           <form method="post" action="{% url 'vacancies:respond' vacancy.pk %}">
+            <input type="hidden" name="next" value="{{ request.get_full_path }}#vacancy-actions">
             {% csrf_token %}
             <button class="btn btn-primary student-vacancy-detail-primary-action-v3" type="submit">
               <i class="bi bi-send"></i>
@@ -51,6 +52,7 @@
 
         {% if can_favorite_vacancies %}
           <form method="post" action="{% url 'vacancies:toggle_favorite' vacancy.pk %}">
+            <input type="hidden" name="next" value="{{ request.get_full_path }}#vacancy-actions">
             {% csrf_token %}
             <button class="btn favorite-toggle student-vacancy-detail-favorite-v3" type="submit">
               {% if is_favorite %}
@@ -174,7 +176,7 @@
         </section>
       {% endif %}
 
-      <section class="student-vacancy-response-card-v3">
+      <section id="vacancy-actions" class="student-vacancy-response-card-v3">
         {% if response %}
           <div class="student-vacancy-response-title-v3">
             <span class="student-vacancy-response-icon-v3">
@@ -220,6 +222,7 @@
 
           <div class="student-vacancy-response-actions-v3">
             <form method="post" action="{% url 'vacancies:respond' vacancy.pk %}">
+            <input type="hidden" name="next" value="{{ request.get_full_path }}#vacancy-actions">
               {% csrf_token %}
               <button class="btn btn-primary" type="submit">
                 Откликнуться

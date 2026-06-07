@@ -302,9 +302,17 @@ def student_dashboard(request):
         CourseRegistration.objects
         .filter(student=request.user)
         .select_related('course')
-        .order_by('-created_at')
     )
-    registrations = registrations_qs[:5]
+    upcoming_registrations = (
+        registrations_qs
+        .filter(
+            status=CourseRegistration.Status.REGISTERED,
+            course__status=Course.Status.ACTIVE,
+            course__date__gte=timezone.localdate(),
+        )
+        .order_by('course__date', 'course__title')
+    )
+    registrations = upcoming_registrations[:5]
 
     resume = getattr(request.user, 'resume_settings', None)
     profile = getattr(request.user, 'student_profile', None)
@@ -476,7 +484,11 @@ def student_favorites(request):
     )
     favorite_courses = (
         StudentFavoriteCourse.objects
-        .filter(student=request.user)
+        .filter(
+            student=request.user,
+            course__status=Course.Status.ACTIVE,
+            course__date__gte=timezone.localdate(),
+        )
         .select_related('course')
         .order_by('-created_at')
     )
@@ -764,9 +776,14 @@ def curator_course_registrations(request):
     students = curator_students_queryset(request.user, include_graduates=True)
     student_ids = students.values_list('id', flat=True)
 
+    today = timezone.localdate()
     registrations = (
         CourseRegistration.objects
-        .filter(student_id__in=student_ids)
+        .filter(
+            student_id__in=student_ids,
+            course__status=Course.Status.ACTIVE,
+            course__date__gte=today,
+        )
         .select_related('student', 'student__study_group', 'course')
         .order_by('-created_at')
     )
@@ -793,7 +810,11 @@ def curator_course_registrations(request):
     else:
         status_q = 'all'
 
-    base_regs = CourseRegistration.objects.filter(student_id__in=student_ids)
+    base_regs = CourseRegistration.objects.filter(
+        student_id__in=student_ids,
+        course__status=Course.Status.ACTIVE,
+        course__date__gte=today,
+    )
 
     paginator = Paginator(registrations, 12)
     page_obj = paginator.get_page(request.GET.get('page'))

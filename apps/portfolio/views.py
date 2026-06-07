@@ -3,6 +3,7 @@ from collections import OrderedDict
 from django.contrib import messages
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils import timezone
 
 from apps.accounts.decorators import role_required
@@ -12,6 +13,18 @@ from apps.accounts.permissions import can_create_portfolio_entries, can_edit_por
 from .forms import PortfolioEntryForm
 from .models import PortfolioAttachment, PortfolioEntry
 
+
+
+
+def _safe_next_url(request):
+    next_url = request.POST.get('next') or request.GET.get('next')
+    if next_url and url_has_allowed_host_and_scheme(
+        next_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return next_url
+    return ''
 
 SECTION_DEFINITIONS = OrderedDict(
     [
@@ -85,7 +98,7 @@ def list_entries(request):
 def create_entry(request):
     if not can_create_portfolio_entries(request.user):
         messages.error(request, 'Добавление достижений недоступно для вашего учебного статуса.')
-        return redirect('portfolio:list')
+        return redirect(_safe_next_url(request) or 'portfolio:list')
     if request.method == 'POST':
         form = PortfolioEntryForm(request.POST, request.FILES)
         if form.is_valid():
@@ -97,17 +110,17 @@ def create_entry(request):
                 PortfolioAttachment.objects.create(entry=entry, file=file_obj)
             ActivityLog.objects.create(student=request.user, event_type=ActivityLog.EventType.PORTFOLIO_CREATED, title=f'Добавлена запись портфолио: {entry.title}', description=entry.type, related_model='portfolio.PortfolioEntry', related_object_id=entry.id)
             ActivityLog.objects.create(student=request.user, event_type=ActivityLog.EventType.PORTFOLIO_PENDING, title=f'Ожидает проверки: {entry.title}', description=entry.type, related_model='portfolio.PortfolioEntry', related_object_id=entry.id)
-            return redirect('portfolio:list')
+            return redirect(_safe_next_url(request) or 'portfolio:list')
     else:
         form = PortfolioEntryForm()
-    return render(request, 'portfolio/form.html', {'form': form})
+    return render(request, 'portfolio/form.html', {'form': form, 'next_url': _safe_next_url(request)})
 
 
 @role_required(User.Role.STUDENT)
 def edit_entry(request, pk):
     if not can_edit_portfolio_entries(request.user):
         messages.error(request, 'Добавление достижений недоступно для вашего учебного статуса.')
-        return redirect('portfolio:list')
+        return redirect(_safe_next_url(request) or 'portfolio:list')
     entry = get_object_or_404(PortfolioEntry, pk=pk, student=request.user)
     if request.method == 'POST':
         form = PortfolioEntryForm(request.POST, request.FILES, instance=entry)
@@ -125,10 +138,15 @@ def edit_entry(request, pk):
                 PortfolioAttachment.objects.filter(entry=entry, id__in=delete_ids).delete()
             for file_obj in form.cleaned_data['attachments']:
                 PortfolioAttachment.objects.create(entry=entry, file=file_obj)
-            return redirect('portfolio:list')
+            return redirect(_safe_next_url(request) or 'portfolio:list')
     else:
         form = PortfolioEntryForm(instance=entry)
-    return render(request, 'portfolio/form.html', {'form': form, 'entry': entry, 'existing_attachments': entry.attachments.all()})
+    return render(request, 'portfolio/form.html', {
+        'form': form,
+        'entry': entry,
+        'existing_attachments': entry.attachments.all(),
+        'next_url': _safe_next_url(request),
+    })
 
 # unchanged below
 @role_required(User.Role.CURATOR)
@@ -161,8 +179,8 @@ def review_queue(request):
 def delete_entry(request, pk):
     if not can_edit_portfolio_entries(request.user):
         messages.error(request, 'Добавление достижений недоступно для вашего учебного статуса.')
-        return redirect('portfolio:list')
+        return redirect(_safe_next_url(request) or 'portfolio:list')
     entry = get_object_or_404(PortfolioEntry, pk=pk, student=request.user)
     if request.method == 'POST':
         entry.delete()
-    return redirect('portfolio:list')
+    return redirect(_safe_next_url(request) or 'portfolio:list')

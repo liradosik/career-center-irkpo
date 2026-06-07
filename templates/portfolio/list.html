@@ -28,7 +28,7 @@
     </div>
   </section>
 
-  <section class="section card student-portfolio-list-card-v2">
+  <section id="portfolio-list" class="section card student-portfolio-list-card-v2">
     <div class="student-portfolio-list-head">
       <div>
         <h2>Мои записи</h2>
@@ -40,7 +40,7 @@
       </div>
     </div>
 
-    <form class="student-portfolio-filters" method="get">
+    <form class="student-portfolio-filters" method="get" action="{% url 'portfolio:list' %}#portfolio-list">
       <div class="student-portfolio-search">
         <i class="bi bi-search"></i>
         <input
@@ -77,7 +77,7 @@
       </button>
 
       {% if search_query or selected_type or selected_status or selected_sort != 'newest' %}
-        <a class="btn student-portfolio-reset" href="{% url 'portfolio:list' %}">
+        <a class="btn student-portfolio-reset" href="{% url 'portfolio:list' %}#portfolio-list">
           <i class="bi bi-x-lg"></i>
           Сбросить
         </a>
@@ -86,7 +86,7 @@
 
     <div class="student-portfolio-entry-list-v2">
       {% for entry in entries %}
-        <article class="student-portfolio-entry-card-v2">
+        <article id="portfolio-entry-{{ entry.pk }}" class="student-portfolio-entry-card-v2">
           <div class="student-portfolio-entry-icon student-portfolio-entry-icon-{{ entry.type }}">
             {% if entry.type == 'academic' %}
               <i class="bi bi-trophy"></i>
@@ -160,7 +160,7 @@
             {% endif %}
 
             <div class="student-portfolio-entry-actions">
-              {% if can_edit_portfolio_entries %}<a class="btn btn-link" href="{% url 'portfolio:edit' entry.pk %}">
+              {% if can_edit_portfolio_entries %}<a class="btn btn-link" href="{% url 'portfolio:edit' entry.pk %}?next={{ request.get_full_path|urlencode }}%23portfolio-entry-{{ entry.pk }}">
                 <i class="bi bi-pencil"></i>
                 Редактировать
               </a>
@@ -172,6 +172,7 @@
   data-confirm-text="Удалить запись портфолио? Это действие нельзя отменить."
 >
                 {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}#portfolio-list">
                 <button class="btn btn-danger" type="submit">
                   <i class="bi bi-trash"></i>
                   Удалить

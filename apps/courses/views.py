@@ -3,6 +3,7 @@ from django.core.paginator import Paginator
 from django.core.exceptions import ValidationError
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils import timezone
 
 from apps.accounts.decorators import role_required
@@ -12,8 +13,19 @@ from apps.accounts.permissions import can_manage_favorites, can_register_courses
 from .models import Course, CourseRegistration, StudentFavoriteCourse
 
 
-def _redirect_back(request, fallback_name, **kwargs):
+def _safe_next_url(request):
     next_url = request.POST.get('next')
+    if next_url and url_has_allowed_host_and_scheme(
+        next_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return next_url
+    return ''
+
+
+def _redirect_back(request, fallback_name, **kwargs):
+    next_url = _safe_next_url(request)
     if next_url:
         return redirect(next_url)
     return redirect(fallback_name, **kwargs)
@@ -108,7 +120,10 @@ def course_list(request):
 
 @role_required(User.Role.STUDENT, User.Role.CURATOR, User.Role.ADMIN)
 def course_detail(request, pk):
-    course = get_object_or_404(Course.objects.filter(status=Course.Status.ACTIVE).annotate(
+    courses = Course.objects.filter(status=Course.Status.ACTIVE)
+    if request.user.role in {User.Role.STUDENT, User.Role.CURATOR}:
+        courses = courses.filter(date__gte=timezone.localdate())
+    course = get_object_or_404(courses.annotate(
         active_registrations_count=Count('registrations', filter=Q(registrations__status=CourseRegistration.Status.REGISTERED))
     ), pk=pk)
     registration = None

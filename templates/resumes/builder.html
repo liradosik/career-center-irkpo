@@ -25,12 +25,12 @@
         </button>{% else %}<span class="student-course-status-badge is-cancelled">Редактирование резюме недоступно</span>{% endif %}
 
         {% if profile %}
-          <a class="btn" target="_blank" href="{% url 'resumes:public' profile.public_resume_token %}?download=pdf">
+          <a class="btn" target="_blank" rel="noopener noreferrer" href="{% url 'resumes:public' profile.public_resume_token %}?download=pdf">
             <i class="bi bi-file-earmark-pdf"></i>
             Скачать PDF
           </a>
 
-          <a class="btn" target="_blank" href="{% url 'resumes:public' profile.public_resume_token %}">
+          <a class="btn" target="_blank" rel="noopener noreferrer" href="{% url 'resumes:public' profile.public_resume_token %}">
             <i class="bi bi-box-arrow-up-right"></i>
             Открыть публичное резюме
           </a>
