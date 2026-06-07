@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from apps.courses.models import Course
+from apps.courses.services import archive_past_courses_if_needed
 
 
 class Command(BaseCommand):
@@ -41,5 +42,5 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS('Dry-run завершён. Изменения не применялись.'))
             return
 
-        archived_count = queryset.update(status=Course.Status.ARCHIVE)
+        archived_count = archive_past_courses_if_needed()
         self.stdout.write(self.style.SUCCESS(f'Реально архивировано курсов: {archived_count}'))

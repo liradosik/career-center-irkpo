@@ -11,6 +11,7 @@ from apps.accounts.models import ActivityLog, User
 from apps.accounts.permissions import can_manage_favorites, can_register_courses
 
 from .models import Course, CourseRegistration, StudentFavoriteCourse
+from .services import archive_past_courses_if_needed
 
 
 def _safe_next_url(request):
@@ -33,6 +34,7 @@ def _redirect_back(request, fallback_name, **kwargs):
 
 @role_required(User.Role.STUDENT)
 def course_list(request):
+    archive_past_courses_if_needed()
     today = timezone.localdate()
     courses = Course.objects.filter(status=Course.Status.ACTIVE, date__gte=today).annotate(
         active_registrations_count=Count(
