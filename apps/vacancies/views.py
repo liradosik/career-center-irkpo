@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from apps.accounts.decorators import role_required
 from apps.accounts.models import ActivityLog, User
@@ -10,8 +11,19 @@ from apps.accounts.permissions import can_apply_vacancies, can_manage_favorites
 from .models import StudentFavoriteVacancy, Vacancy, VacancyResponse
 
 
-def _redirect_back(request, fallback_name, **kwargs):
+def _safe_next_url(request):
     next_url = request.POST.get('next')
+    if next_url and url_has_allowed_host_and_scheme(
+        next_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return next_url
+    return ''
+
+
+def _redirect_back(request, fallback_name, **kwargs):
+    next_url = _safe_next_url(request)
     if next_url:
         return redirect(next_url)
     return redirect(fallback_name, **kwargs)
@@ -135,7 +147,7 @@ def respond(request, pk):
     else:
         messages.info(request, 'Вы уже откликнулись на эту вакансию.')
 
-    next_url = request.POST.get('next')
+    next_url = _safe_next_url(request)
     if next_url:
         return redirect(next_url)
 

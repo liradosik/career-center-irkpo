@@ -72,7 +72,7 @@
 
       <div class="student-favorites-list-v2">
         {% for f in favorite_vacancies %}
-          <article class="student-favorite-row-v2">
+          <article id="favorite-vacancy-{{ f.vacancy_id }}" class="student-favorite-row-v2">
             <div class="student-favorite-icon-v2 {% cycle 'is-blue' 'is-green' 'is-orange' 'is-purple' %}">
               {% if 'дизайн' in f.vacancy.direction|lower or 'design' in f.vacancy.direction|lower %}
                 <i class="bi bi-palette"></i>
@@ -124,7 +124,7 @@
 
               <form method="post" action="{% url 'vacancies:toggle_favorite' f.vacancy_id %}">
                 {% csrf_token %}
-                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <input type="hidden" name="next" value="{{ request.get_full_path }}#favorite-vacancy-{{ f.vacancy_id }}">
                 <button class="student-favorite-remove-btn-v2" type="submit" title="Убрать из избранного">
                   <i class="bi bi-bookmark-check-fill"></i>
                 </button>
@@ -164,7 +164,7 @@
       <div class="student-favorites-list-v2">
         {% for f in favorite_courses %}
           {% with reg=registration_map|dict_get:f.course_id %}
-            <article class="student-favorite-row-v2">
+            <article id="favorite-course-{{ f.course_id }}" class="student-favorite-row-v2">
               <div class="student-favorite-icon-v2 {% cycle 'is-blue' 'is-purple' 'is-green' 'is-orange' %}">
                 {% if f.course.kind == 'course' %}
                   <i class="bi bi-journal-bookmark"></i>
@@ -218,7 +218,7 @@
 
                 <form method="post" action="{% url 'courses:toggle_favorite' f.course_id %}">
                   {% csrf_token %}
-                  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                  <input type="hidden" name="next" value="{{ request.get_full_path }}#favorite-course-{{ f.course_id }}">
                   <button class="student-favorite-remove-btn-v2" type="submit" title="Убрать из избранного">
                     <i class="bi bi-bookmark-check-fill"></i>
                   </button>

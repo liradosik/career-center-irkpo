@@ -60,6 +60,7 @@
             </span>
           {% elif registration and registration.status == 'cancelled' %}
             <form method="post" action="{% url 'courses:register' course.id %}">
+              <input type="hidden" name="next" value="{{ request.get_full_path }}#course-actions">
               {% csrf_token %}
               <button class="btn btn-primary student-course-detail-primary-action-v3" type="submit">
                 <i class="bi bi-arrow-clockwise"></i>
@@ -68,6 +69,7 @@
             </form>
           {% else %}
             <form method="post" action="{% url 'courses:register' course.id %}">
+              <input type="hidden" name="next" value="{{ request.get_full_path }}#course-actions">
               {% csrf_token %}
               <button class="btn btn-primary student-course-detail-primary-action-v3" type="submit">
                 <i class="bi bi-send"></i>
@@ -78,6 +80,7 @@
 
           {% if can_favorite_courses %}
             <form method="post" action="{% url 'courses:toggle_favorite' course.id %}">
+              <input type="hidden" name="next" value="{{ request.get_full_path }}#course-actions">
               {% csrf_token %}
               <button class="btn favorite-toggle student-course-detail-favorite-v3" type="submit">
                 {% if is_favorite %}
@@ -222,7 +225,7 @@
       {% endif %}
 
       {% if request.user.role == 'student' %}
-        <section class="student-course-response-card-v3">
+        <section id="course-actions" class="student-course-response-card-v3">
           {% if registration and registration.status == 'registered' %}
             <div class="student-course-response-title-v3">
               <span class="student-course-response-icon-v3 is-success">
@@ -235,6 +238,7 @@
 
             <div class="student-course-response-actions-v3">
               <form method="post" action="{% url 'courses:cancel_registration' registration.id %}">
+                <input type="hidden" name="next" value="{{ request.get_full_path }}#course-actions">
                 {% csrf_token %}
                 <button class="btn btn-link" type="submit">
                   <i class="bi bi-x-circle"></i>
@@ -256,6 +260,7 @@
             {% if can_register_courses and course.available_places_count > 0 %}
               <div class="student-course-response-actions-v3">
                 <form method="post" action="{% url 'courses:register' course.id %}">
+              <input type="hidden" name="next" value="{{ request.get_full_path }}#course-actions">
                   {% csrf_token %}
                   <button class="btn btn-primary" type="submit">
                     Записаться снова
@@ -296,6 +301,7 @@
 
             <div class="student-course-response-actions-v3">
               <form method="post" action="{% url 'courses:register' course.id %}">
+              <input type="hidden" name="next" value="{{ request.get_full_path }}#course-actions">
                 {% csrf_token %}
                 <button class="btn btn-primary" type="submit">
                   Записаться
