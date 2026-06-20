@@ -39522,3 +39522,678 @@ html {
     columns: 1;
   }
 }
+/* === FINAL FIX: portfolio upload icon alignment === */
+
+.portfolio-entry-upload-content {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 20px !important;
+}
+
+.portfolio-entry-upload-icon {
+  width: 64px !important;
+  height: 64px !important;
+  min-width: 64px !important;
+  flex: 0 0 64px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  line-height: 1 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.portfolio-entry-upload-icon i,
+.portfolio-entry-upload-icon .bi {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: 28px !important;
+  height: 28px !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+
+  font-size: 28px !important;
+  vertical-align: middle !important;
+}
+
+.portfolio-entry-upload-icon i::before,
+.portfolio-entry-upload-icon .bi::before {
+  display: block !important;
+  line-height: 1 !important;
+}
+
+/* === FINAL FIX: attachments in public resume and PDF === */
+
+.portfolio-attachments-block {
+  margin-top: 8px !important;
+}
+
+.portfolio-attachments-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
+.portfolio-attachment-item {
+  width: fit-content !important;
+  max-width: 100% !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-wrap: wrap !important;
+
+  padding: 6px 9px !important;
+  border: 1px solid #dbe8f7 !important;
+  border-radius: 10px !important;
+  background: #f8fbff !important;
+
+  color: #425872 !important;
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+}
+
+.portfolio-attachment-name {
+  max-width: 260px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.portfolio-attachment-separator {
+  color: #8a9bb3 !important;
+}
+
+.portfolio-attachment-link {
+  color: #0d5ed7 !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+}
+
+.portfolio-attachment-link:hover {
+  text-decoration: underline !important;
+}
+
+
+/* Мобильная страховка */
+@media (max-width: 760px) {
+  .student-vacancy-save-inline,
+  .student-course-favorite-btn-v3 {
+    width: 48px !important;
+    min-width: 48px !important;
+    max-width: 48px !important;
+  }
+
+  .student-vacancy-detail-favorite-v3,
+  .student-course-detail-favorite-v3 {
+    width: 100% !important;
+  }
+
+  .portfolio-entry-upload-content {
+    flex-direction: column !important;
+    text-align: center !important;
+  }
+}
+/* === FINAL FIX: PDF attachment links === */
+
+.pdf-entry .portfolio-attachments-block {
+  margin-top: 5px;
+}
+
+.pdf-entry .portfolio-attachments-list {
+  display: block;
+}
+
+.pdf-entry .portfolio-attachment-item {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  margin: 3px 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #53677f;
+  font-size: 9.6px;
+  line-height: 1.35;
+}
+
+.pdf-entry .portfolio-attachment-name {
+  display: inline;
+  max-width: none;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  color: #53677f;
+}
+
+.pdf-entry .portfolio-attachment-separator {
+  display: inline;
+  padding: 0 3px;
+  color: #8a9bb3;
+}
+
+.pdf-entry .portfolio-attachment-link {
+  display: inline;
+  color: #1764cf;
+  font-weight: 600;
+  text-decoration: none;
+}
+/* === URGENT FIX: restore vacancy/course cards actions layout === */
+
+/* 1. Возвращаем действия вакансий в нормальную строку, без огромных кнопок */
+.student-vacancy-actions-v2 {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+  width: auto !important;
+}
+
+.student-vacancy-actions-v2 form {
+  display: inline-flex !important;
+  margin: 0 !important;
+  width: auto !important;
+}
+
+.student-vacancy-actions-v2 .btn,
+.student-vacancy-actions-v2 button,
+.student-vacancy-actions-v2 .student-vacancy-responded-badge {
+  width: auto !important;
+  min-width: 132px !important;
+  min-height: 44px !important;
+  padding: 10px 16px !important;
+  border-radius: 16px !important;
+  white-space: nowrap !important;
+}
+
+/* 2. Избранное вакансий — квадратная иконка, как у курсов */
+.student-vacancy-save-btn.student-vacancy-save-inline {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  padding: 0 !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  border: 1px solid #cfe0f5 !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+  color: #1e66d0 !important;
+  box-shadow: none !important;
+}
+
+.student-vacancy-save-btn.student-vacancy-save-inline .favorite-toggle-label {
+  display: none !important;
+}
+
+.student-vacancy-save-btn.student-vacancy-save-inline i {
+  font-size: 20px !important;
+  line-height: 1 !important;
+}
+
+.student-vacancy-save-btn.student-vacancy-save-inline:hover,
+.student-vacancy-save-btn.student-vacancy-save-inline.is-active {
+  border-color: #8bb8ff !important;
+  background: #eef5ff !important;
+  color: #0750c8 !important;
+}
+
+
+/* 3. Курсы: возвращаем старую сетку справа, как было до поломки */
+.student-course-actions-v3 {
+  display: grid !important;
+  grid-template-columns: 112px 146px 42px !important;
+  align-items: center !important;
+  justify-content: end !important;
+  gap: 9px !important;
+  width: auto !important;
+}
+
+.student-course-actions-v3 form {
+  margin: 0 !important;
+  width: auto !important;
+}
+
+.student-course-actions-v3 .btn,
+.student-course-detail-btn-v3,
+.student-course-action-btn-v3,
+.student-course-cancel-btn-v3,
+.student-course-disabled-btn-v3 {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 42px !important;
+  padding: 9px 12px !important;
+  border-radius: 14px !important;
+  white-space: nowrap !important;
+}
+
+/* 4. Избранное курсов — как у вакансий, но в старой ячейке 42px */
+.student-course-favorite-btn-v3 {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  max-width: 42px !important;
+  padding: 0 !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  border: 1px solid #cfe0f5 !important;
+  border-radius: 14px !important;
+  background: #ffffff !important;
+  color: #1e66d0 !important;
+  box-shadow: none !important;
+}
+
+.student-course-favorite-btn-v3 .favorite-toggle-label {
+  display: none !important;
+}
+
+.student-course-favorite-btn-v3 i {
+  font-size: 19px !important;
+  line-height: 1 !important;
+}
+
+.student-course-favorite-btn-v3:hover,
+.student-course-favorite-btn-v3.is-active {
+  border-color: #8bb8ff !important;
+  background: #eef5ff !important;
+  color: #0750c8 !important;
+}
+
+
+/* 5. Кнопка "Отменить" у курсов — красная */
+.student-course-cancel-btn-v3 {
+  border-color: #f3c4c4 !important;
+  background: #fff7f7 !important;
+  color: #b72727 !important;
+  box-shadow: none !important;
+}
+
+.student-course-cancel-btn-v3:hover {
+  border-color: #ef9f9f !important;
+  background: #ffecec !important;
+  color: #9f1f1f !important;
+}
+
+
+/* 6. Если курс уже отменён и кнопка "Записаться снова" длинная — не ломаем сетку */
+.student-course-actions-v3 .student-course-action-btn-v3 {
+  font-size: 13px !important;
+}
+
+
+/* 7. Адаптив возвращаем аккуратно */
+@media (max-width: 1280px) {
+  .student-course-card-v3 {
+    grid-template-columns: 56px minmax(0, 1fr) minmax(270px, auto) !important;
+  }
+
+  .student-course-meta-v3 {
+    grid-column: 2 !important;
+  }
+
+  .student-course-actions-v3 {
+    grid-column: 3 !important;
+    grid-row: 1 / span 2 !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .student-course-card-v3 {
+    grid-template-columns: 50px minmax(0, 1fr) !important;
+  }
+
+  .student-course-meta-v3,
+  .student-course-actions-v3 {
+    grid-column: 2 !important;
+    grid-row: auto !important;
+    justify-content: start !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .student-vacancy-actions-v2,
+  .student-vacancy-actions-v2 form,
+  .student-vacancy-actions-v2 .btn,
+  .student-vacancy-actions-v2 button {
+    width: 100% !important;
+  }
+
+  .student-vacancy-save-btn.student-vacancy-save-inline {
+    width: 48px !important;
+    min-width: 48px !important;
+    max-width: 48px !important;
+  }
+
+  .student-course-card-v3 {
+    grid-template-columns: 1fr !important;
+    padding: 16px !important;
+  }
+
+  .student-course-meta-v3,
+  .student-course-actions-v3 {
+    grid-column: auto !important;
+  }
+
+  .student-course-actions-v3 {
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+  }
+
+  .student-course-favorite-btn-v3 {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
+/* === FINAL FIX: vacancy actions layout like courses === */
+
+/* Вакансии: возвращаем нормальную 4-колоночную карточку:
+   иконка | текст | адрес/дата | действия */
+.student-vacancy-card-v2 {
+  grid-template-columns: 52px minmax(260px, 1fr) minmax(190px, 0.42fr) minmax(350px, auto) !important;
+  align-items: center !important;
+}
+
+/* Действия вакансии: все три кнопки в одну строку */
+.student-vacancy-actions-v2 {
+  grid-column: 4 !important;
+  grid-row: 1 / 4 !important;
+
+  display: grid !important;
+  grid-template-columns: 150px 160px 48px !important;
+  align-items: center !important;
+  justify-content: end !important;
+  gap: 10px !important;
+
+  width: auto !important;
+  margin: 0 !important;
+  align-self: center !important;
+}
+
+.student-vacancy-actions-v2 form {
+  display: block !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.student-vacancy-actions-v2 .btn,
+.student-vacancy-actions-v2 button,
+.student-vacancy-actions-v2 .student-vacancy-responded-badge {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 48px !important;
+  padding: 10px 14px !important;
+  border-radius: 16px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+
+  font-size: 14px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+/* Избранное вакансий — квадрат, как у курсов */
+.student-vacancy-save-btn.student-vacancy-save-inline {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  padding: 0 !important;
+
+  border: 1px solid #cfe0f5 !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+  color: #1e66d0 !important;
+  box-shadow: none !important;
+}
+
+.student-vacancy-save-btn.student-vacancy-save-inline .favorite-toggle-label {
+  display: none !important;
+}
+
+.student-vacancy-save-btn.student-vacancy-save-inline i {
+  width: 20px !important;
+  height: 20px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  font-size: 20px !important;
+  line-height: 1 !important;
+}
+
+.student-vacancy-save-btn.student-vacancy-save-inline:hover,
+.student-vacancy-save-btn.student-vacancy-save-inline.is-active {
+  border-color: #8bb8ff !important;
+  background: #eef5ff !important;
+  color: #0750c8 !important;
+}
+
+/* Курсы: оставляем текущую нормальную сетку */
+.student-course-actions-v3 {
+  grid-template-columns: 112px 146px 42px !important;
+  align-items: center !important;
+  justify-content: end !important;
+  gap: 9px !important;
+}
+
+/* Избранное курсов — визуально как у вакансий */
+.student-course-favorite-btn-v3 {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  max-width: 42px !important;
+  padding: 0 !important;
+
+  border: 1px solid #cfe0f5 !important;
+  border-radius: 14px !important;
+  background: #ffffff !important;
+  color: #1e66d0 !important;
+  box-shadow: none !important;
+}
+
+.student-course-favorite-btn-v3 .favorite-toggle-label {
+  display: none !important;
+}
+
+.student-course-favorite-btn-v3:hover,
+.student-course-favorite-btn-v3.is-active {
+  border-color: #8bb8ff !important;
+  background: #eef5ff !important;
+  color: #0750c8 !important;
+}
+
+/* Кнопка "Отменить" у курсов — красная */
+.student-course-cancel-btn-v3 {
+  border-color: #f3c4c4 !important;
+  background: #fff7f7 !important;
+  color: #b72727 !important;
+  box-shadow: none !important;
+}
+
+.student-course-cancel-btn-v3:hover {
+  border-color: #ef9f9f !important;
+  background: #ffecec !important;
+  color: #9f1f1f !important;
+}
+
+/* Чтобы старый media max-width:1400 больше не скидывал действия вакансий вниз */
+@media (max-width: 1400px) {
+  .student-vacancy-card-v2 {
+    grid-template-columns: 52px minmax(230px, 1fr) minmax(160px, 0.38fr) minmax(330px, auto) !important;
+  }
+
+  .student-vacancy-actions-v2 {
+    grid-column: 4 !important;
+    grid-row: 1 / 4 !important;
+    grid-template-columns: 142px 150px 48px !important;
+    justify-content: end !important;
+    margin-top: 0 !important;
+  }
+}
+
+/* На узких экранах можно складывать, но не на обычном ноутбучном размере */
+@media (max-width: 1180px) {
+  .student-vacancy-card-v2 {
+    grid-template-columns: 52px minmax(0, 1fr) !important;
+  }
+
+  .student-vacancy-side-v2 {
+    grid-column: 2 !important;
+    grid-row: auto !important;
+  }
+
+  .student-vacancy-actions-v2 {
+    grid-column: 2 !important;
+    grid-row: auto !important;
+    grid-template-columns: 142px 150px 48px !important;
+    justify-content: start !important;
+    margin-top: 10px !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .student-vacancy-card-v2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .student-vacancy-icon-v2,
+  .student-vacancy-title-row-v2,
+  .student-vacancy-company-v2,
+  .student-vacancy-tags-v2,
+  .student-vacancy-side-v2,
+  .student-vacancy-actions-v2 {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+  }
+
+  .student-vacancy-actions-v2 {
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+  }
+
+  .student-vacancy-save-btn.student-vacancy-save-inline {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .student-course-actions-v3 {
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+  }
+
+  .student-course-favorite-btn-v3 {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
+/* === FINAL TUNE: smaller action buttons for vacancy/course cards === */
+
+/* Вакансии: компактнее блок действий */
+.student-vacancy-actions-v2 {
+  grid-template-columns: 128px 138px 42px !important;
+  gap: 8px !important;
+}
+
+.student-vacancy-actions-v2 .btn,
+.student-vacancy-actions-v2 button,
+.student-vacancy-actions-v2 .student-vacancy-responded-badge {
+  min-height: 42px !important;
+  padding: 8px 12px !important;
+  border-radius: 14px !important;
+  font-size: 13px !important;
+}
+
+/* Иконка избранного у вакансий */
+.student-vacancy-save-btn.student-vacancy-save-inline {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  max-width: 42px !important;
+  border-radius: 14px !important;
+}
+
+.student-vacancy-save-btn.student-vacancy-save-inline i {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+
+/* Курсы: компактнее блок действий */
+.student-course-actions-v3 {
+  grid-template-columns: 100px 130px 38px !important;
+  gap: 8px !important;
+}
+
+.student-course-actions-v3 .btn,
+.student-course-detail-btn-v3,
+.student-course-action-btn-v3,
+.student-course-cancel-btn-v3,
+.student-course-disabled-btn-v3 {
+  min-height: 40px !important;
+  padding: 8px 10px !important;
+  border-radius: 13px !important;
+  font-size: 13px !important;
+}
+
+/* Иконка избранного у курсов */
+.student-course-favorite-btn-v3 {
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  max-width: 38px !important;
+  border-radius: 13px !important;
+}
+
+.student-course-favorite-btn-v3 i {
+  font-size: 17px !important;
+  width: 17px !important;
+  height: 17px !important;
+}
+
+/* Красная кнопка отмены остаётся красной */
+.student-course-cancel-btn-v3 {
+  border-color: #f3c4c4 !important;
+  background: #fff7f7 !important;
+  color: #b72727 !important;
+}
+
+.student-course-cancel-btn-v3:hover {
+  border-color: #ef9f9f !important;
+  background: #ffecec !important;
+  color: #9f1f1f !important;
+}
+
+/* Чтобы на средних экранах вакансии не ломались */
+@media (max-width: 1400px) {
+  .student-vacancy-actions-v2 {
+    grid-template-columns: 124px 132px 42px !important;
+    gap: 8px !important;
+  }
+
+  .student-vacancy-actions-v2 .btn,
+  .student-vacancy-actions-v2 button,
+  .student-vacancy-actions-v2 .student-vacancy-responded-badge {
+    font-size: 12.8px !important;
+    padding-inline: 10px !important;
+  }
+}
