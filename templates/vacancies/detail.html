@@ -54,12 +54,12 @@
           <form method="post" action="{% url 'vacancies:toggle_favorite' vacancy.pk %}">
             <input type="hidden" name="next" value="{{ request.get_full_path }}#vacancy-actions">
             {% csrf_token %}
-            <button class="btn favorite-toggle student-vacancy-detail-favorite-v3" type="submit">
+            <button class="btn favorite-toggle student-vacancy-detail-favorite-v3 {% if is_favorite %}is-active{% endif %}" type="submit">
               {% if is_favorite %}
-                <i class="bi bi-bookmark-check"></i>
-                Убрать из избранного
+                <i class="bi bi-bookmark-heart-fill"></i>
+                В избранном
               {% else %}
-                <i class="bi bi-bookmark"></i>
+                <i class="bi bi-bookmark-heart"></i>
                 В избранное
               {% endif %}
             </button>
@@ -69,7 +69,7 @@
             class="btn student-vacancy-detail-favorite-v3 student-vacancy-detail-favorite-disabled-v3"
             title="Добавление вакансий в избранное недоступно для вашего учебного статуса"
           >
-            <i class="bi bi-bookmark"></i>
+            <i class="bi bi-bookmark-heart"></i>
             Избранное недоступно
           </span>
         {% endif %}

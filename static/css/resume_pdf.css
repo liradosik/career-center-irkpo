@@ -786,3 +786,31 @@ h3 {
 .pdf-template-academic .pdf-entry h3 {
   font-weight: 650;
 }
+/* Targeted compact PDF resume flow */
+.pdf-content {
+  display: block;
+  columns: 2;
+  column-gap: 18px;
+  font-size: 10.4px;
+}
+.pdf-block {
+  display: inline-block;
+  width: 100%;
+  margin-right: 0;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.pdf-attachments-note,
+.portfolio-attachments-block {
+  margin-top: 5px;
+}
+.portfolio-attachments-list {
+  display: block;
+}
+.portfolio-attachment-item {
+  margin: 3px 0;
+}
+.portfolio-attachment-item a {
+  color: #1e66d0;
+  text-decoration: underline;
+}

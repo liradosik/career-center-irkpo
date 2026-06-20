@@ -39446,3 +39446,79 @@ html {
     width: 100%;
   }
 }
+/* Targeted pre-defense fixes: favorites, resume layout and upload icon */
+.student-vacancy-save-btn,
+.student-course-favorite-btn-v3 {
+  width: auto;
+  min-width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+  border: 1px solid #cfe0f5;
+  border-radius: 14px;
+  color: #0f3a6b;
+  background: #ffffff;
+  font-weight: 750;
+}
+.student-vacancy-save-btn.is-active,
+.student-course-favorite-btn-v3.is-active,
+.student-vacancy-detail-favorite-v3.is-active,
+.student-course-detail-favorite-v3.is-active {
+  color: #1e66d0;
+  border-color: #9fc4f5;
+  background: #eef6ff;
+}
+.student-vacancy-detail-favorite-v3,
+.student-course-detail-favorite-v3 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+.portfolio-entry-upload-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.portfolio-entry-upload-icon i,
+.portfolio-entry-upload-icon svg {
+  display: block;
+  line-height: 1;
+}
+.public-resume-content-v6,
+.public-resume-page-v6.resume-template-academic .public-resume-content-v6,
+.public-resume-page-v6.resume-template-modern .public-resume-content-v6 {
+  display: block;
+  columns: 2 300px;
+  column-gap: 34px;
+}
+.public-resume-content-v6 .public-resume-block-v6,
+.public-resume-content-v6 .public-resume-block-v6:nth-child(even),
+.public-resume-content-v6 .public-resume-block-v6:nth-child(odd),
+.public-resume-page-v6.resume-template-academic .public-resume-content-v6 .public-resume-block-v6:nth-child(even),
+.public-resume-page-v6.resume-template-academic .public-resume-content-v6 .public-resume-block-v6:nth-child(odd) {
+  display: inline-block;
+  width: 100%;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.portfolio-attachments-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.portfolio-attachment-item a {
+  font-weight: 750;
+}
+@media (max-width: 760px) {
+  .public-resume-content-v6,
+  .public-resume-page-v6.resume-template-academic .public-resume-content-v6,
+  .public-resume-page-v6.resume-template-modern .public-resume-content-v6 {
+    columns: 1;
+  }
+}

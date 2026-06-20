@@ -150,6 +150,8 @@ def builder(request):
                 settings_obj.photo = None
 
             settings_obj.save()
+            messages.success(request, 'Настройки резюме сохранены.')
+            return redirect('resumes:builder')
     else:
         form = ResumeSettingsForm(instance=settings_obj)
 

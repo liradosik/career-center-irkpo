@@ -110,6 +110,7 @@ def create_entry(request):
                 PortfolioAttachment.objects.create(entry=entry, file=file_obj)
             ActivityLog.objects.create(student=request.user, event_type=ActivityLog.EventType.PORTFOLIO_CREATED, title=f'Добавлена запись портфолио: {entry.title}', description=entry.type, related_model='portfolio.PortfolioEntry', related_object_id=entry.id)
             ActivityLog.objects.create(student=request.user, event_type=ActivityLog.EventType.PORTFOLIO_PENDING, title=f'Ожидает проверки: {entry.title}', description=entry.type, related_model='portfolio.PortfolioEntry', related_object_id=entry.id)
+            messages.success(request, 'Запись портфолио сохранена и отправлена на проверку.')
             return redirect(_safe_next_url(request) or 'portfolio:list')
     else:
         form = PortfolioEntryForm()
@@ -138,6 +139,7 @@ def edit_entry(request, pk):
                 PortfolioAttachment.objects.filter(entry=entry, id__in=delete_ids).delete()
             for file_obj in form.cleaned_data['attachments']:
                 PortfolioAttachment.objects.create(entry=entry, file=file_obj)
+            messages.success(request, 'Запись портфолио обновлена и отправлена на проверку.')
             return redirect(_safe_next_url(request) or 'portfolio:list')
     else:
         form = PortfolioEntryForm(instance=entry)
