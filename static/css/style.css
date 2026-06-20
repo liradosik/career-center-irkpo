@@ -40197,3 +40197,70 @@ html {
     padding-inline: 10px !important;
   }
 }
+/* === FINAL FIX: public resume masonry without vertical gaps === */
+
+/* Убираем grid-раскладку у публичного резюме и делаем masonry через columns */
+.public-resume-page-v6 .public-resume-content-v6,
+.public-resume-page-v6.resume-template-classic .public-resume-content-v6,
+.public-resume-page-v6.resume-template-academic .public-resume-content-v6,
+.public-resume-page-v6.resume-template-modern .public-resume-content-v6 {
+  display: block !important;
+  grid-template-columns: none !important;
+  grid-auto-rows: auto !important;
+
+  column-count: 2 !important;
+  column-gap: 52px !important;
+
+  align-items: initial !important;
+}
+
+/* Каждый раздел становится отдельным компактным блоком внутри колонок */
+.public-resume-page-v6 .public-resume-block-v6,
+.public-resume-page-v6 .public-resume-content-v6 .public-resume-block-v6,
+.public-resume-page-v6 .public-resume-content-v6 .public-resume-block-v6:nth-child(odd),
+.public-resume-page-v6 .public-resume-content-v6 .public-resume-block-v6:nth-child(even),
+.public-resume-page-v6.resume-template-academic .public-resume-content-v6 .public-resume-block-v6,
+.public-resume-page-v6.resume-template-academic .public-resume-content-v6 .public-resume-block-v6:nth-child(odd),
+.public-resume-page-v6.resume-template-academic .public-resume-content-v6 .public-resume-block-v6:nth-child(even),
+.public-resume-page-v6.resume-template-modern .public-resume-content-v6 .public-resume-block-v6,
+.public-resume-page-v6.resume-template-modern .public-resume-content-v6 .public-resume-block-v6:nth-child(odd),
+.public-resume-page-v6.resume-template-modern .public-resume-content-v6 .public-resume-block-v6:nth-child(even) {
+  display: inline-block !important;
+  width: 100% !important;
+
+  grid-column: auto !important;
+  grid-row: auto !important;
+  align-self: start !important;
+  transform: none !important;
+
+  min-height: 0 !important;
+  height: auto !important;
+
+  margin: 0 0 28px !important;
+  vertical-align: top !important;
+
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+/* Убираем лишнюю высоту внутри записей */
+.public-resume-page-v6 .public-resume-entry-v6 {
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+/* Чтобы последний блок не оставлял огромный нижний отступ */
+.public-resume-page-v6 .public-resume-block-v6:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* На узких экранах одна колонка */
+@media (max-width: 1050px) {
+  .public-resume-page-v6 .public-resume-content-v6,
+  .public-resume-page-v6.resume-template-classic .public-resume-content-v6,
+  .public-resume-page-v6.resume-template-academic .public-resume-content-v6,
+  .public-resume-page-v6.resume-template-modern .public-resume-content-v6 {
+    column-count: 1 !important;
+    column-gap: 0 !important;
+  }
+}
