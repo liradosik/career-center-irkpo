@@ -242,15 +242,15 @@
                   title="Избранное"
                 >
                   {% if c.id in favorite_course_ids %}
-                    <i class="bi bi-bookmark-check"></i>
+                    <i class="bi bi-bookmark-heart-fill"></i><span class="favorite-toggle-label">В избранном</span>
                   {% else %}
-                    <i class="bi bi-bookmark"></i>
+                    <i class="bi bi-bookmark-heart"></i><span class="favorite-toggle-label">В избранное</span>
                   {% endif %}
                 </button>
               </form>
             {% else %}
               <span class="student-course-favorite-btn-v3 is-disabled" title="Добавление курсов в избранное недоступно для вашего учебного статуса">
-                <i class="bi bi-bookmark"></i>
+                <i class="bi bi-bookmark-heart"></i><span class="favorite-toggle-label">В избранное</span>
               </span>
             {% endif %}
           </div>

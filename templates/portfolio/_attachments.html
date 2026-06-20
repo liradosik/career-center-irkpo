@@ -1,35 +1,29 @@
-{% load ui_extras %}
+{% load ui_extras portfolio_files %}
 {% if attachments or legacy_file %}
   <div class="portfolio-attachments-block">
     <div class="portfolio-attachments-list">
       {% for attachment in attachments %}
-        <div class="portfolio-attachment-item">
-          {% if attachment.filename|is_image_file %}
-            <a href="{{ attachment.file.url }}" target="_blank" rel="noopener">
-              <img src="{{ attachment.file.url }}" alt="{{ attachment.filename }}" class="portfolio-attachment-thumb">
+        {% file_href attachment.file request absolute_file_urls as attachment_url %}
+        {% if attachment_url %}
+          <div class="portfolio-attachment-item">
+            <span>{{ attachment.filename }}</span>
+            <a href="{{ attachment_url }}" target="_blank" rel="noopener">
+              {{ attachment.filename|file_action_label }}
             </a>
-            <span>{{ attachment.filename }}</span>
-            <a href="{{ attachment.file.url }}" target="_blank" rel="noopener">Открыть</a>
-          {% else %}
-            <span>{{ attachment.filename }}</span>
-            <a href="{{ attachment.file.url }}" target="_blank" rel="noopener">Скачать</a>
-          {% endif %}
-        </div>
+          </div>
+        {% endif %}
       {% endfor %}
 
       {% if legacy_file %}
-        <div class="portfolio-attachment-item">
-          {% if legacy_file.name|basename|is_image_file %}
-            <a href="{{ legacy_file.url }}" target="_blank" rel="noopener">
-              <img src="{{ legacy_file.url }}" alt="{{ legacy_file.name|basename }}" class="portfolio-attachment-thumb">
+        {% file_href legacy_file request absolute_file_urls as legacy_url %}
+        {% if legacy_url %}
+          <div class="portfolio-attachment-item">
+            <span>{{ legacy_file.name|basename }}</span>
+            <a href="{{ legacy_url }}" target="_blank" rel="noopener">
+              {{ legacy_file.name|basename|file_action_label }}
             </a>
-            <span>{{ legacy_file.name|basename }}</span>
-            <a href="{{ legacy_file.url }}" target="_blank" rel="noopener">Открыть</a>
-          {% else %}
-            <span>{{ legacy_file.name|basename }}</span>
-            <a href="{{ legacy_file.url }}" target="_blank" rel="noopener">Скачать</a>
-          {% endif %}
-        </div>
+          </div>
+        {% endif %}
       {% endif %}
     </div>
   </div>

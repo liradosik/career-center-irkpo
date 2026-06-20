@@ -176,9 +176,9 @@
                   title="Избранное"
                 >
                   {% if v.id in favorite_vacancy_ids %}
-                    <i class="bi bi-bookmark-check"></i>
+                    <i class="bi bi-bookmark-heart-fill"></i><span class="favorite-toggle-label">В избранном</span>
                   {% else %}
-                    <i class="bi bi-bookmark"></i>
+                    <i class="bi bi-bookmark-heart"></i><span class="favorite-toggle-label">В избранное</span>
                   {% endif %}
                 </button>
               </form>
@@ -187,7 +187,7 @@
                 class="student-vacancy-save-btn student-vacancy-save-inline student-vacancy-save-disabled"
                 title="Добавление в избранное недоступно для вашего учебного статуса"
               >
-                <i class="bi bi-bookmark"></i>
+                <i class="bi bi-bookmark-heart"></i><span class="favorite-toggle-label">В избранное</span>
               </span>
             {% endif %}
           </div>
